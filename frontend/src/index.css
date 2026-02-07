@@ -1,0 +1,160 @@
+@import 'tailwindcss';
+
+/* Custom theme for EnviroMonitor */
+@theme {
+    --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    /* Colors – light theme */
+    --color-primary: #4f6af0;
+    --color-primary-dark: #3b4fd6;
+    --color-primary-light: #7b93f7;
+    --color-secondary: #10b981;
+    --color-secondary-dark: #059669;
+
+    --color-background: #f0f2f5;
+    --color-surface: #ffffff;
+    --color-surface-alt: #f7f8fa;
+    --color-surface-hover: #e8edf2;
+
+    --color-text: #1e293b;
+    --color-text-secondary: #475569;
+    --color-text-muted: #94a3b8;
+    --color-border: #e2e8f0;
+
+    --color-error: #ef4444;
+    --color-warning: #f59e0b;
+    --color-success: #22c55e;
+
+    --color-temp: #ef4444;
+    --color-temp-end: #f97316;
+    --color-humidity: #0ea5e9;
+    --color-humidity-end: #06b6d4;
+}
+
+/* ===== Dark mode overrides ===== */
+html.dark {
+    --color-primary: #667eea;
+    --color-primary-dark: #764ba2;
+    --color-primary-light: #60a5fa;
+    --color-secondary: #4ecdc4;
+    --color-secondary-dark: #059669;
+
+    --color-background: #0a0e27;
+    --color-surface: #1a1f3a;
+    --color-surface-alt: #151a35;
+    --color-surface-hover: #263548;
+
+    --color-text: #ffffff;
+    --color-text-secondary: #a8b2d1;
+    --color-text-muted: #6c7a96;
+    --color-border: rgba(255, 255, 255, 0.08);
+
+    --color-temp: #ff6b6b;
+    --color-temp-end: #ff8e53;
+    --color-humidity: #4ecdc4;
+    --color-humidity-end: #44a3d5;
+}
+
+/* Base styles */
+body {
+    @apply bg-background text-text font-sans antialiased;
+    min-height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Select dropdown styling */
+select option {
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+a {
+    @apply text-primary no-underline transition-colors duration-150 hover:text-primary-dark;
+}
+
+button {
+    @apply cursor-pointer font-[inherit];
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Dashboard animations */
+@keyframes slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse-icon {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Utility animation classes */
+@utility animate-slide-down {
+    animation: slide-down 0.6s ease-out;
+}
+
+@utility animate-fade-in {
+    animation: fade-in 0.8s ease-out 0.2s backwards;
+}
+
+@utility animate-pulse-icon {
+    animation: pulse-icon 2s ease-in-out infinite;
+}
+
+@utility animate-blink {
+    animation: blink 2s ease-in-out infinite;
+}
+
+@utility animate-shimmer {
+    animation: shimmer 2s infinite;
+}
+
+@utility duration-400 {
+    transition-duration: 400ms;
+}

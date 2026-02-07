@@ -1,0 +1,79 @@
+{
+  "common": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "getStarted": "Get Started",
+    "goHome": "Go Home",
+    "language": "Language"
+  },
+  "home": {
+    "title1": "Environmental Monitoring",
+    "title2": "Made Simple",
+    "description": "Monitor, analyze, and protect your environment with our comprehensive platform. Real-time data, actionable insights.",
+    "startTrial": "Start Free Trial",
+    "viewDemo": "View Demo"
+  },
+  "auth": {
+    "welcomeBack": "Welcome Back",
+    "signInDesc": "Sign in to your account",
+    "email": "Email",
+    "password": "Password",
+    "enterEmail": "Enter your email",
+    "enterPassword": "Enter your password",
+    "signIn": "Sign In",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "createAccount": "Create Account",
+    "createAccountDesc": "Start your journey with EnviroMonitor",
+    "fullName": "Full Name",
+    "enterName": "Enter your name",
+    "confirmPassword": "Confirm Password",
+    "createPassword": "Create a password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "alreadyHaveAccount": "Already have an account?"
+  },
+  "dashboard": {
+    "title": "IoT Sensor Monitor",
+    "subtitle": "Real-time temperature & humidity tracking",
+    "refresh": "Refresh data",
+    "grid": "Grid",
+    "list": "List",
+    "search": "Search",
+    "searchPlaceholder": "Enter location, sensor ID...",
+    "area": "Area",
+    "allAreas": "All areas",
+    "selectArea": "Select area",
+    "update": "Updated",
+    "selectTime": "Select time",
+    "sort": "Sort",
+    "selectSort": "Select sort",
+    "sortDefault": "Default",
+    "sortTempAsc": "Temperature ↑",
+    "sortTempDesc": "Temperature ↓",
+    "sortHumAsc": "Humidity ↑",
+    "sortHumDesc": "Humidity ↓",
+    "sortRecent": "Most recent",
+    "timeAll": "All",
+    "timeLt1": "< 1 min",
+    "timeLt3": "< 3 min",
+    "timeLt5": "< 5 min",
+    "showing": "Showing",
+    "of": "/",
+    "locations": "locations",
+    "clearFilters": "Clear filters",
+    "noResults": "No sensors found",
+    "noResultsHint": "Try changing your filters",
+    "temperature": "Temperature",
+    "humidity": "Humidity",
+    "minuteAgo": "{{count}} min ago",
+    "secondAgo": "{{count}} sec ago"
+  },
+  "notFound": {
+    "message": "Oops! The page you're looking for doesn't exist."
+  },
+  "theme": {
+    "switchDark": "Switch to dark mode",
+    "switchLight": "Switch to light mode"
+  }
+}

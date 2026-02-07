@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # MariaDB Database
+  mariadb:
+    image: mariadb:10.11
+    container_name: enviromonitor-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-enviromonitor}
+      MYSQL_USER: ${DB_USER:-envirouser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-enviropassword}
+    ports:
+      - '${DB_PORT:-3306}:3306'
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - enviromonitor-network
+    healthcheck:
+      test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: enviromonitor-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3000}
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-enviromonitor}
+      DB_USER: ${DB_USER:-envirouser}
+      DB_PASSWORD: ${DB_PASSWORD:-enviropassword}
+    ports:
+      - '${PORT:-3000}:3000'
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+    networks:
+      - enviromonitor-network
+
+volumes:
+  mariadb_data:
+
+networks:
+  enviromonitor-network:
+    driver: bridge

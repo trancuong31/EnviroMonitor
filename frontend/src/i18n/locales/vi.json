@@ -1,0 +1,79 @@
+{
+  "common": {
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "register": "Đăng ký",
+    "getStarted": "Bắt đầu",
+    "goHome": "Về trang chủ",
+    "language": "Ngôn ngữ"
+  },
+  "home": {
+    "title1": "Giám sát Môi trường",
+    "title2": "Đơn giản & Hiệu quả",
+    "description": "Giám sát, phân tích và bảo vệ môi trường với nền tảng toàn diện. Dữ liệu thời gian thực, thông tin hữu ích.",
+    "startTrial": "Dùng thử miễn phí",
+    "viewDemo": "Xem Demo"
+  },
+  "auth": {
+    "welcomeBack": "Chào mừng trở lại",
+    "signInDesc": "Đăng nhập vào tài khoản của bạn",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "enterEmail": "Nhập email của bạn",
+    "enterPassword": "Nhập mật khẩu của bạn",
+    "signIn": "Đăng nhập",
+    "noAccount": "Chưa có tài khoản?",
+    "signUp": "Đăng ký",
+    "createAccount": "Tạo tài khoản",
+    "createAccountDesc": "Bắt đầu hành trình cùng EnviroMonitor",
+    "fullName": "Họ và tên",
+    "enterName": "Nhập họ tên của bạn",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "createPassword": "Tạo mật khẩu",
+    "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
+    "alreadyHaveAccount": "Đã có tài khoản?"
+  },
+  "dashboard": {
+    "title": "IoT Sensor Monitor",
+    "subtitle": "Theo dõi nhiệt độ & độ ẩm thời gian thực",
+    "refresh": "Làm mới dữ liệu",
+    "grid": "Lưới",
+    "list": "Danh sách",
+    "search": "Tìm kiếm",
+    "searchPlaceholder": "Nhập vị trí, sensor ID...",
+    "area": "Khu vực",
+    "allAreas": "Tất cả khu vực",
+    "selectArea": "Chọn khu vực",
+    "update": "Cập nhật",
+    "selectTime": "Chọn thời gian",
+    "sort": "Sắp xếp",
+    "selectSort": "Chọn sắp xếp",
+    "sortDefault": "Mặc định",
+    "sortTempAsc": "Nhiệt độ ↑",
+    "sortTempDesc": "Nhiệt độ ↓",
+    "sortHumAsc": "Độ ẩm ↑",
+    "sortHumDesc": "Độ ẩm ↓",
+    "sortRecent": "Mới nhất",
+    "timeAll": "Tất cả",
+    "timeLt1": "< 1 phút",
+    "timeLt3": "< 3 phút",
+    "timeLt5": "< 5 phút",
+    "showing": "Hiển thị",
+    "of": "/",
+    "locations": "vị trí",
+    "clearFilters": "Xóa bộ lọc",
+    "noResults": "Không tìm thấy sensor nào",
+    "noResultsHint": "Thử thay đổi bộ lọc",
+    "temperature": "Nhiệt độ",
+    "humidity": "Độ ẩm",
+    "minuteAgo": "{{count}} phút trước",
+    "secondAgo": "{{count}} giây trước"
+  },
+  "notFound": {
+    "message": "Trang bạn tìm không tồn tại."
+  },
+  "theme": {
+    "switchDark": "Chuyển nền tối",
+    "switchLight": "Chuyển nền sáng"
+  }
+}
