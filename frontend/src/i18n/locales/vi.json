@@ -8,9 +8,9 @@
     "language": "Ngôn ngữ"
   },
   "home": {
-    "title1": "Giám sát Môi trường",
+    "title1": "Hệ thống giám sát Nhiệt độ & Độ ẩm (IoT)",
     "title2": "Đơn giản & Hiệu quả",
-    "description": "Giám sát, phân tích và bảo vệ môi trường với nền tảng toàn diện. Dữ liệu thời gian thực, thông tin hữu ích.",
+    "description": "Giám sát và phân tích với nền tảng toàn diện. Dữ liệu thời gian thực, thông tin hữu ích.",
     "startTrial": "Dùng thử miễn phí",
     "viewDemo": "Xem Demo"
   },
@@ -34,13 +34,14 @@
     "alreadyHaveAccount": "Đã có tài khoản?"
   },
   "dashboard": {
-    "title": "IoT Sensor Monitor",
+    "title": "Giám sát Nhiệt độ & Độ ẩm",
     "subtitle": "Theo dõi nhiệt độ & độ ẩm thời gian thực",
+    "export": "Xuất báo cáo CSV",
     "refresh": "Làm mới dữ liệu",
     "grid": "Lưới",
     "list": "Danh sách",
     "search": "Tìm kiếm",
-    "searchPlaceholder": "Nhập vị trí, sensor ID...",
+    "searchPlaceholder": "Nhập tên vị trí, mã ID...",
     "area": "Khu vực",
     "allAreas": "Tất cả khu vực",
     "selectArea": "Chọn khu vực",
@@ -62,10 +63,29 @@
     "of": "/",
     "locations": "vị trí",
     "clearFilters": "Xóa bộ lọc",
-    "noResults": "Không tìm thấy sensor nào",
-    "noResultsHint": "Thử thay đổi bộ lọc",
+    "noSensor": "Không tìm thấy vị trí nào",
+    "tryFilter": "Thử thay đổi bộ lọc",
     "temperature": "Nhiệt độ",
     "humidity": "Độ ẩm",
+    "currentTemp": "Nhiệt độ hiện tại",
+    "currentHum": "Độ ẩm hiện tại",
+    "chartTitle": "Biểu đồ nhiệt độ & độ ẩm",
+    "sensorId": "Mã vị trí",
+    "time": "Thời gian",
+    "selectDate": "Chọn ngày",
+    "dateRange": "Khoảng thời gian",
+    "selectDateRange": "Chọn khoảng thời gian",
+    "exportExcel": "Xuất Excel",
+    "today": "Hôm nay",
+    "lastUpdate": "Cập nhật lần cuối",
+    "warning": "Cảnh báo",
+    "tempLow": "Nhiệt độ thấp",
+    "tempHigh": "Nhiệt độ cao",
+    "humLow": "Độ ẩm thấp",
+    "humHigh": "Độ ẩm cao",
+    "warningValues": "Giá trị ngoài ngưỡng an toàn",
+    "locationName": "Vị trí",
+    "status": "Trạng thái",
     "minuteAgo": "{{count}} phút trước",
     "secondAgo": "{{count}} giây trước"
   },
@@ -75,5 +95,22 @@
   "theme": {
     "switchDark": "Chuyển nền tối",
     "switchLight": "Chuyển nền sáng"
+  },
+  "settings": {
+    "thresholdTitle": "Cài đặt ngưỡng cảnh báo",
+    "temperature": "Nhiệt độ",
+    "humidity": "Độ ẩm",
+    "min": "Tối thiểu",
+    "max": "Tối đa",
+    "reset": "Đặt lại mặc định",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "thresholdNote": "Các vị trí có giá trị ngoài ngưỡng này sẽ được đánh dấu cảnh báo.",
+    "cold": "Lạnh",
+    "hot": "Nóng",
+    "dry": "Khô",
+    "humid": "Ẩm",
+    "optimal": "Tối ưu",
+    "errorMaxMin": "Giá trị tối đa phải lớn hơn tối thiểu"
   }
 }

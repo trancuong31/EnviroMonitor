@@ -34,26 +34,35 @@
 
 /* ===== Dark mode overrides ===== */
 html.dark {
-    --color-primary: #667eea;
-    --color-primary-dark: #764ba2;
-    --color-primary-light: #60a5fa;
-    --color-secondary: #4ecdc4;
-    --color-secondary-dark: #059669;
+    /* === Brand / Primary (Electric Blue – Tech) === */
+    --color-primary: #1ea7ff;
+    --color-primary-dark: #0b5ed7;
+    --color-primary-light: #5fd0ff;
 
-    --color-background: #0a0e27;
-    --color-surface: #1a1f3a;
-    --color-surface-alt: #151a35;
-    --color-surface-hover: #263548;
+    /* === Secondary (Cyan – Data / Sensor) === */
+    --color-secondary: #2dd4bf;
+    --color-secondary-dark: #0f766e;
 
-    --color-text: #ffffff;
-    --color-text-secondary: #a8b2d1;
-    --color-text-muted: #6c7a96;
-    --color-border: rgba(255, 255, 255, 0.08);
+    /* === Background (Deep Navy – Industrial) === */
+    --color-background: #050b1e;
+    --color-surface: #0b132b;
+    --color-surface-alt: #0f1b3d;
+    --color-surface-hover: #132a55;
 
-    --color-temp: #ff6b6b;
-    --color-temp-end: #ff8e53;
-    --color-humidity: #4ecdc4;
-    --color-humidity-end: #44a3d5;
+    /* === Text === */
+    --color-text: #e6f1ff;
+    --color-text-secondary: #9fb3c8;
+    --color-text-muted: #64748b;
+
+    /* === Border / Grid === */
+    --color-border: rgba(56, 189, 248, 0.15);
+
+    /* === Chart / Sensor Colors === */
+    --color-temp: #ff5f5f;
+    --color-temp-end: #ff9f43;
+
+    --color-humidity: #2dd4bf;
+    --color-humidity-end: #38bdf8;
 }
 
 /* Base styles */
@@ -90,6 +99,7 @@ button {
         opacity: 0;
         transform: translateY(-30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -101,6 +111,7 @@ button {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -108,18 +119,24 @@ button {
 }
 
 @keyframes pulse-icon {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.05);
     }
 }
 
 @keyframes blink {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.4;
     }
@@ -129,6 +146,7 @@ button {
     0% {
         transform: translateX(-100%);
     }
+
     100% {
         transform: translateX(100%);
     }

@@ -1,0 +1,721 @@
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
+import DatePicker from 'react-datepicker';
+import { format, differenceInMinutes, addMinutes, setHours, setMinutes, setSeconds } from 'date-fns';
+import { vi, enUS } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
+import 'react-datepicker/dist/react-datepicker.css';
+
+/**
+ * Utility: Check if dark mode is active
+ */
+const useTheme = () => {
+    const [isDark, setIsDark] = useState(() =>
+        document.documentElement.classList.contains('dark')
+    );
+
+    useEffect(() => {
+        const observer = new MutationObserver(() => {
+            setIsDark(document.documentElement.classList.contains('dark'));
+        });
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+        return () => observer.disconnect();
+    }, []);
+
+    return isDark;
+};
+
+/**
+ * Theme-aware color palette
+ */
+const getThemeColors = (isDark) => ({
+    // Background & Surface
+    modalBg: isDark ? '#0b132b' : '#ffffff',
+    headerBg: isDark ? '#0f1b3d' : '#f8fafc',
+    cardBg: isDark ? '#0f1b3d' : '#ffffff',
+    footerBg: isDark ? '#0f1b3d' : '#f9fafb',
+
+    // Text
+    textPrimary: isDark ? '#e6f1ff' : '#1f2937',
+    textSecondary: isDark ? '#9fb3c8' : '#6b7280',
+    textMuted: isDark ? '#64748b' : '#9ca3af',
+
+    // Border
+    border: isDark ? 'rgba(56, 189, 248, 0.15)' : '#e5e7eb',
+    borderLight: isDark ? 'rgba(56, 189, 248, 0.08)' : '#f3f4f6',
+
+    // Chart colors
+    tempColor: isDark ? '#ff5f5f' : '#ef4444',
+    tempColorEnd: isDark ? '#ff9f43' : '#f97316',
+    humColor: isDark ? '#2dd4bf' : '#0ea5e9',
+    humColorEnd: isDark ? '#38bdf8' : '#06b6d4',
+
+    // Grid & Axis
+    gridColor: isDark ? 'rgba(56, 189, 248, 0.08)' : '#f3f4f6',
+    axisColor: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb',
+
+    // Tooltip
+    tooltipBg: isDark ? '#132a55' : '#ffffff',
+    tooltipBorder: isDark ? 'rgba(56, 189, 248, 0.2)' : '#e5e7eb',
+});
+
+/**
+ * Generate time-based categories for date range
+ */
+const generateTimeCategoriesForRange = (startDate, endDate) => {
+    const categories = [];
+    const diffMins = differenceInMinutes(endDate, startDate);
+
+    // Determine interval based on range
+    let intervalMins = 10; // default 10 mins
+    if (diffMins > 1440) intervalMins = 60; // > 1 day: hourly
+    else if (diffMins > 720) intervalMins = 30; // > 12 hours: 30 mins
+    else if (diffMins > 360) intervalMins = 20; // > 6 hours: 20 mins
+
+    let current = new Date(startDate);
+    while (current <= endDate) {
+        categories.push(format(current, 'dd/MM HH:mm:ss'));
+        current = addMinutes(current, intervalMins);
+    }
+
+    return { categories, intervalMins };
+};
+
+/**
+ * Generate fake location data based on date range
+ */
+const generateLocationDataForRange = (baseTemp, baseHum, startDate, endDate) => {
+    const { categories, intervalMins } = generateTimeCategoriesForRange(startDate, endDate);
+
+    const seed = startDate.getDate() + startDate.getMonth() * 31 + startDate.getHours();
+    const seededRandom = (index) => {
+        const x = Math.sin(seed + index) * 10000;
+        return x - Math.floor(x);
+    };
+
+    const tempData = [];
+    const humData = [];
+    const timestamps = [];
+
+    let current = new Date(startDate);
+    let i = 0;
+    while (current <= endDate) {
+        // Temperature varies throughout the day
+        const hour = current.getHours();
+        const timeVariation = Math.sin((hour - 6) * Math.PI / 12) * 4;
+        const randomVariation = (seededRandom(i) - 0.5) * 2;
+        tempData.push(parseFloat((baseTemp + timeVariation + randomVariation).toFixed(1)));
+
+        // Humidity inversely related to temperature
+        const humTimeVariation = -Math.sin((hour - 6) * Math.PI / 12) * 10;
+        const humRandomVariation = Math.floor((seededRandom(i + 100) - 0.5) * 8);
+        humData.push(Math.max(30, Math.min(100, Math.round(baseHum + humTimeVariation + humRandomVariation))));
+
+        timestamps.push(new Date(current));
+        current = addMinutes(current, intervalMins);
+        i++;
+    }
+
+    return { categories, tempData, humData, timestamps };
+};
+
+/**
+ * Custom DatePicker Input
+ */
+const CustomDateInput = ({ value, onClick, isDark, colors, placeholder }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all outline-none min-w-[280px]"
+        style={{
+            backgroundColor: isDark ? '#132a55' : '#ffffff',
+            color: colors.textPrimary,
+            border: `1px solid ${colors.border}`
+        }}
+    >
+        <svg className="w-4 h-4" style={{ color: colors.textMuted }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span className="truncate">{value || placeholder}</span>
+    </button>
+);
+
+/**
+ * Modal displaying temperature and humidity chart for a factory location
+ * Features: Theme-aware, i18n, date range filter with time, Excel export
+ */
+const LocationChartModal = ({ isOpen, onClose, locationData }) => {
+    const { t, i18n } = useTranslation();
+    const isDark = useTheme();
+    const modalRef = useRef(null);
+    const chartRef = useRef(null);
+
+    // Date range state (default: today 00:00 to now)
+    const [startDate, setStartDate] = useState(() => {
+        const start = new Date();
+        return setSeconds(setMinutes(setHours(start, 8), 0), 0);
+    });
+    const [endDate, setEndDate] = useState(() => new Date());
+
+    // Get theme colors
+    const colors = useMemo(() => getThemeColors(isDark), [isDark]);
+
+    // Close on escape key
+    useEffect(() => {
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
+        if (isOpen) {
+            document.addEventListener('keydown', handleEscape);
+            document.body.style.overflow = 'hidden';
+        }
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen, onClose]);
+
+    // Reset date when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            const start = new Date();
+            setStartDate(setSeconds(setMinutes(setHours(start, 8), 0), 0));
+            setEndDate(new Date());
+        }
+    }, [isOpen]);
+
+    // Close on click outside
+    const handleBackdropClick = useCallback((e) => {
+        if (e.target === modalRef.current) {
+            onClose();
+        }
+    }, [onClose]);
+
+    // Handle date range change
+    const handleDateChange = useCallback((dates) => {
+        const [start, end] = dates;
+        setStartDate(start);
+        setEndDate(end);
+    }, []);
+
+    // Set to today
+    const handleToday = useCallback(() => {
+        const now = new Date();
+        setStartDate(setSeconds(setMinutes(setHours(now, 0), 0), 0));
+        setEndDate(now);
+    }, []);
+
+    // Generate chart data based on selected date range
+    const chartData = useMemo(() => {
+        if (!locationData || !startDate || !endDate) return null;
+
+        const { categories, tempData, humData, timestamps } = generateLocationDataForRange(
+            locationData.temperature,
+            locationData.humidity,
+            startDate,
+            endDate
+        );
+
+        return { categories, tempData, humData, timestamps };
+    }, [locationData, startDate, endDate]);
+
+    // Export to Excel
+    const handleExportExcel = useCallback(() => {
+        if (!chartData || !locationData) return;
+
+        const data = chartData.timestamps.map((timestamp, index) => ({
+            [t('dashboard.time', 'Thời gian')]: format(timestamp, 'dd/MM/yyyy HH:mm:ss'),
+            [t('dashboard.temperature', 'Nhiệt độ') + ' (°C)']: chartData.tempData[index],
+            [t('dashboard.humidity', 'Độ ẩm') + ' (%)']: chartData.humData[index]
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Data');
+
+        // Set column widths
+        ws['!cols'] = [
+            { wch: 22 },
+            { wch: 18 },
+            { wch: 15 }
+        ];
+
+        const startStr = format(startDate, 'yyyyMMdd_HHmm');
+        const endStr = format(endDate, 'yyyyMMdd_HHmm');
+        const filename = `${locationData.locationId}_${startStr}_${endStr}.xlsx`;
+
+        XLSX.writeFile(wb, filename);
+    }, [chartData, locationData, startDate, endDate, t]);
+
+    // Chart options with theme support
+    const chartOptions = useMemo(() => {
+        if (!chartData || !locationData) return null;
+
+        return {
+            chart: {
+                type: 'line',
+                backgroundColor: 'transparent',
+                style: { fontFamily: 'inherit' },
+                height: 350,
+                spacing: [20, 20, 20, 20]
+            },
+            title: {
+                text: t('dashboard.chartTitle', 'Biểu đồ nhiệt độ & độ ẩm'),
+                style: {
+                    color: colors.textPrimary,
+                    fontSize: '15px',
+                    fontWeight: '600'
+                }
+            },
+            subtitle: {
+                text: `${t('dashboard.sensorId', 'Mã vị trí')}: ${locationData.locationId}`,
+                style: {
+                    color: colors.textSecondary,
+                    fontSize: '12px'
+                }
+            },
+            xAxis: {
+                categories: chartData.categories,
+                labels: {
+                    style: { color: colors.textMuted, fontSize: '10px' },
+                    rotation: -45,
+                    step: Math.ceil(chartData.categories.length / 10)
+                },
+                lineColor: colors.axisColor,
+                tickColor: colors.axisColor,
+                title: {
+                    text: t('dashboard.time', 'Thời gian'),
+                    style: { color: colors.textSecondary, fontSize: '11px' }
+                }
+            },
+            yAxis: [{
+                title: {
+                    text: t('dashboard.temperature', 'Nhiệt độ') + ' (°C)',
+                    style: { color: colors.tempColor, fontSize: '11px' }
+                },
+                labels: {
+                    format: '{value}°',
+                    style: { color: colors.tempColor, fontSize: '10px' }
+                },
+                gridLineColor: colors.gridColor,
+                gridLineDashStyle: 'Dash'
+            }, {
+                title: {
+                    text: t('dashboard.humidity', 'Độ ẩm') + ' (%)',
+                    style: { color: colors.humColor, fontSize: '11px' }
+                },
+                labels: {
+                    format: '{value}%',
+                    style: { color: colors.humColor, fontSize: '10px' }
+                },
+                opposite: true,
+                gridLineColor: 'transparent'
+            }],
+            plotOptions: {
+                line: {
+                    dataLabels: { enabled: false },
+                    enableMouseTracking: true,
+                    marker: { enabled: chartData.tempData.length <= 30, radius: 3, symbol: 'circle' },
+                    lineWidth: 2.5
+                }
+            },
+            tooltip: {
+                shared: true,
+                backgroundColor: colors.tooltipBg,
+                borderColor: colors.tooltipBorder,
+                borderRadius: 10,
+                shadow: true,
+                style: { color: colors.textPrimary, fontSize: '12px' },
+                headerFormat: '<span style="font-size:11px;font-weight:600">{point.key}</span><br/>',
+                pointFormat: '<span style="color:{series.color}">●</span> {series.name}: <b>{point.y}</b><br/>'
+            },
+            legend: {
+                align: 'center',
+                verticalAlign: 'bottom',
+                itemStyle: { color: colors.textSecondary, fontSize: '12px', fontWeight: '500' },
+                itemHoverStyle: { color: colors.textPrimary }
+            },
+            series: [{
+                name: t('dashboard.temperature', 'Nhiệt độ'),
+                data: chartData.tempData,
+                color: colors.tempColor,
+                yAxis: 0
+            }, {
+                name: t('dashboard.humidity', 'Độ ẩm'),
+                data: chartData.humData,
+                color: colors.humColor,
+                yAxis: 1
+            }],
+            credits: { enabled: false },
+            responsive: {
+                rules: [{
+                    condition: { maxWidth: 500 },
+                    chartOptions: {
+                        xAxis: { labels: { step: Math.ceil(chartData.categories.length / 5) } },
+                        legend: { layout: 'horizontal' }
+                    }
+                }]
+            }
+        };
+    }, [chartData, locationData, colors, t]);
+
+    if (!isOpen || !locationData) return null;
+
+    return (
+        <div
+            ref={modalRef}
+            onClick={handleBackdropClick}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
+        >
+            <div
+                className="relative rounded-2xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden animate-slide-down border min-h-[600px]"
+                style={{
+                    backgroundColor: colors.modalBg,
+                    borderColor: colors.border
+                }}
+            >
+                {/* Header */}
+                <div
+                    className="flex items-center justify-between px-6 py-4 border-b"
+                    style={{
+                        backgroundColor: colors.headerBg,
+                        borderColor: colors.border
+                    }}
+                >
+                    <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                            <div
+                                className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+                                style={{ backgroundColor: isDark ? 'rgba(45, 212, 191, 0.1)' : '#ecfdf5' }}
+                            >
+                                📊
+                            </div>
+                            <div>
+                                <h2
+                                    className="text-lg font-bold"
+                                    style={{ color: colors.textPrimary }}
+                                >
+                                    {locationData.location}
+                                </h2>
+                                <p
+                                    className="text-xs font-mono mt-0.5"
+                                    style={{ color: colors.textMuted }}
+                                >
+                                    ID: {locationData.locationId}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={onClose}
+                        className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200"
+                        style={{
+                            color: colors.textMuted,
+                            backgroundColor: 'transparent'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.1)' : '#f3f4f6';
+                            e.currentTarget.style.color = colors.textPrimary;
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = colors.textMuted;
+                        }}
+                        aria-label={t('common.close', 'Đóng')}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Date Range Filter Bar */}
+                <div
+                    className="flex flex-wrap items-center justify-between gap-3 px-6 py-3 border-b"
+                    style={{
+                        backgroundColor: isDark ? 'rgba(15, 27, 61, 0.5)' : '#fafbfc',
+                        borderColor: colors.border
+                    }}
+                >
+                    <div className="flex items-center gap-3">
+                        <span
+                            className="text-sm font-medium whitespace-nowrap"
+                            style={{ color: colors.textSecondary }}
+                        >
+                            {t('dashboard.dateRange', 'Khoảng thời gian')}:
+                        </span>
+
+                        <DatePicker
+                            selected={startDate}
+                            onChange={handleDateChange}
+                            startDate={startDate}
+                            endDate={endDate}
+                            selectsRange
+                            showTimeSelect
+                            timeFormat="HH:mm:ss"
+                            timeIntervals={15}
+                            timeCaption={t('dashboard.time', 'Thời gian')}
+                            dateFormat="dd/MM/yyyy HH:mm:ss"
+                            locale={i18n.language === 'vi' ? vi : enUS}
+                            maxDate={new Date()}
+                            customInput={
+                                <CustomDateInput
+                                    isDark={isDark}
+                                    colors={colors}
+                                    placeholder={t('dashboard.selectDateRange', 'Chọn khoảng thời gian')}
+                                />
+                            }
+                            popperClassName={isDark ? 'datepicker-dark' : ''}
+                            calendarClassName={isDark ? 'datepicker-calendar-dark' : ''}
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleToday}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                            style={{
+                                backgroundColor: isDark ? 'rgba(30, 167, 255, 0.15)' : '#eff6ff',
+                                color: isDark ? '#5fd0ff' : '#2563eb'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = isDark ? 'rgba(30, 167, 255, 0.25)' : '#dbeafe';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = isDark ? 'rgba(30, 167, 255, 0.15)' : '#eff6ff';
+                            }}
+                        >
+                            {t('dashboard.today', 'Hôm nay')}
+                        </button>
+
+                        <button
+                            onClick={handleExportExcel}
+                            disabled={!chartData}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{
+                                backgroundColor: isDark ? 'rgba(34, 197, 94, 0.15)' : '#dcfce7',
+                                color: isDark ? '#4ade80' : '#15803d'
+                            }}
+                            onMouseEnter={(e) => {
+                                if (!e.currentTarget.disabled) {
+                                    e.currentTarget.style.backgroundColor = isDark ? 'rgba(34, 197, 94, 0.25)' : '#bbf7d0';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = isDark ? 'rgba(34, 197, 94, 0.15)' : '#dcfce7';
+                            }}
+                            title={t('dashboard.exportExcel', 'Xuất Excel')}
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Excel
+                        </button>
+                    </div>
+                </div>
+
+                {/* Current Values */}
+                <div
+                    className="grid grid-cols-2 gap-4 px-6 py-4"
+                    style={{ backgroundColor: isDark ? 'rgba(11, 19, 43, 0.5)' : '#fafbfc' }}
+                >
+                    <div
+                        className="flex items-center gap-3 p-4 rounded-xl border transition-all hover:scale-[1.02]"
+                        style={{
+                            backgroundColor: colors.cardBg,
+                            borderColor: isDark ? 'rgba(255, 95, 95, 0.2)' : '#fee2e2'
+                        }}
+                    >
+                        <div
+                            className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                            style={{
+                                backgroundColor: isDark ? 'rgba(255, 95, 95, 0.1)' : '#fef2f2',
+                                border: `1px solid ${isDark ? 'rgba(255, 95, 95, 0.2)' : '#fecaca'}`
+                            }}
+                        >
+                            🌡️
+                        </div>
+                        <div>
+                            <p
+                                className="text-xs uppercase tracking-wider font-medium"
+                                style={{ color: colors.textMuted }}
+                            >
+                                {t('dashboard.currentTemp', 'Nhiệt độ hiện tại')}
+                            </p>
+                            <p
+                                className="text-2xl font-bold font-mono"
+                                style={{ color: colors.tempColor }}
+                            >
+                                {locationData.temperature}°C
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        className="flex items-center gap-3 p-4 rounded-xl border transition-all hover:scale-[1.02]"
+                        style={{
+                            backgroundColor: colors.cardBg,
+                            borderColor: isDark ? 'rgba(45, 212, 191, 0.2)' : '#ccfbf1'
+                        }}
+                    >
+                        <div
+                            className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                            style={{
+                                backgroundColor: isDark ? 'rgba(45, 212, 191, 0.1)' : '#ecfdf5',
+                                border: `1px solid ${isDark ? 'rgba(45, 212, 191, 0.2)' : '#99f6e4'}`
+                            }}
+                        >
+                            💧
+                        </div>
+                        <div>
+                            <p
+                                className="text-xs uppercase tracking-wider font-medium"
+                                style={{ color: colors.textMuted }}
+                            >
+                                {t('dashboard.currentHum', 'Độ ẩm hiện tại')}
+                            </p>
+                            <p
+                                className="text-2xl font-bold font-mono"
+                                style={{ color: colors.humColor }}
+                            >
+                                {locationData.humidity}%
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Chart */}
+                <div className="px-6 py-4" style={{ backgroundColor: colors.modalBg }}>
+                    {chartOptions && (
+                        <HighchartsReact
+                            highcharts={Highcharts}
+                            options={chartOptions}
+                            ref={chartRef}
+                        />
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div
+                    className="flex items-center justify-between px-6 py-4 border-t"
+                    style={{
+                        backgroundColor: colors.footerBg,
+                        borderColor: colors.border
+                    }}
+                >
+                    <p
+                        className="text-sm"
+                        style={{ color: colors.textMuted }}
+                    >
+                        {t('dashboard.lastUpdate', 'Cập nhật lần cuối')}: {locationData.lastUpdate}
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <span
+                            className="px-3 py-1 rounded-full text-xs font-medium"
+                            style={{
+                                backgroundColor:
+                                    locationData.status === 'Normal' ? (isDark ? 'rgba(34, 197, 94, 0.15)' : '#dcfce7') :
+                                        locationData.status === 'Hot' ? (isDark ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2') :
+                                            locationData.status === 'Warm' ? (isDark ? 'rgba(249, 115, 22, 0.15)' : '#ffedd5') :
+                                                locationData.status === 'Cool' ? (isDark ? 'rgba(6, 182, 212, 0.15)' : '#cffafe') :
+                                                    locationData.status === 'High Humidity' ? (isDark ? 'rgba(59, 130, 246, 0.15)' : '#dbeafe') :
+                                                        (isDark ? 'rgba(107, 114, 128, 0.15)' : '#f3f4f6'),
+                                color:
+                                    locationData.status === 'Normal' ? (isDark ? '#4ade80' : '#15803d') :
+                                        locationData.status === 'Hot' ? (isDark ? '#f87171' : '#b91c1c') :
+                                            locationData.status === 'Warm' ? (isDark ? '#fb923c' : '#c2410c') :
+                                                locationData.status === 'Cool' ? (isDark ? '#22d3ee' : '#0e7490') :
+                                                    locationData.status === 'High Humidity' ? (isDark ? '#60a5fa' : '#1d4ed8') :
+                                                        colors.textSecondary
+                            }}
+                        >
+                            {locationData.status}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {/* DatePicker dark mode styles */}
+            <style>{`
+                .datepicker-dark .react-datepicker {
+                    background-color: #132a55 !important;
+                    border-color: rgba(56, 189, 248, 0.2) !important;
+                    color: #e6f1ff !important;
+                }
+                .datepicker-dark .react-datepicker__header {
+                    background-color: #0f1b3d !important;
+                    border-color: rgba(56, 189, 248, 0.15) !important;
+                }
+                .datepicker-dark .react-datepicker__current-month,
+                .datepicker-dark .react-datepicker__day-name,
+                .datepicker-dark .react-datepicker-time__header {
+                    color: #e6f1ff !important;
+                }
+                .datepicker-dark .react-datepicker__day {
+                    color: #9fb3c8 !important;
+                }
+                .datepicker-dark .react-datepicker__day:hover {
+                    background-color: rgba(30, 167, 255, 0.2) !important;
+                    color: #fff !important;
+                }
+                .datepicker-dark .react-datepicker__day--selected,
+                .datepicker-dark .react-datepicker__day--in-range,
+                .datepicker-dark .react-datepicker__day--in-selecting-range {
+                    background-color: #1ea7ff !important;
+                    color: #fff !important;
+                }
+                .datepicker-dark .react-datepicker__day--keyboard-selected {
+                    background-color: rgba(30, 167, 255, 0.3) !important;
+                }
+                .datepicker-dark .react-datepicker__day--disabled {
+                    color: #4a5568 !important;
+                }
+                .datepicker-dark .react-datepicker__time-container {
+                    border-color: rgba(56, 189, 248, 0.15) !important;
+                }
+                .datepicker-dark .react-datepicker__time {
+                    background-color: #132a55 !important;
+                }
+                .datepicker-dark .react-datepicker__time-list-item {
+                    color: #9fb3c8 !important;
+                }
+                .datepicker-dark .react-datepicker__time-list-item:hover {
+                    background-color: rgba(30, 167, 255, 0.2) !important;
+                    color: #fff !important;
+                }
+                .datepicker-dark .react-datepicker__time-list-item--selected {
+                    background-color: #1ea7ff !important;
+                    color: #fff !important;
+                }
+                .datepicker-dark .react-datepicker__navigation-icon::before {
+                    border-color: #9fb3c8 !important;
+                }
+                .datepicker-dark .react-datepicker__triangle {
+                    display: none;
+                }
+                
+                /* Light mode enhancements */
+                .react-datepicker {
+                    font-family: inherit !important;
+                    border-radius: 12px !important;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+                }
+                .react-datepicker__header {
+                    border-radius: 12px 12px 0 0 !important;
+                }
+                .react-datepicker__day--selected,
+                .react-datepicker__day--in-range {
+                    border-radius: 8px !important;
+                }
+            `}</style>
+        </div>
+    );
+};
+
+export default LocationChartModal;
