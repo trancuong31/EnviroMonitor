@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore, useThemeStore } from '../../../store';
 import { Button, LanguageSwitcher } from '../../ui';
@@ -8,10 +8,16 @@ import { Button, LanguageSwitcher } from '../../ui';
  * Main layout component with sticky header and scroll-to-top button
  */
 const MainLayout = ({ children }) => {
+    const navigate = useNavigate();
     const { isAuthenticated, user, logout } = useAuthStore();
     const { theme, toggleTheme } = useThemeStore();
     const { t } = useTranslation();
     const [showScrollTop, setShowScrollTop] = useState(false);
+
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+    };
 
     const handleScroll = useCallback(() => {
         setShowScrollTop(window.scrollY > 300);
@@ -66,7 +72,7 @@ const MainLayout = ({ children }) => {
                                 </div>
                                 <span className="max-w-[120px] truncate">{user?.name || 'User'}</span>
                             </div>
-                            <Button variant="ghost" size="small" onClick={logout}>
+                            <Button variant="ghost" size="small" onClick={handleLogout}>
                                 {t('common.logout')}
                             </Button>
                         </>

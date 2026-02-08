@@ -42,9 +42,9 @@ api.interceptors.response.use(
     (error) => {
         // Handle 401 - Unauthorized
         if (error.response?.status === 401) {
-            // Clear auth storage and redirect to login
+            // Clear auth storage and redirect to home
             localStorage.removeItem('auth-storage');
-            window.location.href = '/login';
+            window.location.href = '/';
         }
 
         return Promise.reject(error);

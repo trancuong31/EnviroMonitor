@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 const languages = [
     { code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
     { code: 'en', label: 'English', flag: '🇺🇸' },
+    { code: 'kr', label: '한국어', flag: '🇰🇷' },
 ];
 
 /**

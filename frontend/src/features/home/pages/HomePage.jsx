@@ -1,12 +1,31 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../../components/ui';
-
+import { useAuthStore } from '../../../store';
+import AuthModal from '../../auth/components/AuthModal';
+import { ArrowUpRight } from 'lucide-react';
+import { toast } from 'sonner';
 /**
  * Home page component
  */
 const HomePage = () => {
     const { t } = useTranslation();
+    const { isAuthenticated, user, logout } = useAuthStore();
+    const [authModal, setAuthModal] = useState({ isOpen: false, mode: 'login' });
+
+    const openAuthModal = (mode) => {
+        setAuthModal({ isOpen: true, mode });
+    };
+
+    const closeAuthModal = () => {
+        setAuthModal({ isOpen: false, mode: 'login' });
+    };
+
+    const handleLogout = () => {
+        logout();
+        toast.success(t('common.logoutSuccess'));
+    };
 
     // Marquee content component for seamless loop
     const MarqueeContent = () => (
@@ -38,16 +57,37 @@ const HomePage = () => {
         <div className="min-h-screen bg-background transition-colors duration-300">
             <header className="px-8 py-4">
                 <nav className="flex justify-between items-center max-w-[1200px] mx-auto">
-                    <div className="text-2xl font-bold text-primary">EnviroMonitor</div>
-                    <div className="flex items-center gap-6">
-                        <Link to="/login" className="text-text">
-                            {t('common.login')}
-                        </Link>
-                        <Link to="/register">
-                            <Button variant="primary" size="small">
-                                {t('common.getStarted')}
-                            </Button>
-                        </Link>
+                    <Link to="/" className="text-2xl font-bold font-mono text-primary hover:opacity-80 transition-opacity">
+                        EnviroMonitor
+                    </Link>
+                    <div className="flex items-center gap-4">
+                        {isAuthenticated ? (
+                            <>
+                                <div className="flex items-center gap-3 px-4">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xs font-bold text-white">
+                                        {(user?.name || 'U').charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="text-sm text-text-muted font-medium max-w-[120px] truncate hidden sm:block">
+                                        {user?.name || 'User'}
+                                    </span>
+                                </div>
+                                <Button variant="ghost" size="small" onClick={handleLogout}>
+                                    {t('common.logout')}
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => openAuthModal('login')}
+                                    className="text-text hover:text-primary transition-colors duration-150 font-medium"
+                                >
+                                    {t('common.login')}
+                                </button>
+                                <Button variant="primary" size="small" onClick={() => openAuthModal('register')}>
+                                    {t('common.getStarted')}
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </nav>
             </header>
@@ -75,21 +115,28 @@ const HomePage = () => {
                         {t('home.description')}
                     </p>
                     <div className="flex gap-4 justify-center flex-col sm:flex-row items-center animate-fade-up animate-once animate-duration-2000">
+                        {isAuthenticated ? (
                         <Link to="/dashboard">
-                            <Button variant="primary" size="large">
-                                {t('home.startTrial')}
+                            <Button variant="secondary" size="large" className="flex items-center gap-2">
+                                {t('home.viewDemo')} <ArrowUpRight/>
                             </Button>
-                        </Link>
-                        <Link to="/dashboard">
-                            <Button variant="secondary" size="large">
-                                {t('home.viewDemo')}
+                        </Link>) : (<>
+                            <Button variant="primary" size="large" onClick={() => openAuthModal('login')}>                                
+                                {t('home.viewDemo')} <ArrowUpRight/>
                             </Button>
-                        </Link>
+                        </>)}
                     </div>
                     <div className="fixed bottom-4 right-4 text-xs text-gray-400 opacity-70 tracking-wide select-none">
                         {t('home.copyright')}
                     </div>
                 </section>
+
+            {/* Auth Modal */}
+            <AuthModal
+                isOpen={authModal.isOpen}
+                onClose={closeAuthModal}
+                initialMode={authModal.mode}
+            />
             </main>
         </div>
     );

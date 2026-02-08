@@ -5,14 +5,16 @@
     "register": "Đăng ký",
     "getStarted": "Bắt đầu",
     "goHome": "Về trang chủ",
-    "language": "Ngôn ngữ"
+    "language": "Ngôn ngữ",
+    "dashboard": "Bảng điều khiển",
+    "logoutSuccess": "Đăng xuất thành công"
   },
   "home": {
     "title1": "Hệ thống giám sát Nhiệt độ & Độ ẩm (IoT)",
     "title2": "Đơn giản & Hiệu quả",
     "description": "Giám sát và phân tích với nền tảng toàn diện. Dữ liệu thời gian thực, thông tin hữu ích.",
     "startTrial": "Dùng thử miễn phí",
-    "viewDemo": "Xem Demo",
+    "viewDemo": "Bảng điều kiển",
     "features": {
       "realtime": "Giám sát Thời gian thực",
       "alerts": "Cảnh báo Thông minh",
@@ -33,13 +35,15 @@
     "noAccount": "Chưa có tài khoản?",
     "signUp": "Đăng ký",
     "createAccount": "Tạo tài khoản",
-    "createAccountDesc": "Bắt đầu hành trình cùng EnviroMonitor",
+    "createAccountDesc": "Bắt đầu giám sát với EnviroMonitor",
     "fullName": "Họ và tên",
     "enterName": "Nhập họ tên của bạn",
     "confirmPassword": "Xác nhận mật khẩu",
     "createPassword": "Tạo mật khẩu",
     "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
-    "alreadyHaveAccount": "Đã có tài khoản?"
+    "alreadyHaveAccount": "Đã có tài khoản?",
+    "loginSuccess": "Đăng nhập thành công",
+    "registerSuccess": "Đăng ký thành công"
   },
   "dashboard": {
     "title": "Giám sát Nhiệt độ & Độ ẩm",

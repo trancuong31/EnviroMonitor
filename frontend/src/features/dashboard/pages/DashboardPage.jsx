@@ -339,7 +339,7 @@ const DashboardPage = () => {
                     </div>
 
                     {/* Results count */}
-                    <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center justify-between mb-5 animate-fade-in">
                         <p className="text-text-muted text-sm">
                             {t('dashboard.showing')} <span className="text-text font-semibold">{filteredLocations.length}</span> {t('dashboard.of')} {locations.length} {t('dashboard.locations')}
                         </p>

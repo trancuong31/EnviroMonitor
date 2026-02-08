@@ -5,11 +5,8 @@ import PrivateRoute from './PrivateRoute';
 import { lazy, Suspense } from 'react';
 
 const HomePage = lazy(() => import('../features/home/pages/HomePage'));
-const LoginPage = lazy(() => import('../features/auth/pages/LoginPage'));
-const RegisterPage = lazy(() => import('../features/auth/pages/RegisterPage'));
 const DashboardPage = lazy(() => import('../features/dashboard/pages/DashboardPage'));
 const NotFoundPage = lazy(() => import('../features/common/pages/NotFoundPage'));
-
 // Loading component
 const Loading = () => (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -26,8 +23,6 @@ const AppRoutes = () => {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
         
         {/* Protected routes */}
         <Route

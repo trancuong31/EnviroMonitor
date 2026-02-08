@@ -4,6 +4,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import en from './locales/en.json';
 import vi from './locales/vi.json';
+import kr from './locales/kr.json';
 
 i18n
     .use(LanguageDetector)
@@ -12,6 +13,7 @@ i18n
         resources: {
             en: { translation: en },
             vi: { translation: vi },
+            kr: { translation: kr },
         },
         fallbackLng: 'vi',
         interpolation: {

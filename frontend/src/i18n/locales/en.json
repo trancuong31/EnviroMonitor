@@ -5,14 +5,16 @@
     "register": "Register",
     "getStarted": "Get Started",
     "goHome": "Go Home",
-    "language": "Language"
+    "language": "Language",
+    "dashboard": "Dashboard",
+    "logoutSuccess": "Logout successful"
   },
   "home": {
     "title1": "Factory Temperature & Humidity Monitoring System",
     "title2": "Made Simple",
     "description": "Monitor, analyze, and protect your environment with our comprehensive platform. Real-time data, actionable insights.",
     "startTrial": "Start Free Trial",
-    "viewDemo": "View Demo",
+    "viewDemo": "Dashboard",
     "features": {
       "realtime": "Realtime Monitoring",
       "alerts": "Smart Alerts",
@@ -39,7 +41,9 @@
     "confirmPassword": "Confirm Password",
     "createPassword": "Create a password",
     "confirmPasswordPlaceholder": "Confirm your password",
-    "alreadyHaveAccount": "Already have an account?"
+    "alreadyHaveAccount": "Already have an account?",
+    "loginSuccess": "Successfully signed in",
+    "registerSuccess": "Successfully registered"
   },
   "dashboard": {
     "title": "Temperature & Humidity Monitor",

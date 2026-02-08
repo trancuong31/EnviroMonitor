@@ -7,6 +7,7 @@ import { format, differenceInMinutes, addMinutes, setHours, setMinutes, setSecon
 import { vi, enUS } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import 'react-datepicker/dist/react-datepicker.css';
+import { ChartNoAxesCombined } from 'lucide-react';
 
 /**
  * Utility: Check if dark mode is active
@@ -393,7 +394,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                                 className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
                                 style={{ backgroundColor: isDark ? 'rgba(45, 212, 191, 0.1)' : '#ecfdf5' }}
                             >
-                                📊
+                                <ChartNoAxesCombined />
                             </div>
                             <div>
                                 <h2
