@@ -158,7 +158,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
     // Date range state (default: today 00:00 to now)
     const [startDate, setStartDate] = useState(() => {
         const start = new Date();
-        return setSeconds(setMinutes(setHours(start, 8), 0), 0);
+        return setSeconds(setMinutes(setHours(start, 0), 0), 0);
     });
     const [endDate, setEndDate] = useState(() => new Date());
 
@@ -184,7 +184,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
     useEffect(() => {
         if (isOpen) {
             const start = new Date();
-            setStartDate(setSeconds(setMinutes(setHours(start, 8), 0), 0));
+            setStartDate(setSeconds(setMinutes(setHours(start, 0), 0), 0));
             setEndDate(new Date());
         }
     }, [isOpen]);

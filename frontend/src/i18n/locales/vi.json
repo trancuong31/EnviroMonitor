@@ -12,7 +12,15 @@
     "title2": "Đơn giản & Hiệu quả",
     "description": "Giám sát và phân tích với nền tảng toàn diện. Dữ liệu thời gian thực, thông tin hữu ích.",
     "startTrial": "Dùng thử miễn phí",
-    "viewDemo": "Xem Demo"
+    "viewDemo": "Xem Demo",
+    "features": {
+      "realtime": "Giám sát Thời gian thực",
+      "alerts": "Cảnh báo Thông minh",
+      "analysis": "Phân tích Lịch sử",
+      "visualization": "Trực quan hóa Dữ liệu",
+      "health": "Tình trạng Hệ thống"
+    },
+    "copyright": "© 2026 Partron Vina | Hệ thống giám sát IoT nội bộ"
   },
   "auth": {
     "welcomeBack": "Chào mừng trở lại",

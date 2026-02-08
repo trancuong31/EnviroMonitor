@@ -12,7 +12,15 @@
     "title2": "Made Simple",
     "description": "Monitor, analyze, and protect your environment with our comprehensive platform. Real-time data, actionable insights.",
     "startTrial": "Start Free Trial",
-    "viewDemo": "View Demo"
+    "viewDemo": "View Demo",
+    "features": {
+      "realtime": "Realtime Monitoring",
+      "alerts": "Smart Alerts",
+      "analysis": "Historical Analysis",
+      "visualization": "Data Visualization",
+      "health": "System Health",
+      "copyright": "© 2026 Partron Vina | Internal IoT Monitoring System"
+    }
   },
   "auth": {
     "welcomeBack": "Welcome Back",

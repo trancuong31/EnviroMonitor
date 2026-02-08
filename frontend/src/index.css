@@ -118,6 +118,18 @@ button {
     }
 }
 
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @keyframes pulse-icon {
 
     0%,
@@ -152,6 +164,16 @@ button {
     }
 }
 
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-25%);
+    }
+}
+
 /* Utility animation classes */
 @utility animate-slide-down {
     animation: slide-down 0.6s ease-out;
@@ -159,6 +181,10 @@ button {
 
 @utility animate-fade-in {
     animation: fade-in 0.8s ease-out 0.2s backwards;
+}
+
+@utility animate-fade-up {
+    animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 @utility animate-pulse-icon {
@@ -173,6 +199,43 @@ button {
     animation: shimmer 2s infinite;
 }
 
+@utility animate-marquee {
+    animation: marquee 40s linear 1.5s infinite;
+}
+
 @utility duration-400 {
     transition-duration: 400ms;
+}
+
+/* Animation delays */
+@utility delay-100 {
+    animation-delay: 100ms;
+}
+
+@utility delay-200 {
+    animation-delay: 200ms;
+}
+
+@utility delay-300 {
+    animation-delay: 300ms;
+}
+
+@utility delay-400 {
+    animation-delay: 400ms;
+}
+
+@utility delay-500 {
+    animation-delay: 500ms;
+}
+
+@utility delay-600 {
+    animation-delay: 600ms;
+}
+
+@utility delay-700 {
+    animation-delay: 700ms;
+}
+
+@utility delay-800 {
+    animation-delay: 800ms;
 }
