@@ -91,6 +91,7 @@
     "today": "오늘",
     "lastUpdate": "마지막 업데이트",
     "warning": "경고",
+    "normal": "정상",
     "tempLow": "저온",
     "tempHigh": "고온",
     "humLow": "저습",
@@ -99,7 +100,17 @@
     "locationName": "위치",
     "status": "상태",
     "minuteAgo": "{{count}}분 전",
-    "secondAgo": "{{count}}초 전"
+    "secondAgo": "{{count}}초 전",
+    "loading": "데이터 로드 중...",
+    "error": "데이터 로드 오류",
+    "retry": "재시도"
+  },
+  "time": {
+    "justNow": "방금",
+    "secondsAgo": "{{count}}초 전",
+    "minutesAgo": "{{count}}분 전",
+    "hoursAgo": "{{count}}시간 전",
+    "daysAgo": "{{count}}일 전"
   },
   "notFound": {
     "message": "페이지를 찾을 수 없습니다."

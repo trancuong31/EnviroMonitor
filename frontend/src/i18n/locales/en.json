@@ -92,6 +92,7 @@
     "lastUpdate": "Last updated",
     "warning": "Warning",
     "tempLow": "Low temperature",
+    "normal": "Normal",
     "tempHigh": "High temperature",
     "humLow": "Low humidity",
     "humHigh": "High humidity",
@@ -99,7 +100,18 @@
     "locationName": "Location",
     "status": "Status",
     "minuteAgo": "{{count}} min ago",
-    "secondAgo": "{{count}} sec ago"
+    "secondAgo": "{{count}} sec ago",
+    "loading": "Loading data...",
+    "error": "Error loading data",
+    "retry": "Retry"
+  },
+  "time": {
+    "justNow": "just now",
+    "secondsAgo": "{{count}} sec ago",
+    "minutesAgo": "{{count}} min ago",
+    "hoursAgo": "{{count}} hr ago",
+    "daysAgo": "{{count}} day ago",
+    "daysAgo_plural": "{{count}} days ago"
   },
   "notFound": {
     "message": "Oops! The page you're looking for doesn't exist."

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, RotateCcw, Save, Thermometer, Droplets, Info } from 'lucide-react';
+import { X, RotateCcw, Save, Thermometer, Droplets, Info, CircleAlert } from 'lucide-react';
 import { useSettingsStore, DEFAULT_THRESHOLDS } from '../../../store';
 
 /**
@@ -260,8 +260,9 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                         {/* Temperature validation error */}
                         {errors.temp && (
                             <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-lg animate-fade-in">
+                                <CircleAlert className="w-4 h-4 text-red-500" />
                                 <span className="text-red-500 text-xs font-medium">
-                                    ⚠️ {t('settings.errorMaxMin', 'Giá trị tối đa phải lớn hơn tối thiểu')}
+                                 {t('settings.errorMaxMin', 'Giá trị tối đa phải lớn hơn tối thiểu')}
                                 </span>
                             </div>
                         )}
@@ -329,8 +330,9 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                         {/* Humidity validation error */}
                         {errors.hum && (
                             <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-lg animate-fade-in">
+                                <CircleAlert className="w-4 h-4 text-red-500" />
                                 <span className="text-red-500 text-xs font-medium">
-                                    ⚠️ {t('settings.errorMaxMin', 'Giá trị tối đa phải lớn hơn tối thiểu')}
+                                     {t('settings.errorMaxMin', 'Giá trị tối đa phải lớn hơn tối thiểu')}
                                 </span>
                             </div>
                         )}

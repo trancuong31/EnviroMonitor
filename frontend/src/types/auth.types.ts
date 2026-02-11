@@ -11,7 +11,18 @@ export interface User {
     createdAt: string;
     updatedAt: string;
 }
-
+/**
+ * DataLog interface
+ */
+export interface TLog {
+    id: number;
+    logidx: string;
+    tc_name: string;
+    log_date: Date;
+    value_0: number;
+    value_1: number;
+    event_time: string;
+}
 /**
  * Login credentials
  */

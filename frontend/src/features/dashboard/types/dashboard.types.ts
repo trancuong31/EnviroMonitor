@@ -2,23 +2,35 @@
  * Dashboard TypeScript interfaces
  */
 
-export interface DashboardStats {
-    airQuality: {
-        status: string;
-        aqi: number;
+/** Raw log entry from API response */
+export interface ApiLogEntry {
+    id: number;
+    logidx: string;
+    tc_name: string;
+    log_date: string;
+    value_0: number;
+    value_1: number;
+    event_time: string;
+}
+
+/** API response shape for getDashboardStats */
+export interface ApiDashboardResponse {
+    status: string;
+    data: {
+        logs: ApiLogEntry[];
     };
-    temperature: {
-        value: number;
-        humidity: number;
-    };
-    waterQuality: {
-        status: string;
-        ph: number;
-    };
-    noiseLevel: {
-        value: number;
-        status: string;
-    };
+}
+
+/** Transformed location data for dashboard display */
+export interface Location {
+    id: string;
+    locationId: string;
+    location: string;
+    temperature: number;
+    humidity: number;
+    lastUpdate: string;
+    status: string;
+    chartData: number[];
 }
 
 export interface Sensor {

@@ -20,7 +20,7 @@ const sequelize = new Sequelize(
             timestamps: true,
             underscored: true,
         },
-    }
+    },
 );
 
 const connectDB = async () => {

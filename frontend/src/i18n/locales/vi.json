@@ -91,6 +91,7 @@
     "today": "Hôm nay",
     "lastUpdate": "Cập nhật lần cuối",
     "warning": "Cảnh báo",
+    "normal": "Bình thường",
     "tempLow": "Nhiệt độ thấp",
     "tempHigh": "Nhiệt độ cao",
     "humLow": "Độ ẩm thấp",
@@ -99,7 +100,17 @@
     "locationName": "Vị trí",
     "status": "Trạng thái",
     "minuteAgo": "{{count}} phút trước",
-    "secondAgo": "{{count}} giây trước"
+    "secondAgo": "{{count}} giây trước",
+    "loading": "Đang tải dữ liệu...",
+    "error": "Lỗi khi tải dữ liệu",
+    "retry": "Thử lại"
+  },
+  "time": {
+    "justNow": "vừa xong",
+    "secondsAgo": "{{count}} giây trước",
+    "minutesAgo": "{{count}} phút trước",
+    "hoursAgo": "{{count}} giờ trước",
+    "daysAgo": "{{count}} ngày trước"
   },
   "notFound": {
     "message": "Trang bạn tìm không tồn tại."

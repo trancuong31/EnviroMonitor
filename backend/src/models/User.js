@@ -37,22 +37,6 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING(500),
         allowNull: true,
     },
-    lastLoginAt: {
-        type: DataTypes.DATE,
-        allowNull: true,
-    },
-    passwordChangedAt: {
-        type: DataTypes.DATE,
-        allowNull: true,
-    },
-    passwordResetToken: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-    },
-    passwordResetExpires: {
-        type: DataTypes.DATE,
-        allowNull: true,
-    },
 }, {
     tableName: 'users',
     timestamps: true,

@@ -1,5 +1,5 @@
 const User = require('./User');
-
+const TLog = require('./TLog');
 // Define associations here
 // Example:
 // User.hasMany(Post);
@@ -7,4 +7,5 @@ const User = require('./User');
 
 module.exports = {
     User,
+    TLog,
 };
