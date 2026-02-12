@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import DatePicker from 'react-datepicker';
-import { format, differenceInMinutes, addMinutes, setHours, setMinutes, setSeconds } from 'date-fns';
+import { format, setHours, setMinutes, setSeconds } from 'date-fns';
 import { vi, enUS } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import 'react-datepicker/dist/react-datepicker.css';
-import { ChartNoAxesCombined } from 'lucide-react';
+import { ChartNoAxesCombined, SearchAlert } from 'lucide-react';
+import { getLogsByDateRange } from '../api/dashboardApi';
 
 /**
  * Utility: Check if dark mode is active
@@ -66,61 +67,23 @@ const getThemeColors = (isDark) => ({
 });
 
 /**
- * Generate time-based categories for date range
+ * Transform raw API logs into chart-ready data
  */
-const generateTimeCategoriesForRange = (startDate, endDate) => {
+const transformLogsToChartData = (logs) => {
+    if (!logs || logs.length === 0) return null;
+
     const categories = [];
-    const diffMins = differenceInMinutes(endDate, startDate);
-
-    // Determine interval based on range
-    let intervalMins = 10; // default 10 mins
-    if (diffMins > 1440) intervalMins = 60; // > 1 day: hourly
-    else if (diffMins > 720) intervalMins = 30; // > 12 hours: 30 mins
-    else if (diffMins > 360) intervalMins = 20; // > 6 hours: 20 mins
-
-    let current = new Date(startDate);
-    while (current <= endDate) {
-        categories.push(format(current, 'dd/MM HH:mm:ss'));
-        current = addMinutes(current, intervalMins);
-    }
-
-    return { categories, intervalMins };
-};
-
-/**
- * Generate fake location data based on date range
- */
-const generateLocationDataForRange = (baseTemp, baseHum, startDate, endDate) => {
-    const { categories, intervalMins } = generateTimeCategoriesForRange(startDate, endDate);
-
-    const seed = startDate.getDate() + startDate.getMonth() * 31 + startDate.getHours();
-    const seededRandom = (index) => {
-        const x = Math.sin(seed + index) * 10000;
-        return x - Math.floor(x);
-    };
-
     const tempData = [];
     const humData = [];
     const timestamps = [];
 
-    let current = new Date(startDate);
-    let i = 0;
-    while (current <= endDate) {
-        // Temperature varies throughout the day
-        const hour = current.getHours();
-        const timeVariation = Math.sin((hour - 6) * Math.PI / 12) * 4;
-        const randomVariation = (seededRandom(i) - 0.5) * 2;
-        tempData.push(parseFloat((baseTemp + timeVariation + randomVariation).toFixed(1)));
-
-        // Humidity inversely related to temperature
-        const humTimeVariation = -Math.sin((hour - 6) * Math.PI / 12) * 10;
-        const humRandomVariation = Math.floor((seededRandom(i + 100) - 0.5) * 8);
-        humData.push(Math.max(30, Math.min(100, Math.round(baseHum + humTimeVariation + humRandomVariation))));
-
-        timestamps.push(new Date(current));
-        current = addMinutes(current, intervalMins);
-        i++;
-    }
+    logs.forEach((log) => {
+        const date = new Date(log.log_date);
+        categories.push(format(date, 'dd/MM HH:mm:ss'));
+        tempData.push(log.value_0);
+        humData.push(log.value_1);
+        timestamps.push(date);
+    });
 
     return { categories, tempData, humData, timestamps };
 };
@@ -197,6 +160,9 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
         }
     }, [onClose]);
 
+    const [chartData, setChartData] = useState(null);
+    const [loading, setLoading] = useState(false);
+
     // Handle date range change
     const handleDateChange = useCallback((dates) => {
         const [start, end] = dates;
@@ -211,18 +177,28 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
         setEndDate(now);
     }, []);
 
-    // Generate chart data based on selected date range
-    const chartData = useMemo(() => {
-        if (!locationData || !startDate || !endDate) return null;
+    // Fetch chart data from API when date range changes
+    useEffect(() => {
+        if (!locationData || !startDate || !endDate) return;
 
-        const { categories, tempData, humData, timestamps } = generateLocationDataForRange(
-            locationData.temperature,
-            locationData.humidity,
-            startDate,
-            endDate
-        );
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const logs = await getLogsByDateRange(
+                    locationData.locationId,
+                    startDate.toISOString(),
+                    endDate.toISOString()
+                );
+                setChartData(transformLogsToChartData(logs));
+            } catch (error) {
+                console.error('Failed to fetch chart data:', error);
+                setChartData(null);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        return { categories, tempData, humData, timestamps };
+        fetchData();
     }, [locationData, startDate, endDate]);
 
     // Export to Excel
@@ -263,7 +239,9 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                 backgroundColor: 'transparent',
                 style: { fontFamily: 'inherit' },
                 height: 350,
-                spacing: [20, 20, 20, 20]
+                spacing: [20, 20, 20, 20],
+                zooming: {type: 'x'
+                }
             },
             title: {
                 text: t('dashboard.chartTitle', 'Biểu đồ nhiệt độ & độ ẩm'),
@@ -287,6 +265,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                     rotation: -45,
                     step: Math.ceil(chartData.categories.length / 10)
                 },
+                
                 lineColor: colors.axisColor,
                 tickColor: colors.axisColor,
                 title: {
@@ -593,12 +572,29 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
 
                 {/* Chart */}
                 <div className="px-6 py-4" style={{ backgroundColor: colors.modalBg }}>
-                    {chartOptions && (
+                    {loading ? (
+                        <div className="flex items-center justify-center h-[350px]">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-8 h-8 border-3 border-t-transparent rounded-full animate-spin"
+                                    style={{ borderColor: colors.textMuted, borderTopColor: 'transparent' }} />
+                                <span className="text-sm" style={{ color: colors.textMuted }}>
+                                    {t('common.loading', 'Đang tải...')}
+                                </span>
+                            </div>
+                        </div>
+                    ) : chartOptions ? (
                         <HighchartsReact
                             highcharts={Highcharts}
                             options={chartOptions}
                             ref={chartRef}
                         />
+                    ) : (
+                        <div className="flex items-center justify-center h-[350px] ">
+                            
+                            <span className="text-sm" style={{ color: colors.textMuted }}>
+                               <SearchAlert className="w-12 h-12 text-text-muted mx-auto mb-4" /> {t('dashboard.noData', 'Không có dữ liệu')}
+                            </span>
+                        </div>
                     )}
                 </div>
 

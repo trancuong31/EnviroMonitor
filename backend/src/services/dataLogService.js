@@ -13,8 +13,22 @@ const getLogs = async () => {
                 )`)
             }
         },
-        order: [['logidx', 'ASC']],
+        order: [['tc_name', 'ASC']],
         limit: 5
+    });
+
+    return logs;
+};
+
+const getLogsByDateRange= async (logidx, startDate, endDate) => {
+    const logs = await TLog.findAll({
+        where: {
+            log_date: {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            },
+            logidx: logidx
+        },
+        order: [['log_date', 'ASC']],
     });
 
     return logs;
@@ -22,4 +36,5 @@ const getLogs = async () => {
 
 module.exports = {
     getLogs,
+    getLogsByDateRange,
 };

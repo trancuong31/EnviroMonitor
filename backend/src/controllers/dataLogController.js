@@ -13,6 +13,21 @@ const getLogs = catchAsync(async (req, res) => {
         data: { logs },
     });
 });
+
+/**
+ * get logs by date range
+ */
+const getLogsByDateRange = catchAsync(async (req, res) => {
+    const { logidx, startDate, endDate } = req.query;
+    const logs = await dataLogs.getLogsByDateRange(logidx, startDate, endDate);
+
+    res.status(HTTP_CODES.OK).json({
+        status: 'success',
+        data: { logs },
+    });
+});
+
 module.exports = {
     getLogs,
+    getLogsByDateRange,
 };

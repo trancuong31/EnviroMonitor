@@ -34,9 +34,10 @@ export const getDashboardStats = async () => {
     return transformLogsToLocations(logs);
 };
 
-export const getSensorData = async (sensorId) => {
-    const response = await api.get(`/sensors/${sensorId}`);
-    return response.data;
+export const getLogsByDateRange = async (logidx, startDate, endDate) => {
+    const response = await api.get(`/dataLogs/getLogsByDateRange?logidx=${logidx}&startDate=${startDate}&endDate=${endDate}`);
+    const { logs } = response.data.data;
+    return logs;
 };
 
 export const getAlerts = async () => {
