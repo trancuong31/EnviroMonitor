@@ -2,6 +2,7 @@ require('./config/env');
 const app = require('./app');
 const { connectDB } = require('./config/database');
 const logger = require('./config/logger');
+const { startAlertScheduler } = require('./jobs');
 
 const PORT = process.env.PORT || 3000;
 
@@ -18,6 +19,9 @@ const startServer = async () => {
     try {
         // Connect to MariaDB
         await connectDB();
+
+        // Start alert scheduler (cron job)
+        // startAlertScheduler();
 
         // Start server
         const server = app.listen(PORT, () => {

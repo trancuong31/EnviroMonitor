@@ -7,7 +7,7 @@ import { format, setHours, setMinutes, setSeconds } from 'date-fns';
 import { vi, enUS } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import 'react-datepicker/dist/react-datepicker.css';
-import { ChartNoAxesCombined, SearchAlert } from 'lucide-react';
+import { ChartNoAxesCombined, SearchAlert, Thermometer, Droplets } from 'lucide-react';
 import { getLogsByDateRange } from '../api/dashboardApi';
 
 /**
@@ -162,6 +162,27 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
 
     const [chartData, setChartData] = useState(null);
     const [loading, setLoading] = useState(false);
+    // Chart view mode: 'temperature' | 'humidity'
+    const [chartMode, setChartMode] = useState('temperature');
+
+    // Read thresholds fresh from localStorage each time modal opens
+    const [thresholds, setThresholds] = useState(() => {
+        try {
+            const stored = localStorage.getItem('warningThresholds');
+            return stored ? JSON.parse(stored) : { tempMin: 18, tempMax: 28, humMin: 40, humMax: 60 };
+        } catch { return { tempMin: 18, tempMax: 28, humMin: 40, humMax: 60 }; }
+    });
+
+    // Refresh thresholds & reset chartMode every time modal opens
+    useEffect(() => {
+        if (isOpen) {
+            try {
+                const stored = localStorage.getItem('warningThresholds');
+                if (stored) setThresholds(JSON.parse(stored));
+            } catch { /* keep defaults */ }
+            setChartMode('temperature');
+        }
+    }, [isOpen]);
 
     // Handle date range change
     const handleDateChange = useCallback((dates) => {
@@ -233,6 +254,17 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
     const chartOptions = useMemo(() => {
         if (!chartData || !locationData) return null;
 
+        const dataLength = chartData.tempData.length;
+        const isTemp = chartMode === 'temperature';
+
+        const chartColor = isTemp ? colors.tempColor : colors.humColor;
+        const uclValue = isTemp ? thresholds.tempMax : thresholds.humMax;
+        const lclValue = isTemp ? thresholds.tempMin : thresholds.humMin;
+
+        // UCL / LCL as constant horizontal series (reliable, no plotLine merge issues)
+        const uclData = Array(dataLength).fill(uclValue);
+        const lclData = Array(dataLength).fill(lclValue);
+
         return {
             chart: {
                 type: 'line',
@@ -240,11 +272,12 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                 style: { fontFamily: 'inherit' },
                 height: 350,
                 spacing: [20, 20, 20, 20],
-                zooming: {type: 'x'
-                }
+                zooming: { type: 'x' }
             },
             title: {
-                text: t('dashboard.chartTitle', 'Biểu đồ nhiệt độ & độ ẩm'),
+                text: isTemp
+                    ? t('dashboard.chartTitleTemp', 'Biểu đồ nhiệt độ')
+                    : t('dashboard.chartTitleHum', 'Biểu đồ độ ẩm'),
                 style: {
                     color: colors.textPrimary,
                     fontSize: '15px',
@@ -265,7 +298,6 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                     rotation: -45,
                     step: Math.ceil(chartData.categories.length / 10)
                 },
-                
                 lineColor: colors.axisColor,
                 tickColor: colors.axisColor,
                 title: {
@@ -275,32 +307,22 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
             },
             yAxis: [{
                 title: {
-                    text: t('dashboard.temperature', 'Nhiệt độ') + ' (°C)',
-                    style: { color: colors.tempColor, fontSize: '11px' }
+                    text: isTemp
+                        ? t('dashboard.temperature', 'Nhiệt độ') + ' (°C)'
+                        : t('dashboard.humidity', 'Độ ẩm') + ' (%)',
+                    style: { color: chartColor, fontSize: '11px' }
                 },
                 labels: {
-                    format: '{value}°',
-                    style: { color: colors.tempColor, fontSize: '10px' }
+                    format: isTemp ? '{value}°' : '{value}%',
+                    style: { color: chartColor, fontSize: '10px' }
                 },
                 gridLineColor: colors.gridColor,
                 gridLineDashStyle: 'Dash'
-            }, {
-                title: {
-                    text: t('dashboard.humidity', 'Độ ẩm') + ' (%)',
-                    style: { color: colors.humColor, fontSize: '11px' }
-                },
-                labels: {
-                    format: '{value}%',
-                    style: { color: colors.humColor, fontSize: '10px' }
-                },
-                opposite: true,
-                gridLineColor: 'transparent'
             }],
             plotOptions: {
                 line: {
                     dataLabels: { enabled: false },
                     enableMouseTracking: true,
-                    marker: { enabled: chartData.tempData.length <= 30, radius: 3, symbol: 'circle' },
                     lineWidth: 2.5
                 }
             },
@@ -320,17 +342,40 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                 itemStyle: { color: colors.textSecondary, fontSize: '12px', fontWeight: '500' },
                 itemHoverStyle: { color: colors.textPrimary }
             },
-            series: [{
-                name: t('dashboard.temperature', 'Nhiệt độ'),
-                data: chartData.tempData,
-                color: colors.tempColor,
-                yAxis: 0
-            }, {
-                name: t('dashboard.humidity', 'Độ ẩm'),
-                data: chartData.humData,
-                color: colors.humColor,
-                yAxis: 1
-            }],
+            series: [
+                {
+                    name: isTemp
+                        ? t('dashboard.temperature', 'Nhiệt độ')
+                        : t('dashboard.humidity', 'Độ ẩm'),
+                    data: isTemp ? chartData.tempData : chartData.humData,
+                    color: chartColor,
+                    marker: { enabled: dataLength <= 30, radius: 3, symbol: 'circle' },
+                    yAxis: 0,
+                    zIndex: 2
+                },
+                {
+                    name: `UCL (${uclValue})`,
+                    data: uclData,
+                    color: isDark ? '#ff6b6b' : '#ef4444',
+                    dashStyle: 'Dash',
+                    lineWidth: 1.5,
+                    marker: { enabled: false },
+                    enableMouseTracking: false,
+                    yAxis: 0,
+                    zIndex: 1
+                },
+                {
+                    name: `LCL (${lclValue})`,
+                    data: lclData,
+                    color: isDark ? '#fbbf24' : '#f59e0b',
+                    dashStyle: 'Dash',
+                    lineWidth: 1.5,
+                    marker: { enabled: false },
+                    enableMouseTracking: false,
+                    yAxis: 0,
+                    zIndex: 1
+                }
+            ],
             credits: { enabled: false },
             responsive: {
                 rules: [{
@@ -342,7 +387,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                 }]
             }
         };
-    }, [chartData, locationData, colors, t]);
+    }, [chartData, locationData, colors, t, chartMode, thresholds, isDark]);
 
     if (!isOpen || !locationData) return null;
 
@@ -500,6 +545,43 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                     </div>
                 </div>
 
+                {/* Chart Mode Toggle */}
+                <div
+                    className="flex items-center gap-2 px-6 py-3 border-b"
+                    style={{
+                        backgroundColor: isDark ? 'rgba(15, 27, 61, 0.3)' : '#f8fafc',
+                        borderColor: colors.border
+                    }}
+                >
+                    <span className="text-xs font-medium mr-1" style={{ color: colors.textMuted }}>
+                        {t('dashboard.chartView', 'Hiển thị')}:
+                    </span>
+                    {[
+                        { key: 'temperature', icon: Thermometer, label: t('dashboard.temperature', 'Nhiệt độ') },
+                        { key: 'humidity', icon: Droplets, label: t('dashboard.humidity', 'Độ ẩm') }
+                    ].map(({ key, icon: Icon, label }) => {
+                        const isActive = chartMode === key;
+                        const activeColor = key === 'temperature' ? colors.tempColor : colors.humColor;
+                        return (
+                            <button
+                                key={key}
+                                onClick={() => setChartMode(key)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                                style={{
+                                    backgroundColor: isActive
+                                        ? (isDark ? `${activeColor}22` : `${activeColor}18`)
+                                        : 'transparent',
+                                    color: isActive ? activeColor : colors.textMuted,
+                                    border: `1px solid ${isActive ? `${activeColor}44` : 'transparent'}`
+                                }}
+                            >
+                                <Icon className="w-3.5 h-3.5" />
+                                {label}
+                            </button>
+                        );
+                    })}
+                </div>
+
                 {/* Current Values */}
                 <div
                     className="grid grid-cols-2 gap-4 px-6 py-4"
@@ -584,6 +666,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                         </div>
                     ) : chartOptions ? (
                         <HighchartsReact
+                            key={`${chartMode}-${locationData?.locationId}`}
                             highcharts={Highcharts}
                             options={chartOptions}
                             ref={chartRef}
