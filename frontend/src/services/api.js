@@ -1,13 +1,18 @@
 import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+import { useAuthStore } from '@/store';
 const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT, 10) || 30000;
+const API_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL || 'http://localhost:8888/api/v1';
+const API_URL_PUBLIC = import.meta.env.VITE_API_URL_PUBLIC || API_URL_LOCAL;
 
-/**
- * Axios instance with interceptors
- */
+const hostname = window.location.hostname;
+const isLocal =
+    hostname === 'localhost' ||
+    hostname.startsWith('192.168.');
+
+const baseURL = isLocal ? API_URL_LOCAL : API_URL_PUBLIC;
+
 const api = axios.create({
-    baseURL: API_URL,
+    baseURL,
     timeout: API_TIMEOUT,
     headers: {
         'Content-Type': 'application/json',
@@ -38,13 +43,12 @@ api.interceptors.request.use(
 
 // Response interceptor - handle errors
 api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        // Handle 401 - Unauthorized
+    res => res,
+    error => {
+
         if (error.response?.status === 401) {
-            // Clear auth storage and redirect to home
-            localStorage.removeItem('auth-storage');
-            window.location.href = '/';
+
+            useAuthStore.getState().logout();
         }
 
         return Promise.reject(error);

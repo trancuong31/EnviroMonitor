@@ -43,7 +43,8 @@
     "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
     "alreadyHaveAccount": "Đã có tài khoản?",
     "loginSuccess": "Đăng nhập thành công",
-    "registerSuccess": "Đăng ký thành công"
+    "registerSuccess": "Đăng ký thành công",
+    "register": "Đăng ký"
   },
   "dashboard": {
     "title": "Giám sát Nhiệt độ & Độ ẩm",

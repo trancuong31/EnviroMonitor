@@ -127,7 +127,7 @@ const HomePage = () => {
                         </>)}
                     </div>
                     <div className="fixed bottom-4 right-4 text-xs text-gray-400 opacity-70 tracking-wide select-none">
-                        {t('home.copyright')}
+                        {t('home.features.copyright')}
                     </div>
                 </section>
 

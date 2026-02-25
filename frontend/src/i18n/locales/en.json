@@ -43,7 +43,8 @@
     "confirmPasswordPlaceholder": "Confirm your password",
     "alreadyHaveAccount": "Already have an account?",
     "loginSuccess": "Successfully signed in",
-    "registerSuccess": "Successfully registered"
+    "registerSuccess": "Successfully registered",
+    "register": "Register"
   },
   "dashboard": {
     "title": "Temperature & Humidity Monitor",

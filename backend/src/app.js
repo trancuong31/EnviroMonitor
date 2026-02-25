@@ -6,11 +6,13 @@ const routes = require('./routes');
 const { errorHandler, apiLimiter } = require('./middlewares');
 const { AppError } = require('./utils/appError');
 const { HTTP_CODES } = require('./constants/httpCodes');
-
+const path = require("path");
 const app = express();
 
 // Security middlewares
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: false,
+}));
 app.use(cors());
 
 // Rate limiting
@@ -29,13 +31,26 @@ if (process.env.NODE_ENV === 'development') {
 
 // Static files
 app.use('/uploads', express.static('uploads'));
-
+app.use(express.static(path.join(__dirname, "public")));
 // API routes
 app.use('/api/v1', routes);
+// catch all → React routing
+app.get("*", (req, res, next) => {
 
-// Handle undefined routes
-app.all('*', (req, res, next) => {
-    next(new AppError(`Cannot find ${req.originalUrl} on this server`, HTTP_CODES.NOT_FOUND));
+    if (req.originalUrl.startsWith("/api"))
+        return next();
+
+    res.sendFile(
+        path.join(__dirname, "public", "index.html")
+    );
+
+});
+// Handle undefined API routes only
+app.all('/api/*', (req, res, next) => {
+    next(new AppError(
+        `Cannot find ${req.originalUrl} on this server`,
+        HTTP_CODES.NOT_FOUND
+    ));
 });
 
 // Global error handler

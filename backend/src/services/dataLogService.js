@@ -14,7 +14,7 @@ const getLogs = async () => {
             }
         },
         order: [['tc_name', 'ASC']],
-        limit: 5
+        limit: 20
     });
 
     return logs;
