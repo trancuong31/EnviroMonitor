@@ -20,9 +20,9 @@
       "alerts": "Cảnh báo Thông minh",
       "analysis": "Phân tích Lịch sử",
       "visualization": "Trực quan hóa Dữ liệu",
-      "health": "Tình trạng Hệ thống"
-    },
-    "copyright": "© 2026 Partron Vina | Hệ thống giám sát IoT nội bộ"
+      "health": "Tình trạng Hệ thống",
+      "copyright": "© 2026 Partron Vina | Hệ thống giám sát IoT nội bộ"
+    }
   },
   "auth": {
     "welcomeBack": "Chào mừng trở lại",
@@ -72,6 +72,7 @@
     "timeLt1": "< 1 phút",
     "timeLt3": "< 3 phút",
     "timeLt5": "< 5 phút",
+    "timeLt10": "< 10 phút",
     "showing": "Hiển thị",
     "of": "/",
     "locations": "vị trí",

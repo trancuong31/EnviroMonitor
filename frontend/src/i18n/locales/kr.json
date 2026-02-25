@@ -20,9 +20,10 @@
       "alerts": "스마트 알림",
       "analysis": "이력 데이터 분석",
       "visualization": "데이터 시각화",
-      "health": "시스템 상태"
-    },
-    "copyright": "© 2026 Partron Vina | 사내 IoT 모니터링 시스템"
+      "health": "시스템 상태",
+      "copyright": "© 2026 Partron Vina | 사내 IoT 모니터링 시스템"
+    }
+    
   },
   "auth": {
     "welcomeBack": "다시 오신 것을 환영합니다",
@@ -72,6 +73,7 @@
     "timeLt1": "1분 미만",
     "timeLt3": "3분 미만",
     "timeLt5": "5분 미만",
+    "timeLt10": "10분 미만",
     "showing": "표시 중:",
     "of": "/",
     "locations": "개 위치",

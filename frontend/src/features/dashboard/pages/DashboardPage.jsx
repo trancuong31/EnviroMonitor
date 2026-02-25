@@ -23,14 +23,10 @@ import {
 } from 'lucide-react';
 import { useDashboardStore } from '../store/useDashboardStore';
 
-// Parse relative time string to minutes for sorting/filtering
-const parseMinutes = (str) => {
-  if (!str) return 0;
-  if (str.includes('giây')) return 0;
-  if (str.includes('ngày')) return parseInt(str, 10) * 1440;
-  if (str.includes('giờ')) return parseInt(str, 10) * 60;
-  const m = parseInt(str, 10);
-  return isNaN(m) ? 0 : m;
+// Calculate age in minutes from ISO timestamp (used for sorting/filtering)
+const getAgeInMinutes = (isoDate) => {
+  if (!isoDate) return Infinity;
+  return (Date.now() - new Date(isoDate).getTime()) / 60000;
 };
 
 /**
@@ -79,7 +75,7 @@ const DashboardPage = () => {
     await fetchLocations();
     setTimeout(() => setIsRefreshing(false), 600);
   }, [fetchLocations]);
-
+  
   // Auto-refresh every 5 seconds - smooth per-item update
   useEffect(() => {
     const interval = setInterval(() => {
@@ -108,7 +104,7 @@ const DashboardPage = () => {
     // Filter by time
     if (filterTime !== 'all') {
       const maxMin = parseInt(filterTime, 10);
-      result = result.filter((l) => parseMinutes(l.lastUpdate) < maxMin);
+      result = result.filter((l) => getAgeInMinutes(l.lastUpdateISO) < maxMin);
     }
 
     // Sort
@@ -126,7 +122,7 @@ const DashboardPage = () => {
         result.sort((a, b) => b.humidity - a.humidity);
         break;
       case 'recent':
-        result.sort((a, b) => parseMinutes(a.lastUpdate) - parseMinutes(b.lastUpdate));
+        result.sort((a, b) => getAgeInMinutes(a.lastUpdateISO) - getAgeInMinutes(b.lastUpdateISO));
         break;
       default:
         break;
@@ -185,6 +181,7 @@ const DashboardPage = () => {
       { label: t('dashboard.timeLt1'), value: '1' },
       { label: t('dashboard.timeLt3'), value: '3' },
       { label: t('dashboard.timeLt5'), value: '5' },
+      { label: t('dashboard.timeLt10'), value: '10' },
     ],
     [t]
   );

@@ -7,9 +7,8 @@ import i18next from 'i18next';
  */
 const formatRelativeTime = (isoDate) => {
     const now = new Date();
-    // Server stores local time (GMT+7) but returns Z suffix — strip it to parse as local
-    const localDateStr = isoDate.replace('Z', '');
-    const date = new Date(localDateStr);
+    // Server returns proper UTC (Z suffix) — parse directly, browser handles timezone
+    const date = new Date(isoDate);
 
     const diffMs = now - date;
 

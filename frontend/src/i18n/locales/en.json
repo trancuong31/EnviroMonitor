@@ -72,6 +72,7 @@
     "timeLt1": "< 1 min",
     "timeLt3": "< 3 min",
     "timeLt5": "< 5 min",
+    "timeLt10": "< 10 min",
     "showing": "Showing",
     "of": "/",
     "locations": "locations",
