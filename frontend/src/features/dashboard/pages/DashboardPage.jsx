@@ -7,6 +7,7 @@ import {
   LocationListItem,
   LocationChartModal,
   ThresholdSettingsModal,
+  LocationGroupSection,
 } from '../components';
 import {
   Search,
@@ -22,6 +23,7 @@ import {
   CircleAlert,
 } from 'lucide-react';
 import { useDashboardStore } from '../store/useDashboardStore';
+import { groupByLocationPrefix } from '../utils/groupUtils';
 
 // Calculate age in minutes from ISO timestamp (used for sorting/filtering)
 const getAgeInMinutes = (isoDate) => {
@@ -38,7 +40,9 @@ const DashboardPage = () => {
   const [view, setView] = useState('grid');
   const [search, setSearch] = useState('');
   const [filterLine, setFilterLine] = useState('all');
-  const [filterTime, setFilterTime] = useState('all');
+  const [refreshInterval, setRefreshInterval] = useState(
+    () => parseInt(localStorage.getItem('dashboard_refreshInterval'), 10) || 300000
+  );
   const [sortBy, setSortBy] = useState('default');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -76,13 +80,20 @@ const DashboardPage = () => {
     setTimeout(() => setIsRefreshing(false), 600);
   }, [fetchLocations]);
   
-  // Auto-refresh every 5 seconds - smooth per-item update
+  // Auto-refresh based on user-selected interval (persisted in localStorage)
   useEffect(() => {
     const interval = setInterval(() => {
       refreshLocations();
-    }, 5000);
+    }, refreshInterval);
     return () => clearInterval(interval);
-  }, [refreshLocations]);
+  }, [refreshLocations, refreshInterval]);
+
+  // Persist refresh interval to localStorage
+  const handleRefreshIntervalChange = useCallback((val) => {
+    const ms = parseInt(val, 10);
+    setRefreshInterval(ms);
+    localStorage.setItem('dashboard_refreshInterval', String(ms));
+  }, []);
 
   // Filtered + sorted data
   const filteredLocations = useMemo(() => {
@@ -101,11 +112,7 @@ const DashboardPage = () => {
       result = result.filter((l) => l.location.startsWith(filterLine));
     }
 
-    // Filter by time
-    if (filterTime !== 'all') {
-      const maxMin = parseInt(filterTime, 10);
-      result = result.filter((l) => getAgeInMinutes(l.lastUpdateISO) < maxMin);
-    }
+
 
     // Sort
     switch (sortBy) {
@@ -129,7 +136,13 @@ const DashboardPage = () => {
     }
 
     return result;
-  }, [locations, search, filterLine, filterTime, sortBy]);
+  }, [locations, search, filterLine, sortBy]);
+
+  // Group filtered locations by 5-char prefix of tc_name
+  const groupedLocations = useMemo(
+    () => groupByLocationPrefix(filteredLocations),
+    [filteredLocations]
+  );
 
   // Export to CSV handler
   const handleExport = useCallback(() => {
@@ -175,13 +188,11 @@ const DashboardPage = () => {
   }, [filteredLocations, t]);
 
   // Translated options (must be inside component to react to language changes)
-  const timeOptions = useMemo(
+  const refreshIntervalOptions = useMemo(
     () => [
-      { label: t('dashboard.timeAll'), value: 'all' },
-      { label: t('dashboard.timeLt1'), value: '1' },
-      { label: t('dashboard.timeLt3'), value: '3' },
-      { label: t('dashboard.timeLt5'), value: '5' },
-      { label: t('dashboard.timeLt10'), value: '10' },
+      { label: t('dashboard.interval5'), value: '300000' },
+      { label: t('dashboard.interval10'), value: '600000' },
+      { label: t('dashboard.interval15'), value: '900000' },
     ],
     [t]
   );
@@ -200,7 +211,7 @@ const DashboardPage = () => {
 
   return (
     <MainLayout>
-      <div className="min-h-full">
+      <div className="min-h-full overflow-hidden">
         <div className="max-w-[1400px] mx-auto p-4 md:p-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 animate-slide-down">
@@ -289,7 +300,7 @@ const DashboardPage = () => {
             </div>
 
             {/* Filter by Line */}
-            <div className="bg-surface rounded-xl border border-border p-4 shadow-sm transition-all duration-200">
+            <div className="bg-surface rounded-xl border border-border p-4 shadow-sm transition-all duration-200 ">
               <CustomSelect
                 label={
                   <span className="flex items-center gap-2">
@@ -307,19 +318,19 @@ const DashboardPage = () => {
               />
             </div>
 
-            {/* Filter by Time */}
+            {/* Refresh Interval */}
             <div className="bg-surface rounded-xl border border-border p-4 shadow-sm transition-all duration-200">
               <CustomSelect
                 label={
                   <span className="flex items-center gap-2">
                     <Clock className="w-3.5 h-3.5" />
-                    {t('dashboard.update')}
+                    {t('dashboard.refreshInterval')}
                   </span>
                 }
-                value={filterTime}
-                onChange={(val) => setFilterTime(val)}
-                options={timeOptions}
-                placeholder={t('dashboard.selectTime')}
+                value={String(refreshInterval)}
+                onChange={handleRefreshIntervalChange}
+                options={refreshIntervalOptions}
+                placeholder={t('dashboard.selectInterval')}
               />
             </div>
 
@@ -347,12 +358,11 @@ const DashboardPage = () => {
               <span className="text-text font-semibold">{filteredLocations.length}</span>{' '}
               {t('dashboard.of')} {locations.length} {t('dashboard.locations')}
             </p>
-            {(search || filterLine !== 'all' || filterTime !== 'all' || sortBy !== 'default') && (
+            {(search || filterLine !== 'all' || sortBy !== 'default') && (
               <button
                 onClick={() => {
                   setSearch('');
                   setFilterLine('all');
-                  setFilterTime('all');
                   setSortBy('default');
                 }}
                 className="text-xs text-primary hover:text-primary-light transition-colors font-medium"
@@ -389,22 +399,28 @@ const DashboardPage = () => {
 
           {/* Grid View */}
           {!isLoading && !error && view === 'grid' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 animate-fade-in">
-              {filteredLocations.length > 0 ? (
-                filteredLocations.map((loc) => (
-                  <LocationCard
-                    key={loc.id}
-                    location={loc.location}
-                    locationId={loc.locationId}
-                    temperature={loc.temperature}
-                    humidity={Math.round(loc.humidity)}
-                    lastUpdate={loc.lastUpdate}
-                    status={loc.status}
-                    onClick={() => handleLocationClick(loc)}
-                  />
+            <div className="flex flex-col gap-8 animate-fade-in">
+              {groupedLocations.length > 0 ? (
+                groupedLocations.map((group) => (
+                  <LocationGroupSection key={group.prefix} prefix={group.prefix} count={group.items.length}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-14">
+                      {group.items.map((loc) => (
+                        <LocationCard
+                          key={loc.id}
+                          location={loc.location}
+                          locationId={loc.locationId}
+                          temperature={loc.temperature}
+                          humidity={Math.round(loc.humidity)}
+                          lastUpdate={loc.lastUpdate}
+                          status={loc.status}
+                          onClick={() => handleLocationClick(loc)}
+                        />
+                      ))}
+                    </div>
+                  </LocationGroupSection>
                 ))
               ) : (
-                <div className="col-span-full text-center py-16">
+                <div className="text-center py-16">
                   <SearchAlert className="w-12 h-12 text-text-muted mx-auto mb-4" />
                   <p className="text-text-muted text-lg">{t('dashboard.noSensor')}</p>
                   <p className="text-text-muted/60 text-sm mt-1">{t('dashboard.tryFilter')}</p>
@@ -415,18 +431,24 @@ const DashboardPage = () => {
 
           {/* List View */}
           {!isLoading && !error && view === 'list' && (
-            <div className="flex flex-col gap-4 animate-fade-in">
-              {filteredLocations.length > 0 ? (
-                filteredLocations.map((loc) => (
-                  <LocationListItem
-                    key={loc.id}
-                    location={loc.location}
-                    locationId={loc.locationId}
-                    temperature={loc.temperature}
-                    humidity={Math.round(loc.humidity)}
-                    chartData={loc.chartData}
-                    onClick={() => handleLocationClick(loc)}
-                  />
+            <div className="flex flex-col gap-8 animate-fade-in">
+              {groupedLocations.length > 0 ? (
+                groupedLocations.map((group) => (
+                  <LocationGroupSection key={group.prefix} prefix={group.prefix} count={group.items.length}>
+                    <div className="flex flex-col gap-4">
+                      {group.items.map((loc) => (
+                        <LocationListItem
+                          key={loc.id}
+                          location={loc.location}
+                          locationId={loc.locationId}
+                          temperature={loc.temperature}
+                          humidity={Math.round(loc.humidity)}
+                          chartData={loc.chartData}
+                          onClick={() => handleLocationClick(loc)}
+                        />
+                      ))}
+                    </div>
+                  </LocationGroupSection>
                 ))
               ) : (
                 <div className="text-center py-16">

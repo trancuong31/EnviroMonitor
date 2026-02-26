@@ -15,14 +15,14 @@ const applyTheme = (theme) => {
 
 // Initialise from localStorage (or default to light)
 const stored = typeof window !== 'undefined' ? localStorage.getItem('theme') : null;
-const initialTheme = stored === 'dark' ? 'dark' : 'light';
+const initialTheme = stored === 'light' ? 'light' : 'dark';
 applyTheme(initialTheme);
 
 export const useThemeStore = create((set) => ({
     theme: initialTheme,
     toggleTheme: () =>
         set((state) => {
-            const next = state.theme === 'light' ? 'dark' : 'light';
+            const next = state.theme === 'dark' ? 'light' : 'dark';
             localStorage.setItem('theme', next);
             applyTheme(next);
             return { theme: next };

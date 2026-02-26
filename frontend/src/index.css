@@ -71,6 +71,15 @@ body {
     min-height: 100vh;
     transition: background-color 0.3s, color 0.3s;
 }
+/* Ẩn scrollbar nhưng vẫn scroll được */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE, Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari */
+}
 
 /* Select dropdown styling */
 select option {

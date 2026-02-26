@@ -66,7 +66,7 @@ const CustomSelect = ({ value, onChange, options, placeholder, icon, label }) =>
     return (
         <div ref={dropdownRef} className="relative w-full">
             {label && (
-                <label className="block text-[0.7rem] uppercase tracking-wider text-text-muted font-semibold mb-2">
+                <label className="block text-[0.7rem] uppercase tracking-wider text-text-muted font-semibold mb-2 ">
                     {label}
                 </label>
             )}
@@ -80,7 +80,7 @@ const CustomSelect = ({ value, onChange, options, placeholder, icon, label }) =>
                     w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border text-sm
                     transition-all duration-200 ease-in-out bg-transparent text-text
                     border-border hover:border-primary/40
-                    focus:outline-none
+                    focus:outline-none 
                     ${isOpen ? 'ring-2 ring-primary/30 border-primary/50' : ''}
                 `}
             >
@@ -105,14 +105,14 @@ const CustomSelect = ({ value, onChange, options, placeholder, icon, label }) =>
                 className={`
                     absolute z-50 w-full mt-1.5 rounded-xl shadow-lg overflow-hidden
                     transition-all duration-200 ease-in-out origin-top
-                    bg-surface border border-border
+                    bg-surface border border-border 
                     ${isOpen
                         ? 'opacity-100 scale-y-100 max-h-60 visible'
-                        : 'opacity-0 scale-y-95 max-h-0 invisible pointer-events-none'
+                        : 'opacity-0 scale-y-95 max-h-0 invisible pointer-events-none '
                     }
                 `}
             >
-                <div className="overflow-y-auto max-h-60">
+                <div className="overflow-y-auto max-h-60 scrollbar-hide">
                     {options.map((option, index) => {
                         const isSelected = value === option.value;
                         const isHighlighted = highlightedIndex === index;

@@ -6,7 +6,7 @@ import { Toaster } from 'sonner';
 function App() {
   return (
     <BrowserRouter>    
-      <Toaster richColors position="top-right" />
+      <Toaster richColors position="top-center" />
       <AppRoutes />
     </BrowserRouter>
   );
