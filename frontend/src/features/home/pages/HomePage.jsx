@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../../components/ui';
+import { Button, LanguageSwitcher } from '../../../components/ui';
 import { useAuthStore } from '../../../store';
 import AuthModal from '../../auth/components/AuthModal';
 import { ArrowUpRight } from 'lucide-react';
@@ -60,9 +60,11 @@ const HomePage = () => {
                     <Link to="/" className="text-2xl font-bold font-mono text-primary hover:opacity-80 transition-opacity">
                         EnviroMonitor
                     </Link>
+                    
                     <div className="flex items-center gap-4">
                         {isAuthenticated ? (
                             <>
+                                <LanguageSwitcher />
                                 <div className="flex items-center gap-3 px-4">
                                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xs font-bold text-white">
                                         {(user?.name || 'U').charAt(0).toUpperCase()}
@@ -77,6 +79,7 @@ const HomePage = () => {
                             </>
                         ) : (
                             <>
+                                <LanguageSwitcher />
                                 <button
                                     onClick={() => openAuthModal('login')}
                                     className="text-text hover:text-primary transition-colors duration-150 font-medium"

@@ -229,7 +229,7 @@ const DashboardPage = () => {
       <div className="min-h-full overflow-hidden">
         <div className="max-w-[1400px] mx-auto p-4 md:p-6">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 animate-slide-down">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 animate-slide-down">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold font-mono tracking-tight bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
                 {t('dashboard.title')}
@@ -296,9 +296,43 @@ const DashboardPage = () => {
               </div>
             </div>
           </div>
-
+          {/* Factory filter tabs — always visible */}
+          <div className="flex items-center gap-3 mb-6 animate-fade-in">
+              <div className="flex items-center gap-2 text-text-muted">
+                <Building2 className="w-4 h-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">
+                  {t('dashboard.factory')}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => handleFilterFactoryChange('all')}
+                  className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 border ${
+                    filterFactory === 'all'
+                      ? 'bg-primary text-white border-primary shadow-[0_2px_8px_rgba(79,106,240,0.35)]'
+                      : 'bg-surface text-text-muted border-border hover:text-text hover:border-primary/30 hover:shadow-sm'
+                  }`}
+                >
+                  {t('dashboard.allFactories')}
+                </button>
+                {factoryOptions.map((factory) => (
+                  <button
+                    key={factory}
+                    onClick={() => handleFilterFactoryChange(factory)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-semibold font-mono transition-all duration-300 border ${
+                      filterFactory === factory
+                        ? 'bg-primary text-white border-primary shadow-[0_2px_8px_rgba(79,106,240,0.35)]'
+                        : 'bg-surface text-text-muted border-border hover:text-text hover:border-primary/30 hover:shadow-sm'
+                    }`}
+                  >
+                    {factory}
+                  </button>
+                ))}
+              </div>
+          </div>
           {/* Filter bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 animate-fade-in">
+            
             {/* Search location */}
             <div className="bg-surface rounded-xl border border-border p-4 shadow-sm transition-all duration-200 focus-within:border-primary/50 focus-within:shadow-md">
               <label className="flex items-center gap-2 text-[0.7rem] uppercase tracking-wider text-text-muted font-semibold mb-2">
@@ -366,40 +400,7 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          {/* Factory filter tabs — always visible */}
-          <div className="flex items-center gap-3 mb-6 animate-fade-in">
-              <div className="flex items-center gap-2 text-text-muted">
-                <Building2 className="w-4 h-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">
-                  {t('dashboard.factory')}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <button
-                  onClick={() => handleFilterFactoryChange('all')}
-                  className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 border ${
-                    filterFactory === 'all'
-                      ? 'bg-primary text-white border-primary shadow-[0_2px_8px_rgba(79,106,240,0.35)]'
-                      : 'bg-surface text-text-muted border-border hover:text-text hover:border-primary/30 hover:shadow-sm'
-                  }`}
-                >
-                  {t('dashboard.allFactories')}
-                </button>
-                {factoryOptions.map((factory) => (
-                  <button
-                    key={factory}
-                    onClick={() => handleFilterFactoryChange(factory)}
-                    className={`px-4 py-1.5 rounded-full text-sm font-semibold font-mono transition-all duration-300 border ${
-                      filterFactory === factory
-                        ? 'bg-primary text-white border-primary shadow-[0_2px_8px_rgba(79,106,240,0.35)]'
-                        : 'bg-surface text-text-muted border-border hover:text-text hover:border-primary/30 hover:shadow-sm'
-                    }`}
-                  >
-                    {factory}
-                  </button>
-                ))}
-              </div>
-          </div>
+          
 
           {/* Results count */}
           <div className="flex items-center justify-between mb-5 animate-fade-in">
