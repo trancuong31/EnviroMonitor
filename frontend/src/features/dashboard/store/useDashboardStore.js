@@ -23,11 +23,12 @@ export const useDashboardStore = create((set) => ({
 
     /**
      * Fetch locations from API (full replace, used for initial load)
+     * @param {string} factory - factory prefix filter (e.g. 'V4', 'all')
      */
-    fetchLocations: async () => {
+    fetchLocations: async (factory) => {
         set({ isLoading: true, error: null });
         try {
-            const locations = await getDashboardStats();
+            const locations = await getDashboardStats(factory);
             set({ locations, isLoading: false });
         } catch (error) {
             set({ error: error.message || 'Failed to fetch data', isLoading: false });
@@ -37,10 +38,11 @@ export const useDashboardStore = create((set) => ({
     /**
      * Refresh locations - merge new data into existing items in-place
      * so individual cards update smoothly without re-mounting the list
+     * @param {string} factory - factory prefix filter (e.g. 'V4', 'all')
      */
-    refreshLocations: async () => {
+    refreshLocations: async (factory) => {
         try {
-            const newLocations = await getDashboardStats();
+            const newLocations = await getDashboardStats(factory);
             set((state) => {
                 const existingMap = new Map(state.locations.map((loc) => [loc.id, loc]));
                 const merged = newLocations.map((newLoc) => {

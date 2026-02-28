@@ -21,6 +21,7 @@ import {
   Settings,
   SearchAlert,
   CircleAlert,
+  Building2,
 } from 'lucide-react';
 import { useDashboardStore } from '../store/useDashboardStore';
 import { groupByLocationPrefix } from '../utils/groupUtils';
@@ -39,6 +40,9 @@ const DashboardPage = () => {
   const { locations, isLoading, error, fetchLocations, refreshLocations } = useDashboardStore();
   const [view, setView] = useState('grid');
   const [search, setSearch] = useState('');
+  const [filterFactory, setFilterFactory] = useState(
+    () => localStorage.getItem('dashboard_filterFactory') || 'all'
+  );
   const [filterLine, setFilterLine] = useState('all');
   const [refreshInterval, setRefreshInterval] = useState(
     () => parseInt(localStorage.getItem('dashboard_refreshInterval'), 10) || 300000
@@ -49,16 +53,18 @@ const DashboardPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Fetch data on mount
+  // Hardcoded factory options — always visible
+  const factoryOptions = ['V0', 'V4', 'V5'];
+
+  // Fetch data on mount with saved factory filter
   useEffect(() => {
-    fetchLocations();
+    fetchLocations(filterFactory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchLocations]);
 
   // Extract unique location prefixes for line filter
   const lineOptions = useMemo(() => {
-    const names = locations.map((l) => {
-      return l.location;
-    });
+    const names = locations.map((l) => l.location);
     return [...new Set(names)];
   }, [locations]);
 
@@ -73,20 +79,27 @@ const DashboardPage = () => {
     setSelectedLocation(null);
   }, []);
 
+  // Handle factory filter change - persist to localStorage + re-fetch from API
+  const handleFilterFactoryChange = useCallback((factory) => {
+    setFilterFactory(factory);
+    localStorage.setItem('dashboard_filterFactory', factory);
+    fetchLocations(factory);
+  }, [fetchLocations]);
+
   // Refresh handler - full re-fetch from API
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await fetchLocations();
+    await fetchLocations(filterFactory);
     setTimeout(() => setIsRefreshing(false), 600);
-  }, [fetchLocations]);
+  }, [fetchLocations, filterFactory]);
   
   // Auto-refresh based on user-selected interval (persisted in localStorage)
   useEffect(() => {
     const interval = setInterval(() => {
-      refreshLocations();
+      refreshLocations(filterFactory);
     }, refreshInterval);
     return () => clearInterval(interval);
-  }, [refreshLocations, refreshInterval]);
+  }, [refreshLocations, refreshInterval, filterFactory]);
 
   // Persist refresh interval to localStorage
   const handleRefreshIntervalChange = useCallback((val) => {
@@ -106,6 +119,8 @@ const DashboardPage = () => {
         (l) => l.location.toLowerCase().includes(q) || l.locationId.toLowerCase().includes(q)
       );
     }
+
+    // Factory filter is applied server-side via API param
 
     // Filter by line (prefix match on tc_name)
     if (filterLine !== 'all') {
@@ -351,6 +366,41 @@ const DashboardPage = () => {
             </div>
           </div>
 
+          {/* Factory filter tabs — always visible */}
+          <div className="flex items-center gap-3 mb-6 animate-fade-in">
+              <div className="flex items-center gap-2 text-text-muted">
+                <Building2 className="w-4 h-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">
+                  {t('dashboard.factory')}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => handleFilterFactoryChange('all')}
+                  className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 border ${
+                    filterFactory === 'all'
+                      ? 'bg-primary text-white border-primary shadow-[0_2px_8px_rgba(79,106,240,0.35)]'
+                      : 'bg-surface text-text-muted border-border hover:text-text hover:border-primary/30 hover:shadow-sm'
+                  }`}
+                >
+                  {t('dashboard.allFactories')}
+                </button>
+                {factoryOptions.map((factory) => (
+                  <button
+                    key={factory}
+                    onClick={() => handleFilterFactoryChange(factory)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-semibold font-mono transition-all duration-300 border ${
+                      filterFactory === factory
+                        ? 'bg-primary text-white border-primary shadow-[0_2px_8px_rgba(79,106,240,0.35)]'
+                        : 'bg-surface text-text-muted border-border hover:text-text hover:border-primary/30 hover:shadow-sm'
+                    }`}
+                  >
+                    {factory}
+                  </button>
+                ))}
+              </div>
+          </div>
+
           {/* Results count */}
           <div className="flex items-center justify-between mb-5 animate-fade-in">
             <p className="text-text-muted text-sm">
@@ -358,10 +408,11 @@ const DashboardPage = () => {
               <span className="text-text font-semibold">{filteredLocations.length}</span>{' '}
               {t('dashboard.of')} {locations.length} {t('dashboard.locations')}
             </p>
-            {(search || filterLine !== 'all' || sortBy !== 'default') && (
+            {(search || filterFactory !== 'all' || filterLine !== 'all' || sortBy !== 'default') && (
               <button
                 onClick={() => {
                   setSearch('');
+                  handleFilterFactoryChange('all');
                   setFilterLine('all');
                   setSortBy('default');
                 }}

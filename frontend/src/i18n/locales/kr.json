@@ -23,7 +23,6 @@
       "health": "시스템 상태",
       "copyright": "© 2026 Partron Vina | 사내 IoT 모니터링 시스템"
     }
-    
   },
   "auth": {
     "welcomeBack": "다시 오신 것을 환영합니다",
@@ -59,6 +58,8 @@
     "area": "구역",
     "allAreas": "모든 구역",
     "selectArea": "구역 선택",
+    "factory": "공장",
+    "allFactories": "전체",
     "sort": "정렬",
     "selectSort": "정렬 기준 선택",
     "sortDefault": "기본",
@@ -70,7 +71,7 @@
     "refreshInterval": "새로 고침 주기",
     "selectInterval": "주기 선택",
     "interval5": "5분마다",
-    "interval10": "10분마다", 
+    "interval10": "10분마다",
     "interval15": "15분마다",
     "showing": "표시 중:",
     "of": "/",

@@ -6,7 +6,8 @@ const { HTTP_CODES } = require('../constants/httpCodes');
  * get all logs
  */
 const getLogs = catchAsync(async (req, res) => {
-    const logs = await dataLogs.getLogs();
+    const { factory } = req.query;
+    const logs = await dataLogs.getLogs({ factory });
 
     res.status(HTTP_CODES.OK).json({
         status: 'success',

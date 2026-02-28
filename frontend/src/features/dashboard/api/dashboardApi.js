@@ -28,8 +28,10 @@ const transformLogsToLocations = (logs) => {
 /**
  * Fetch dashboard logs and transform into location data
  */
-export const getDashboardStats = async () => {
-    const response = await api.get('/dataLogs/getLogs');
+export const getDashboardStats = async (factory) => {
+    const params = {};
+    if (factory && factory !== 'all') params.factory = factory;
+    const response = await api.get('/dataLogs/getLogs', { params });
     const { logs } = response.data.data;
     return transformLogsToLocations(logs);
 };

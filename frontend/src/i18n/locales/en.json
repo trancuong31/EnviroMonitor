@@ -58,6 +58,8 @@
     "area": "Area",
     "allAreas": "All areas",
     "selectArea": "Select area",
+    "factory": "Factory",
+    "allFactories": "All",
     "refreshInterval": "Refresh",
     "selectInterval": "Select interval",
     "interval5": "5 min",

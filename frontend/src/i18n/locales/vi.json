@@ -58,6 +58,8 @@
     "area": "Khu vực",
     "allAreas": "Tất cả khu vực",
     "selectArea": "Chọn khu vực",
+    "factory": "Xưởng",
+    "allFactories": "Tất cả",
     "refreshInterval": "Tần suất làm mới",
     "selectInterval": "Chọn tần suất",
     "interval5": "5 phút",
