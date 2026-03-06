@@ -21,7 +21,7 @@ const startServer = async () => {
         await connectDB();
 
         // Start alert scheduler (cron job)
-        // startAlertScheduler();
+        startAlertScheduler();
 
         // Start server
         const server = app.listen(PORT, () => {

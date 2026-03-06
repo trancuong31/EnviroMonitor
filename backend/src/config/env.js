@@ -45,12 +45,8 @@ const envVars = {
     // Alert System
     alert: {
         enabled: process.env.ALERT_ENABLED === 'true',
-        tempMin: parseFloat(process.env.ALERT_TEMP_MIN) || 18,
-        tempMax: parseFloat(process.env.ALERT_TEMP_MAX) || 28,
-        humMin: parseFloat(process.env.ALERT_HUM_MIN) || 40,
-        humMax: parseFloat(process.env.ALERT_HUM_MAX) || 60,
-        emails: (process.env.ALERT_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean),
         checkInterval: parseInt(process.env.ALERT_CHECK_INTERVAL, 10) || 60,
+        cooldownMinutes: parseInt(process.env.ALERT_COOLDOWN_MINUTES, 10) || 60,
     },
 };
 

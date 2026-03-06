@@ -40,22 +40,6 @@ const sendEmail = async (options) => {
 };
 
 /**
- * Send welcome email
- */
-const sendWelcomeEmail = async (user) => {
-    await sendEmail({
-        email: user.email,
-        subject: 'Welcome to EnviroMonitor!',
-        text: `Hi ${user.name}, Welcome to EnviroMonitor! We're excited to have you on board.`,
-        html: `
-      <h1>Welcome to EnviroMonitor!</h1>
-      <p>Hi ${user.name},</p>
-      <p>Welcome to EnviroMonitor! We're excited to have you on board.</p>
-    `,
-    });
-};
-
-/**
  * Send password reset email
  */
 const sendPasswordResetEmail = async (user, resetURL) => {
@@ -76,6 +60,5 @@ const sendPasswordResetEmail = async (user, resetURL) => {
 
 module.exports = {
     sendEmail,
-    sendWelcomeEmail,
     sendPasswordResetEmail,
 };

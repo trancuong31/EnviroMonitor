@@ -25,7 +25,7 @@ const LocationCard = ({ location, locationId, temperature, humidity, sensorType 
     const hasWarning = hasThresholdWarning;
 
     const warningText = getWarningStatus(temperature, humidity, thresholds, t);
-    const displayStatus = isOffline ? 'NG' : (hasWarning ? (warningText || t('dashboard.warning', 'Cảnh báo')) : status);
+    const displayStatus = isOffline ? 'OFFLINE' : (hasWarning ? (warningText || t('dashboard.warning', 'Cảnh báo')) : status);
 
     return (
         <div

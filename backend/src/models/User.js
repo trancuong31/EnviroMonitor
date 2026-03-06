@@ -83,6 +83,11 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING(500),
         allowNull: true,
     },
+    lastAlertSentAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: null,
+    },
 }, {
     tableName: 'users',
     timestamps: true,

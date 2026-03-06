@@ -9,6 +9,7 @@ import * as XLSX from 'xlsx';
 import 'react-datepicker/dist/react-datepicker.css';
 import { ChartNoAxesCombined, SearchAlert, Thermometer, Droplets } from 'lucide-react';
 import { getLogsByDateRange } from '../api/dashboardApi';
+import { useSettingsStore } from '../../../store';
 
 /**
  * Utility: Check if dark mode is active
@@ -165,21 +166,16 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
     // Chart view mode: 'temperature' | 'humidity'
     const [chartMode, setChartMode] = useState('temperature');
 
-    // Read thresholds fresh from localStorage each time modal opens
-    const [thresholds, setThresholds] = useState(() => {
-        try {
-            const stored = localStorage.getItem('warningThresholds');
-            return stored ? JSON.parse(stored) : { tempMin: 18, tempMax: 28, humMin: 40, humMax: 60 };
-        } catch { return { tempMin: 18, tempMax: 28, humMin: 40, humMax: 60 }; }
-    });
+    const sensorType = locationData?.sensorType || 'ROOM';
+    const thresholds = useSettingsStore((s) => (sensorType === 'FRIDGE' ? s.fridge : s.room));
 
-    // Refresh thresholds & reset chartMode every time modal opens
+    const isOffline = locationData?.lastUpdateISO ? (Date.now() - new Date(locationData.lastUpdateISO).getTime()) / 60000 > 15 : false;
+    const finalTemp = isOffline ? 0 : locationData?.temperature;
+    const finalHum = isOffline ? 0 : locationData?.humidity;
+
+    // Reset chartMode every time modal opens
     useEffect(() => {
         if (isOpen) {
-            try {
-                const stored = localStorage.getItem('warningThresholds');
-                if (stored) setThresholds(JSON.parse(stored));
-            } catch { /* keep defaults */ }
             setChartMode('temperature');
         }
     }, [isOpen]);
@@ -612,9 +608,9 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                             </p>
                             <p
                                 className="text-2xl font-bold font-mono"
-                                style={{ color: colors.tempColor }}
+                                style={{ color: isOffline ? '#ef4444' : colors.tempColor }}
                             >
-                                {locationData.temperature}°C
+                                {finalTemp}°C
                             </p>
                         </div>
                     </div>
@@ -644,9 +640,9 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                             </p>
                             <p
                                 className="text-2xl font-bold font-mono"
-                                style={{ color: colors.humColor }}
+                                style={{ color: isOffline ? '#ef4444' : colors.humColor }}
                             >
-                                {locationData.humidity}%
+                                {finalHum}%
                             </p>
                         </div>
                     </div>
@@ -700,6 +696,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                             className="px-3 py-1 rounded-full text-xs font-medium"
                             style={{
                                 backgroundColor:
+                                    isOffline ? (isDark ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2') :
                                     locationData.status === 'Normal' ? (isDark ? 'rgba(34, 197, 94, 0.15)' : '#dcfce7') :
                                         locationData.status === 'Hot' ? (isDark ? 'rgba(239, 68, 68, 0.15)' : '#fee2e2') :
                                             locationData.status === 'Warm' ? (isDark ? 'rgba(249, 115, 22, 0.15)' : '#ffedd5') :
@@ -707,6 +704,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                                                     locationData.status === 'High Humidity' ? (isDark ? 'rgba(59, 130, 246, 0.15)' : '#dbeafe') :
                                                         (isDark ? 'rgba(107, 114, 128, 0.15)' : '#f3f4f6'),
                                 color:
+                                    isOffline ? (isDark ? '#f87171' : '#b91c1c') :
                                     locationData.status === 'Normal' ? (isDark ? '#4ade80' : '#15803d') :
                                         locationData.status === 'Hot' ? (isDark ? '#f87171' : '#b91c1c') :
                                             locationData.status === 'Warm' ? (isDark ? '#fb923c' : '#c2410c') :
@@ -715,7 +713,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                                                         colors.textSecondary
                             }}
                         >
-                            {locationData.status}
+                            {isOffline ? 'NG' : locationData.status}
                         </span>
                     </div>
                 </div>
