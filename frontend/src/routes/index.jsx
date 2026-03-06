@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from './PrivateRoute';
+import { useAuthStore } from '../store/useAuthStore';
 
 // Lazy load pages
 import { lazy, Suspense } from 'react';
@@ -7,6 +8,7 @@ import { lazy, Suspense } from 'react';
 const HomePage = lazy(() => import('../features/home/pages/HomePage'));
 const DashboardPage = lazy(() => import('../features/dashboard/pages/DashboardPage'));
 const NotFoundPage = lazy(() => import('../features/common/pages/NotFoundPage'));
+
 // Loading component
 const Loading = () => (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -17,12 +19,31 @@ const Loading = () => (
     </div>
 );
 
+/**
+ * Public route wrapper - redirects to dashboard if already authenticated
+ */
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated } = useAuthStore();
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
+
 const AppRoutes = () => {
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <HomePage />
+            </PublicRoute>
+          }
+        />
         
         {/* Protected routes */}
         <Route
@@ -43,3 +64,4 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
+

@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 const { ROLES } = require('../constants/roles');
 const { STATUSES } = require('../constants/statuses');
+const { FACTORIES } = require('../constants/factories');
 
 const User = sequelize.define('User', {
     id: {
@@ -32,6 +33,51 @@ const User = sequelize.define('User', {
     status: {
         type: DataTypes.ENUM(...Object.values(STATUSES)),
         defaultValue: STATUSES.ACTIVE,
+    },
+    factory: {
+        type: DataTypes.ENUM(...Object.values(FACTORIES)),
+        allowNull: true,
+        defaultValue: null,
+    },
+    fridgeTempMin: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: null,
+    },
+    fridgeTempMax: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: null,
+    },
+    fridgeHumMin: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: null,
+    },
+    fridgeHumMax: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: null,
+    },
+    roomTempMin: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: null,
+    },
+    roomTempMax: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: null,
+    },
+    roomHumMin: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: null,
+    },
+    roomHumMax: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: null,
     },
     avatar: {
         type: DataTypes.STRING(500),

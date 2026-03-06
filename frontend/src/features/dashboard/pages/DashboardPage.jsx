@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '../../../components/layout';
 import { CustomSelect } from '../../../components/ui';
+import api from '../../../services/api';
 import {
   LocationCard,
   LocationListItem,
@@ -25,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useDashboardStore } from '../store/useDashboardStore';
 import { groupByLocationPrefix } from '../utils/groupUtils';
+import { useSettingsStore } from '../../../store';
 
 // Calculate age in minutes from ISO timestamp (used for sorting/filtering)
 const getAgeInMinutes = (isoDate) => {
@@ -38,6 +40,7 @@ const getAgeInMinutes = (isoDate) => {
 const DashboardPage = () => {
   const { t } = useTranslation();
   const { locations, isLoading, error, fetchLocations, refreshLocations } = useDashboardStore();
+  const loadFromUser = useSettingsStore((s) => s.loadFromUser);
   const [view, setView] = useState('grid');
   const [search, setSearch] = useState('');
   const [filterFactory, setFilterFactory] = useState(
@@ -54,13 +57,36 @@ const DashboardPage = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Hardcoded factory options — always visible
-  const factoryOptions = ['V0', 'V4', 'V5'];
+  const factoryOptions = ['D2','V0', 'V4', 'V5'];
 
   // Fetch data on mount with saved factory filter
   useEffect(() => {
     fetchLocations(filterFactory);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchLocations]);
+
+  // Always fetch latest user settings on dashboard load
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchMe = async () => {
+      try {
+        const res = await api.get('/auth/me');
+        const user = res.data?.data?.user;
+        if (!cancelled && user) {
+          loadFromUser(user);
+        }
+      } catch (e) {
+        // axios interceptor handles 401 (logout). Keep dashboard resilient.
+        console.error('Failed to load user settings:', e);
+      }
+    };
+
+    fetchMe();
+    return () => {
+      cancelled = true;
+    };
+  }, [loadFromUser]);
 
   // Extract unique location prefixes for line filter
   const lineOptions = useMemo(() => {
@@ -463,7 +489,9 @@ const DashboardPage = () => {
                           locationId={loc.locationId}
                           temperature={loc.temperature}
                           humidity={Math.round(loc.humidity)}
+                          sensorType={loc.sensorType}
                           lastUpdate={loc.lastUpdate}
+                          lastUpdateISO={loc.lastUpdateISO}
                           status={loc.status}
                           onClick={() => handleLocationClick(loc)}
                         />
@@ -495,6 +523,9 @@ const DashboardPage = () => {
                           locationId={loc.locationId}
                           temperature={loc.temperature}
                           humidity={Math.round(loc.humidity)}
+                          sensorType={loc.sensorType}
+                          lastUpdate={loc.lastUpdate}
+                          lastUpdateISO={loc.lastUpdateISO}
                           chartData={loc.chartData}
                           onClick={() => handleLocationClick(loc)}
                         />

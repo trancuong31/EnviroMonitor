@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, RotateCcw, Save, Thermometer, Droplets, Info, CircleAlert } from 'lucide-react';
+import { X, RotateCcw, Save, Thermometer, Droplets, Info, CircleAlert, Loader2 } from 'lucide-react';
 import { useSettingsStore, DEFAULT_THRESHOLDS } from '../../../store';
-
+import { toast } from 'sonner';
 /**
  * Range Slider with Number Input - modern dual-thumb style visualization
  */
@@ -93,37 +93,63 @@ const RangeSliderInput = ({
 };
 
 /**
+ * Tab button for switching between Fridge and Room settings
+ */
+const TabButton = ({ active, icon, label, onClick }) => (
+    <button
+        onClick={onClick}
+        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${active
+            ? 'bg-primary text-white shadow-lg shadow-primary/25'
+            : 'bg-surface-alt text-text-muted hover:text-text hover:bg-surface-hover'
+            }`}
+    >
+        <span className="text-base">{icon}</span>
+        {label}
+    </button>
+);
+
+/**
  * ThresholdSettingsModal - Modal for configuring temperature and humidity warning thresholds
- * Features: Range sliders with number inputs, tooltip info
+ * Features: Tabbed UI (Fridge / Room), range sliders with number inputs, saves to DB via API
  */
 const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     const { t } = useTranslation();
-    const { thresholds, updateThresholds } = useSettingsStore();
+    const { fridge, room, updateSettings, isLoading } = useSettingsStore();
     const [showTooltip, setShowTooltip] = useState(false);
+    const [activeTab, setActiveTab] = useState('fridge');
 
     // Local state for form inputs
-    const [formValues, setFormValues] = useState(thresholds);
+    const [formValues, setFormValues] = useState({ fridge, room });
     const [errors, setErrors] = useState({ temp: false, hum: false });
+    const [saveMessage, setSaveMessage] = useState(null);
 
     // Sync form values when modal opens or thresholds change
     useEffect(() => {
         if (isOpen) {
-            setFormValues(thresholds);
+            setFormValues({ fridge, room });
             setErrors({ temp: false, hum: false });
+            setSaveMessage(null);
         }
-    }, [isOpen, thresholds]);
+    }, [isOpen, fridge, room]);
+
+    // Get current tab values
+    const currentValues = formValues[activeTab];
 
     // Handle input changes
     const handleChange = (field, value) => {
-        setFormValues(prev => ({ ...prev, [field]: value }));
-        // Clear errors when user makes changes
+        setFormValues(prev => ({
+            ...prev,
+            [activeTab]: { ...prev[activeTab], [field]: value },
+        }));
         setErrors({ temp: false, hum: false });
+        setSaveMessage(null);
     };
 
     // Validate thresholds
     const validateThresholds = () => {
-        const tempError = formValues.tempMax <= formValues.tempMin;
-        const humError = formValues.humMax <= formValues.humMin;
+        const vals = formValues[activeTab];
+        const tempError = vals.tempMax <= vals.tempMin;
+        const humError = vals.humMax <= vals.humMin;
 
         setErrors({ temp: tempError, hum: humError });
 
@@ -131,17 +157,33 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     };
 
     // Handle save with validation
-    const handleSave = () => {
-        if (validateThresholds()) {
-            updateThresholds(formValues);
+    const handleSave = async () => {
+        if (!validateThresholds()) return;
+
+        const result = await updateSettings(activeTab, formValues[activeTab]);
+        if (result.success) {
+            toast.success(t('settings.saveSuccess', 'Lưu cài đặt thành công'));
             onClose();
+        } else {
+            toast.error(t('settings.saveError', 'Lỗi khi lưu cài đặt'));
         }
     };
 
     // Handle reset to defaults
     const handleReset = () => {
-        setFormValues(DEFAULT_THRESHOLDS);
+        setFormValues(prev => ({
+            ...prev,
+            [activeTab]: { ...DEFAULT_THRESHOLDS[activeTab] },
+        }));
         setErrors({ temp: false, hum: false });
+        setSaveMessage(null);
+    };
+
+    // Handle tab switch
+    const handleTabSwitch = (tab) => {
+        setActiveTab(tab);
+        setErrors({ temp: false, hum: false });
+        setSaveMessage(null);
     };
 
     // Handle backdrop click
@@ -150,6 +192,9 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
             onClose();
         }
     };
+
+    // Temperature slider range varies by type
+    const tempMaxRange = activeTab === 'fridge' ? 20 : 50;
 
     if (!isOpen) return null;
 
@@ -196,6 +241,22 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                     </div>
                 </div>
 
+                {/* Tab Buttons */}
+                <div className="flex gap-2 px-6 pt-5 pb-2">
+                    <TabButton
+                        active={activeTab === 'fridge'}
+                        icon=""
+                        label={t('settings.fridgeTab', 'Tủ lạnh')}
+                        onClick={() => handleTabSwitch('fridge')}
+                    />
+                    <TabButton
+                        active={activeTab === 'room'}
+                        icon=""
+                        label={t('settings.roomTab', 'Nhiệt độ thường')}
+                        onClick={() => handleTabSwitch('room')}
+                    />
+                </div>
+
                 {/* Body */}
                 <div className="p-6 space-y-8">
                     {/* Temperature thresholds */}
@@ -210,20 +271,20 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                         <div className="grid grid-cols-2 gap-6">
                             <RangeSliderInput
                                 label={t('settings.min', 'Tối thiểu')}
-                                value={formValues.tempMin}
+                                value={currentValues.tempMin}
                                 onChange={(val) => handleChange('tempMin', val)}
-                                min={0}
-                                max={40}
+                                min={activeTab === 'fridge' ? -10 : 0}
+                                max={tempMaxRange}
                                 step={0.5}
                                 unit="°C"
                                 color="temp"
                             />
                             <RangeSliderInput
                                 label={t('settings.max', 'Tối đa')}
-                                value={formValues.tempMax}
+                                value={currentValues.tempMax}
                                 onChange={(val) => handleChange('tempMax', val)}
-                                min={0}
-                                max={50}
+                                min={activeTab === 'fridge' ? -10 : 0}
+                                max={tempMaxRange}
                                 step={0.5}
                                 unit="°C"
                                 color="temp"
@@ -235,20 +296,20 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                             {/* Safe zone highlight */}
                             <div
                                 className="absolute top-0 h-full bg-surface/80 rounded-l-full"
-                                style={{ left: 0, width: `${(formValues.tempMin / 50) * 100}%` }}
+                                style={{ left: 0, width: `${((currentValues.tempMin - (activeTab === 'fridge' ? -10 : 0)) / tempMaxRange) * 100}%` }}
                             />
                             <div
                                 className="absolute top-0 h-full bg-surface/80 rounded-r-full"
-                                style={{ left: `${(formValues.tempMax / 50) * 100}%`, right: 0 }}
+                                style={{ left: `${((currentValues.tempMax - (activeTab === 'fridge' ? -10 : 0)) / tempMaxRange) * 100}%`, right: 0 }}
                             />
                             {/* Markers */}
                             <div
                                 className="absolute top-0 w-0.5 h-full bg-temp shadow-lg"
-                                style={{ left: `${(formValues.tempMin / 50) * 100}%` }}
+                                style={{ left: `${((currentValues.tempMin - (activeTab === 'fridge' ? -10 : 0)) / tempMaxRange) * 100}%` }}
                             />
                             <div
                                 className="absolute top-0 w-0.5 h-full bg-temp shadow-lg"
-                                style={{ left: `${(formValues.tempMax / 50) * 100}%` }}
+                                style={{ left: `${((currentValues.tempMax - (activeTab === 'fridge' ? -10 : 0)) / tempMaxRange) * 100}%` }}
                             />
                         </div>
                         <div className="flex justify-between text-[10px] text-text-muted/60">
@@ -280,7 +341,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                         <div className="grid grid-cols-2 gap-6">
                             <RangeSliderInput
                                 label={t('settings.min', 'Tối thiểu')}
-                                value={formValues.humMin}
+                                value={currentValues.humMin}
                                 onChange={(val) => handleChange('humMin', val)}
                                 min={0}
                                 max={100}
@@ -290,7 +351,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                             />
                             <RangeSliderInput
                                 label={t('settings.max', 'Tối đa')}
-                                value={formValues.humMax}
+                                value={currentValues.humMax}
                                 onChange={(val) => handleChange('humMax', val)}
                                 min={0}
                                 max={100}
@@ -305,20 +366,20 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                             {/* Safe zone highlight */}
                             <div
                                 className="absolute top-0 h-full bg-surface/80 rounded-l-full"
-                                style={{ left: 0, width: `${formValues.humMin}%` }}
+                                style={{ left: 0, width: `${currentValues.humMin}%` }}
                             />
                             <div
                                 className="absolute top-0 h-full bg-surface/80 rounded-r-full"
-                                style={{ left: `${formValues.humMax}%`, right: 0 }}
+                                style={{ left: `${currentValues.humMax}%`, right: 0 }}
                             />
                             {/* Markers */}
                             <div
                                 className="absolute top-0 w-0.5 h-full bg-humidity shadow-lg"
-                                style={{ left: `${formValues.humMin}%` }}
+                                style={{ left: `${currentValues.humMin}%` }}
                             />
                             <div
                                 className="absolute top-0 w-0.5 h-full bg-humidity shadow-lg"
-                                style={{ left: `${formValues.humMax}%` }}
+                                style={{ left: `${currentValues.humMax}%` }}
                             />
                         </div>
                         <div className="flex justify-between text-[10px] text-text-muted/60">
@@ -337,13 +398,24 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                             </div>
                         )}
                     </div>
+
+                    {/* Save message */}
+                    {saveMessage && (
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg animate-fade-in ${saveMessage.type === 'success'
+                            ? 'bg-green-500/10 border border-green-500/20 text-green-500'
+                            : 'bg-red-500/10 border border-red-500/20 text-red-500'
+                            }`}>
+                            <span className="text-xs font-medium">{saveMessage.text}</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Footer */}
                 <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-surface-alt/50">
                     <button
                         onClick={handleReset}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors"
+                        disabled={isLoading}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors disabled:opacity-50"
                     >
                         <RotateCcw className="w-4 h-4" />
                         {t('settings.reset', 'Đặt lại mặc định')}
@@ -351,16 +423,27 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                     <div className="flex gap-2">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors"
+                            disabled={isLoading}
+                            className="px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors disabled:opacity-50"
                         >
                             {t('settings.cancel', 'Hủy')}
                         </button>
                         <button
                             onClick={handleSave}
-                            className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-primary/25 transition-all"
+                            disabled={isLoading}
+                            className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-primary/25 transition-all disabled:opacity-50"
                         >
-                            <Save className="w-4 h-4" />
-                            {t('settings.save', 'Lưu')}
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    {t('settings.savingSettings', 'Đang lưu...')}
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-4 h-4" />
+                                    {t('settings.save', 'Lưu')}
+                                </>
+                            )}
                         </button>
                     </div>
                 </div>

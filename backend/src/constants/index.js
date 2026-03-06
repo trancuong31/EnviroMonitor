@@ -1,6 +1,7 @@
 const { HTTP_CODES } = require('./httpCodes');
 const { ROLES, isValidRole } = require('./roles');
 const { STATUSES, isValidStatus } = require('./statuses');
+const { FACTORIES, isValidFactory } = require('./factories');
 
 module.exports = {
     HTTP_CODES,
@@ -8,4 +9,6 @@ module.exports = {
     isValidRole,
     STATUSES,
     isValidStatus,
+    FACTORIES,
+    isValidFactory,
 };

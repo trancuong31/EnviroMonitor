@@ -18,6 +18,7 @@ const transformLogsToLocations = (logs) => {
         location: log.tc_name,
         temperature: log.value_0,
         humidity: log.value_1,
+        sensorType: log.sensorType || 'ROOM',
         lastUpdate: formatRelativeTime(log.log_date),
         lastUpdateISO: log.log_date,
         status: i18next.t('dashboard.normal', 'Normal'),

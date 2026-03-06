@@ -136,6 +136,11 @@
     "dry": "Khô",
     "humid": "Ẩm",
     "optimal": "Tối ưu",
-    "errorMaxMin": "Giá trị tối đa phải lớn hơn tối thiểu"
+    "errorMaxMin": "Giá trị tối đa phải lớn hơn tối thiểu",
+    "fridgeTab": "Tủ lạnh",
+    "roomTab": "Nhiệt độ thường",
+    "savingSettings": "Đang lưu...",
+    "saveSuccess": "Lưu cài đặt thành công",
+    "saveError": "Lỗi khi lưu cài đặt"
   }
 }

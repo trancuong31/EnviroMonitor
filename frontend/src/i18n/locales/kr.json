@@ -136,6 +136,11 @@
     "dry": "건조",
     "humid": "다습",
     "optimal": "적정",
-    "errorMaxMin": "최댓값은 최솟값보다 커야 합니다"
+    "errorMaxMin": "최댓값은 최솟값보다 커야 합니다",
+    "fridgeTab": "냉장고",
+    "roomTab": "실내 온도",
+    "savingSettings": "저장 중...",
+    "saveSuccess": "설정이 저장되었습니다",
+    "saveError": "설정 저장 오류"
   }
 }

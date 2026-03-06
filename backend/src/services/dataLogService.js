@@ -19,6 +19,20 @@ const getLogs = async ({ factory } = {}) => {
     }
 
     const logs = await TLog.findAll({
+        attributes: {
+            include: [
+                // Attach sensorType (FRIDGE/ROOM) from TYPE table based on tc_name mapping
+                [
+                    sequelize.literal(`(
+                        SELECT TT.\`TYPE\`
+                        FROM \`TYPE\` TT
+                        WHERE TT.\`TC_NAME\` = TLog.tc_name
+                        LIMIT 1
+                    )`),
+                    'sensorType',
+                ],
+            ],
+        },
         where: whereConditions,
         order: [['tc_name', 'ASC']],
         limit: 20

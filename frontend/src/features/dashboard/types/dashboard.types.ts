@@ -7,6 +7,7 @@ export interface ApiLogEntry {
     id: number;
     logidx: string;
     tc_name: string;
+    sensorType?: 'FRIDGE' | 'ROOM';
     log_date: string;
     value_0: number;
     value_1: number;
@@ -28,6 +29,7 @@ export interface Location {
     location: string;
     temperature: number;
     humidity: number;
+    sensorType?: 'FRIDGE' | 'ROOM';
     lastUpdate: string;
     status: string;
     chartData: number[];

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '../services/api';
+import { useSettingsStore } from './useSettingsStore';
 
 /**
  * Auth store using Zustand
@@ -26,7 +27,8 @@ export const useAuthStore = create(
                 set({ isLoading: true, error: null });
                 try {
                     const response = await api.post('/auth/login', { email, password });
-                    const { user, token } = response.data.data || response.data;
+                    const token = response.data.token;
+                    const user = response.data.data.user;
 
                     set({
                         user,
@@ -34,6 +36,9 @@ export const useAuthStore = create(
                         isAuthenticated: true,
                         isLoading: false,
                     });
+
+                    // Hydrate settings from user data
+                    useSettingsStore.getState().loadFromUser(user);
 
                     return { success: true };
                 } catch (error) {
@@ -56,6 +61,9 @@ export const useAuthStore = create(
                         isAuthenticated: true,
                         isLoading: false,
                     });
+
+                    // Hydrate settings from user data
+                    useSettingsStore.getState().loadFromUser(user);
 
                     return { success: true };
                 } catch (error) {

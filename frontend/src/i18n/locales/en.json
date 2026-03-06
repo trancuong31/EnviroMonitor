@@ -137,6 +137,11 @@
     "dry": "Dry",
     "humid": "Humid",
     "optimal": "Optimal",
-    "errorMaxMin": "Maximum must be greater than minimum"
+    "errorMaxMin": "Maximum must be greater than minimum",
+    "fridgeTab": "Fridge",
+    "roomTab": "Room Temperature",
+    "savingSettings": "Saving...",
+    "saveSuccess": "Settings saved successfully",
+    "saveError": "Error saving settings"
   }
 }
