@@ -33,20 +33,19 @@ const buildAlertEmail = (alerts, thresholds, userName, factoryName) => {
         const humBg = a.humStatus !== 'normal' ? '#fef2f2' : '#f0fdf4';
         const humColor = a.humStatus !== 'normal' ? '#dc2626' : '#16a34a';
 
-        const typeLabel = a.sensorType === 'FRIDGE' ? '🧊 Tủ lạnh' : '🏠 Phòng';
+        const typeLabel = a.sensorType === 'FRIDGE' ? 'Tủ lạnh' : 'Phòng';
 
-        const tempLabel = a.tempStatus === 'high' ? '🔴 Vượt UCL'
-            : a.tempStatus === 'low' ? '🔵 Dưới LCL'
-                : '✅ Bình thường';
+        const tempLabel = a.tempStatus === 'high' ? 'Vượt UCL'
+            : a.tempStatus === 'low' ? 'Dưới LCL'
+                : 'Bình thường';
 
-        const humLabel = a.humStatus === 'high' ? '🔴 Vượt UCL'
-            : a.humStatus === 'low' ? '🔵 Dưới LCL'
-                : '✅ Bình thường';
+        const humLabel = a.humStatus === 'high' ? 'Vượt UCL'
+            : a.humStatus === 'low' ? 'Dưới LCL'
+                : 'Bình thường';
 
         return `
         <tr style="border-bottom: 1px solid #e5e7eb;">
             <td style="padding: 12px 16px; font-size: 14px; color: #374151; text-align: center;">${i + 1}</td>
-            <td style="padding: 12px 16px; font-size: 14px; font-weight: 600; color: #1f2937;">${a.logidx}</td>
             <td style="padding: 12px 16px; font-size: 14px; color: #374151;">${a.tc_name || '—'}</td>
             <td style="padding: 12px 16px; font-size: 13px; color: #374151; text-align: center;">${typeLabel}</td>
             <td style="padding: 12px 16px; font-size: 14px; font-weight: 700; color: ${tempColor}; text-align: center;">${a.value_0 != null ? a.value_0.toFixed(1) : '—'}°C</td>
@@ -61,7 +60,7 @@ const buildAlertEmail = (alerts, thresholds, userName, factoryName) => {
         </tr>`;
     }).join('');
 
-    const subject = `⚠️ [EnviroMonitor] Cảnh báo ${factoryName} — ${totalAlerts} cảm biến vượt ngưỡng (${now})`;
+    const subject = `[EnviroMonitor] Cảnh báo ${factoryName} — ${totalAlerts} cảm biến vượt ngưỡng (${now})`;
 
     const html = `
 <!DOCTYPE html>
@@ -74,8 +73,8 @@ const buildAlertEmail = (alerts, thresholds, userName, factoryName) => {
     <div style="max-width: 960px; margin: 0 auto; padding: 24px;">
         
         <!-- Header -->
-        <div style="background: linear-gradient(135deg, #dc2626, #f97316); border-radius: 16px 16px 0 0; padding: 32px; text-align: center;">
-            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700;">⚠️ CẢNH BÁO MÔI TRƯỜNG</h1>
+        <div style="background-color: #dc2626; border-radius: 16px 16px 0 0; padding: 32px; text-align: center;">
+            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700;">CẢNH BÁO MÔI TRƯỜNG</h1>
             <p style="margin: 8px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">Hệ thống EnviroMonitor phát hiện cảm biến vượt ngưỡng an toàn</p>
         </div>
 
@@ -112,7 +111,6 @@ const buildAlertEmail = (alerts, thresholds, userName, factoryName) => {
                 <thead>
                     <tr style="background: #f8fafc;">
                         <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border-bottom: 2px solid #e5e7eb;">STT</th>
-                        <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; border-bottom: 2px solid #e5e7eb;">Mã vị trí</th>
                         <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; border-bottom: 2px solid #e5e7eb;">Tên vị trí</th>
                         <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border-bottom: 2px solid #e5e7eb;">Loại</th>
                         <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border-bottom: 2px solid #e5e7eb;">Nhiệt độ</th>
@@ -133,7 +131,7 @@ const buildAlertEmail = (alerts, thresholds, userName, factoryName) => {
             <p style="margin: 0 0 12px; font-size: 13px; font-weight: 700; color: #92400e;">📋 Ngưỡng an toàn cá nhân của bạn:</p>
             <table style="width: 100%;" cellpadding="0" cellspacing="0">
                 <tr>
-                    <td colspan="2" style="padding: 6px 0; font-size: 13px; font-weight: 600; color: #78350f;">🧊 Tủ lạnh (Fridge)</td>
+                    <td colspan="2" style="padding: 6px 0; font-size: 13px; font-weight: 600; color: #78350f;">Tủ lạnh (Fridge)</td>
                 </tr>
                 <tr>
                     <td style="padding: 4px 0 4px 16px; font-size: 13px; color: #78350f;">
@@ -144,7 +142,7 @@ const buildAlertEmail = (alerts, thresholds, userName, factoryName) => {
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="padding: 10px 0 6px; font-size: 13px; font-weight: 600; color: #78350f;">🏠 Phòng (Room)</td>
+                    <td colspan="2" style="padding: 10px 0 6px; font-size: 13px; font-weight: 600; color: #78350f;">Phòng (Room)</td>
                 </tr>
                 <tr>
                     <td style="padding: 4px 0 4px 16px; font-size: 13px; color: #78350f;">

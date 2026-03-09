@@ -44,7 +44,11 @@
     "alreadyHaveAccount": "Already have an account?",
     "loginSuccess": "Successfully signed in",
     "registerSuccess": "Successfully registered",
-    "register": "Register"
+    "register": "Register",
+    "selectFactory": "Select factory",
+    "enterFactory": "Enter factory",
+    "factory": "Factory",
+    "pleaseSelectFactory": "Please select factory"
   },
   "dashboard": {
     "title": "Temperature & Humidity Monitor",

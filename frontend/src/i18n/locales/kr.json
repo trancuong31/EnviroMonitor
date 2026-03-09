@@ -44,7 +44,11 @@
     "alreadyHaveAccount": "이미 계정이 있으신가요?",
     "loginSuccess": "로그인 성공",
     "registerSuccess": "회원가입 성공",
-    "register": "등록"
+    "register": "등록",
+    "selectFactory": "공장 선택",
+    "enterFactory": "공장 입력",
+    "factory": "공장",
+    "pleaseSelectFactory": "공장을 선택해주세요"
   },
   "dashboard": {
     "title": "온습도 모니터링",

@@ -5,6 +5,8 @@ import { useAuthStore } from '../../../store';
 import { Button } from '../../../components/ui';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
+import CustomSelect from '../../../components/ui/CustomSelect/CustomSelect';
+
 /**
  * Auth Modal Component - Login and Register
  */
@@ -18,12 +20,13 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
         email: '',
         password: '',
         confirmPassword: '',
+        factory: '',
     });
 
     // Reset form when modal closes or mode changes
     useEffect(() => {
         if (!isOpen) {
-            setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+            setFormData({ name: '', email: '', password: '', confirmPassword: '', factory: '' });
             clearError();
         }
     }, [isOpen, clearError]);
@@ -46,7 +49,6 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
             document.body.style.overflow = 'unset';
         };
     }, [isOpen, onClose]);
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -56,10 +58,14 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         let result;
-        
+
         if (mode === 'login') {
             result = await login(formData.email, formData.password);
         } else {
+            if (!formData.factory) {
+                toast.error(t('auth.pleaseSelectFactory'));
+                return;
+            }
             result = await register(formData);
         }
 
@@ -72,7 +78,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
 
     const toggleMode = () => {
         setMode((prev) => (prev === 'login' ? 'register' : 'login'));
-        setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+        setFormData({ name: '', email: '', password: '', confirmPassword: '', factory: '' });
         clearError();
     };
 
@@ -154,7 +160,37 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
                                 className={inputClasses}
                             />
                         </div>
-
+                        {mode === 'register' && (
+                            <div className="flex flex-col gap-2">
+                                <label htmlFor="factory" className="text-sm font-medium text-text-muted">
+                                    {t('auth.factory')}
+                                </label>
+                                <CustomSelect
+                                    id="factory"
+                                    name="factory"
+                                    value={formData.factory}
+                                    onChange={(value) =>
+                                        handleChange({
+                                            target: {
+                                                name: "factory",
+                                                value: value
+                                            }
+                                        })
+                                    }
+                                    placeholder={t('auth.selectFactory')}
+                                    options={[
+                                        { value: 'D2', label: 'D2' },
+                                        { value: 'V0', label: 'V0' },
+                                        { value: 'V1', label: 'V1' },
+                                        { value: 'V2', label: 'V2' },
+                                        { value: 'V4', label: 'V4' },
+                                        { value: 'V5', label: 'V5' },
+                                    ]}
+                                    required
+                                    className={inputClasses}
+                                />
+                            </div>
+                        )}
                         <div className="flex flex-col gap-2">
                             <label htmlFor="password" className="text-sm font-medium text-text-muted">
                                 {t('auth.password')}

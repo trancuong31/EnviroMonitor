@@ -42,42 +42,42 @@ const User = sequelize.define('User', {
     fridgeTempMin: {
         type: DataTypes.FLOAT,
         allowNull: true,
-        defaultValue: null,
+        defaultValue: 2,
     },
     fridgeTempMax: {
         type: DataTypes.FLOAT,
         allowNull: true,
-        defaultValue: null,
+        defaultValue: 10,
     },
     fridgeHumMin: {
         type: DataTypes.FLOAT,
         allowNull: true,
-        defaultValue: null,
+        defaultValue: 50,
     },
     fridgeHumMax: {
         type: DataTypes.FLOAT,
         allowNull: true,
-        defaultValue: null,
+        defaultValue: 100,
     },
     roomTempMin: {
         type: DataTypes.FLOAT,
         allowNull: true,
-        defaultValue: null,
+        defaultValue: 18,
     },
     roomTempMax: {
         type: DataTypes.FLOAT,
         allowNull: true,
-        defaultValue: null,
+        defaultValue: 28,
     },
     roomHumMin: {
         type: DataTypes.FLOAT,
         allowNull: true,
-        defaultValue: null,
+        defaultValue: 40,
     },
     roomHumMax: {
         type: DataTypes.FLOAT,
         allowNull: true,
-        defaultValue: null,
+        defaultValue: 60,
     },
     avatar: {
         type: DataTypes.STRING(500),

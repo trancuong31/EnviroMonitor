@@ -44,7 +44,11 @@
     "alreadyHaveAccount": "Đã có tài khoản?",
     "loginSuccess": "Đăng nhập thành công",
     "registerSuccess": "Đăng ký thành công",
-    "register": "Đăng ký"
+    "register": "Đăng ký",
+    "selectFactory": "Chọn xưởng",
+    "enterFactory": "Nhập xưởng",
+    "factory": "Xưởng",
+    "pleaseSelectFactory": " Vui lòng chọn nhà máy"
   },
   "dashboard": {
     "title": "Giám sát Nhiệt độ & Độ ẩm",

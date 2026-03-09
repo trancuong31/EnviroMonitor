@@ -9,7 +9,7 @@ const env = require('../config/env');
  * Register a new user
  */
 const register = async (userData) => {
-    const { email, password, name } = userData;
+    const { email, password, name, factory } = userData;
 
     // Check if user exists
     const existingUser = await User.findOne({ where: { email } });
@@ -25,6 +25,7 @@ const register = async (userData) => {
         email,
         password: hashedPassword,
         name,
+        factory,
     });
 
     // Generate token
