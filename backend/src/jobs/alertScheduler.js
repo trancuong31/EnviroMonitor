@@ -193,8 +193,8 @@ const startAlertScheduler = () => {
         return;
     }
 
-    // Run every minute
-    const cronExpression = '* * * * *';
+    // Run every hour
+    const cronExpression = '0 * * * *';
 
     cron.schedule(cronExpression, () => {
         logger.info('[AlertScheduler] Scheduled check triggered');

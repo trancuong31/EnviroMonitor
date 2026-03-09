@@ -1,6 +1,7 @@
 const User = require('./User');
 const TLog = require('./TLog');
 const Type = require('./Type');
+const Layout = require('./Layout');
 // Define associations here
 // Example:
 // User.hasMany(Post);
@@ -10,4 +11,5 @@ module.exports = {
     User,
     TLog,
     Type,
+    Layout,
 };

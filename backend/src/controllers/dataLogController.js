@@ -28,7 +28,20 @@ const getLogsByDateRange = catchAsync(async (req, res) => {
     });
 });
 
+/**
+ * get list layout
+ */
+const getListLayout = catchAsync(async (req, res) => {
+    const layouts = await dataLogs.getListLayout();
+
+    res.status(HTTP_CODES.OK).json({
+        status: 'success',
+        data: { layouts },
+    });
+});
+
 module.exports = {
     getLogs,
     getLogsByDateRange,
+    getListLayout,
 };

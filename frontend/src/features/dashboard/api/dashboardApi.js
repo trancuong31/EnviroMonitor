@@ -47,3 +47,8 @@ export const getAlerts = async () => {
     const response = await api.get('/alerts');
     return response.data;
 };
+
+export const getListLayout = async () => {
+    const response = await api.get('/dataLogs/getListLayout');
+    return response.data;
+};

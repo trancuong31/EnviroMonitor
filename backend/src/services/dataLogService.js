@@ -1,4 +1,4 @@
-const { TLog } = require('../models');
+const { TLog, Layout } = require('../models');
 const { sequelize } = require('../config/database');
 const { Op } = require('sequelize');
 
@@ -55,7 +55,12 @@ const getLogsByDateRange = async (logidx, startDate, endDate) => {
     return logs;
 };
 
+const getListLayout = async () => {
+    const layouts = await Layout.findAll();
+    return layouts;
+};
 module.exports = {
     getLogs,
     getLogsByDateRange,
+    getListLayout
 };

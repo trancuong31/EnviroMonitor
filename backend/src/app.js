@@ -9,11 +9,16 @@ const { HTTP_CODES } = require('./constants/httpCodes');
 const path = require("path");
 const app = express();
 
-// Security middlewares
-app.use(helmet({
-    contentSecurityPolicy: false,
+// Security middlewares`
+app.use(
+    helmet({
+        contentSecurityPolicy: false,
+        crossOriginResourcePolicy: false
+    })
+);
+app.use(cors({
+    origin: "*"
 }));
-app.use(cors());
 
 // Rate limiting
 app.use('/api', apiLimiter);
