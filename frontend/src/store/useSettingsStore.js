@@ -17,6 +17,7 @@ export const DEFAULT_THRESHOLDS = {
         humMin: 40,
         humMax: 60,
     },
+    ng: 15,
 };
 
 /**
@@ -38,6 +39,7 @@ const extractThresholds = (user) => {
             humMin: user.roomHumMin ?? DEFAULT_THRESHOLDS.room.humMin,
             humMax: user.roomHumMax ?? DEFAULT_THRESHOLDS.room.humMax,
         },
+        ng: user.ng ?? DEFAULT_THRESHOLDS.ng,
     };
 };
 
@@ -48,6 +50,7 @@ const extractThresholds = (user) => {
 export const useSettingsStore = create((set) => ({
     fridge: { ...DEFAULT_THRESHOLDS.fridge },
     room: { ...DEFAULT_THRESHOLDS.room },
+    ng: DEFAULT_THRESHOLDS.ng,
     isLoading: false,
 
     /**
@@ -55,25 +58,30 @@ export const useSettingsStore = create((set) => ({
      */
     loadFromUser: (user) => {
         const thresholds = extractThresholds(user);
-        set({ fridge: thresholds.fridge, room: thresholds.room });
+        set({ fridge: thresholds.fridge, room: thresholds.room, ng: thresholds.ng });
     },
 
     /**
      * Update thresholds and persist to DB via API
-     * @param {'fridge' | 'room'} type
-     * @param {{ tempMin?: number, tempMax?: number, humMin?: number, humMax?: number }} values
+     * @param {'fridge' | 'room' | 'ng'} type
+     * @param {object} values
+     * @param {object} [rootValues={}]
      * @returns {Promise<{ success: boolean, error?: string }>}
      */
-    updateSettings: async (type, values) => {
+    updateSettings: async (type, values, rootValues = {}) => {
         set({ isLoading: true });
 
         // Map local field names to API field names
-        const prefix = type === 'fridge' ? 'fridge' : 'room';
-        const payload = {};
-        if (values.tempMin !== undefined) payload[`${prefix}TempMin`] = values.tempMin;
-        if (values.tempMax !== undefined) payload[`${prefix}TempMax`] = values.tempMax;
-        if (values.humMin !== undefined) payload[`${prefix}HumMin`] = values.humMin;
-        if (values.humMax !== undefined) payload[`${prefix}HumMax`] = values.humMax;
+        let payload = { ...rootValues };
+        if (type !== 'ng') {
+            const prefix = type === 'fridge' ? 'fridge' : 'room';
+            if (values.tempMin !== undefined) payload[`${prefix}TempMin`] = values.tempMin;
+            if (values.tempMax !== undefined) payload[`${prefix}TempMax`] = values.tempMax;
+            if (values.humMin !== undefined) payload[`${prefix}HumMin`] = values.humMin;
+            if (values.humMax !== undefined) payload[`${prefix}HumMax`] = values.humMax;
+        } else {
+             payload.ng = values;
+        }
 
         try {
             const response = await api.put('/users/settings', payload);
@@ -81,13 +89,19 @@ export const useSettingsStore = create((set) => ({
 
             if (user) {
                 const thresholds = extractThresholds(user);
-                set({ fridge: thresholds.fridge, room: thresholds.room, isLoading: false });
+                set({ fridge: thresholds.fridge, room: thresholds.room, ng: thresholds.ng, isLoading: false });
             } else {
                 // Optimistically update local state
-                set((state) => ({
-                    [type]: { ...state[type], ...values },
-                    isLoading: false,
-                }));
+                let nextState = { isLoading: false };
+                if (type !== 'ng') {
+                    nextState[type] = { ...useSettingsStore.getState()[type], ...values };
+                } else {
+                    nextState.ng = values;
+                }
+                if (rootValues.ng !== undefined) {
+                    nextState.ng = rootValues.ng;
+                }
+                set(nextState);
             }
 
             return { success: true };

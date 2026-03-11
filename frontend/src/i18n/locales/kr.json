@@ -145,6 +145,8 @@
     "roomTab": "실내 온도",
     "savingSettings": "저장 중...",
     "saveSuccess": "설정이 저장되었습니다",
-    "saveError": "설정 저장 오류"
+    "saveError": "설정 저장 오류",
+    "offlineThreshold": "오프라인 임계값",
+    "minutes": "분"
   }
 }

@@ -168,8 +168,9 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
 
     const sensorType = locationData?.sensorType || 'ROOM';
     const thresholds = useSettingsStore((s) => (sensorType === 'FRIDGE' ? s.fridge : s.room));
+    const ngThreshold = useSettingsStore((s) => s.ng);
 
-    const isOffline = locationData?.lastUpdateISO ? (Date.now() - new Date(locationData.lastUpdateISO).getTime()) / 60000 > 15 : false;
+    const isOffline = locationData?.lastUpdateISO ? (Date.now() - new Date(locationData.lastUpdateISO).getTime()) / 60000 > ngThreshold : false;
     const finalTemp = isOffline ? 0 : locationData?.temperature;
     const finalHum = isOffline ? 0 : locationData?.humidity;
 

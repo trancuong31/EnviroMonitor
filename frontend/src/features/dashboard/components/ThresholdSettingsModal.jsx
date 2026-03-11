@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, RotateCcw, Save, Thermometer, Droplets, Info, CircleAlert, Loader2 } from 'lucide-react';
+import { X, RotateCcw, Save, Thermometer, Droplets, Info, CircleAlert, Loader2, Clock } from 'lucide-react';
 import { useSettingsStore, DEFAULT_THRESHOLDS } from '../../../store';
 import { toast } from 'sonner';
 /**
@@ -114,23 +114,23 @@ const TabButton = ({ active, icon, label, onClick }) => (
  */
 const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     const { t } = useTranslation();
-    const { fridge, room, updateSettings, isLoading } = useSettingsStore();
+    const { fridge, room, ng, updateSettings, isLoading } = useSettingsStore();
     const [showTooltip, setShowTooltip] = useState(false);
     const [activeTab, setActiveTab] = useState('fridge');
 
     // Local state for form inputs
-    const [formValues, setFormValues] = useState({ fridge, room });
+    const [formValues, setFormValues] = useState({ fridge, room, ng });
     const [errors, setErrors] = useState({ temp: false, hum: false });
     const [saveMessage, setSaveMessage] = useState(null);
 
     // Sync form values when modal opens or thresholds change
     useEffect(() => {
         if (isOpen) {
-            setFormValues({ fridge, room });
+            setFormValues({ fridge, room, ng });
             setErrors({ temp: false, hum: false });
             setSaveMessage(null);
         }
-    }, [isOpen, fridge, room]);
+    }, [isOpen, fridge, room, ng]);
 
     // Get current tab values
     const currentValues = formValues[activeTab];
@@ -160,7 +160,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     const handleSave = async () => {
         if (!validateThresholds()) return;
 
-        const result = await updateSettings(activeTab, formValues[activeTab]);
+        const result = await updateSettings(activeTab, formValues[activeTab], { ng: formValues.ng });
         if (result.success) {
             toast.success(t('settings.saveSuccess', 'Lưu cài đặt thành công'));
             onClose();
@@ -174,6 +174,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
         setFormValues(prev => ({
             ...prev,
             [activeTab]: { ...DEFAULT_THRESHOLDS[activeTab] },
+            ng: DEFAULT_THRESHOLDS.ng,
         }));
         setErrors({ temp: false, hum: false });
         setSaveMessage(null);
@@ -397,6 +398,26 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                                 </span>
                             </div>
                         )}
+                    </div>
+
+                    {/* Offline Threshold */}
+                    <div className="space-y-4 pt-4 border-t border-border">
+                        <div className="flex items-center gap-2 text-text-muted">
+                            <Clock className="w-5 h-5" />
+                            <span className="text-sm font-semibold uppercase tracking-wider">
+                                {t('settings.offlineThreshold', 'Thời gian cảnh báo Offline')}
+                            </span>
+                        </div>
+                        <RangeSliderInput
+                            label={t('settings.offlineMinutes', 'Số phút')}
+                            value={formValues.ng}
+                            onChange={(val) => setFormValues(prev => ({ ...prev, ng: val }))}
+                            min={5}
+                            max={200}
+                            step={1}
+                            unit={t('settings.minutes', ' phút')}
+                            color="temp"
+                        />
                     </div>
 
                     {/* Save message */}

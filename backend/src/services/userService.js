@@ -10,6 +10,7 @@ const THRESHOLD_FIELDS = [
     'fridgeHumMin', 'fridgeHumMax',
     'roomTempMin', 'roomTempMax',
     'roomHumMin', 'roomHumMax',
+    'ng'
 ];
 
 /**

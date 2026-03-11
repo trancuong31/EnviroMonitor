@@ -10,8 +10,9 @@ import { isWarning, isTemperatureWarning, isHumidityWarning } from '../utils/war
 const LocationListItem = ({ location, locationId, temperature, humidity, sensorType = 'ROOM', chartData = [], lastUpdate, lastUpdateISO, onClick }) => {
     const { t } = useTranslation();
     const thresholds = useSettingsStore((s) => (sensorType === 'FRIDGE' ? s.fridge : s.room));
+    const ngThreshold = useSettingsStore((s) => s.ng);
 
-    const isOffline = lastUpdateISO ? (Date.now() - new Date(lastUpdateISO).getTime()) / 60000 > 15 : false;
+    const isOffline = lastUpdateISO ? (Date.now() - new Date(lastUpdateISO).getTime()) / 60000 > ngThreshold : false;
 
     const finalTemp = isOffline ? 0 : temperature;
     const finalHum = isOffline ? 0 : humidity;

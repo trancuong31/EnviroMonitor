@@ -79,6 +79,11 @@ const User = sequelize.define('User', {
         allowNull: true,
         defaultValue: 60,
     },
+    ng: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        defaultValue: 15,
+    },
     avatar: {
         type: DataTypes.STRING(500),
         allowNull: true,

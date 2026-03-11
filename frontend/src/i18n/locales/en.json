@@ -146,6 +146,8 @@
     "roomTab": "Room Temperature",
     "savingSettings": "Saving...",
     "saveSuccess": "Settings saved successfully",
-    "saveError": "Error saving settings"
+    "saveError": "Error saving settings",
+    "offlineThreshold": "Offline Threshold",
+    "minutes": " minutes"
   }
 }
