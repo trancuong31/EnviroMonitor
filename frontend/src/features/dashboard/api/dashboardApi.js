@@ -52,3 +52,13 @@ export const getListLayout = async () => {
     const response = await api.get('/dataLogs/getListLayout');
     return response.data;
 };
+
+export const getListImages = async () => {
+    const response = await api.get('/dataLogs/getListImages');
+    return response.data;
+};
+
+export const getLayoutDetail = async (position) => {
+    const response = await api.get('/dataLogs/getLayoutDetail', { params: { position } });
+    return response.data?.data || null;
+};

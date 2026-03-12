@@ -149,5 +149,12 @@
     "saveError": "Error saving settings",
     "offlineThreshold": "Offline Threshold",
     "minutes": " minutes"
+  },
+  "layout": {
+    "viewLayout": "View Floor Plan",
+    "sensorImage": "Sensor Image",
+    "selectSensor": "Click sensor to view image",
+    "noSensorImage": "No sensor image available",
+    "close": "Close"
   }
 }

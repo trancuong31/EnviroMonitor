@@ -148,5 +148,12 @@
     "saveError": "설정 저장 오류",
     "offlineThreshold": "오프라인 임계값",
     "minutes": "분"
+  },
+  "layout": {
+    "viewLayout": "평면도 보기",
+    "sensorImage": "센서 이미지",
+    "selectSensor": "센서를 클릭하면 이미지를 볼 수 있습니다",
+    "noSensorImage": "센서 이미지 없음",
+    "close": "닫기"
   }
 }

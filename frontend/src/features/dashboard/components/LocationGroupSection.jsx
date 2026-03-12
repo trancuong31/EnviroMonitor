@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Image as ImageIcon } from 'lucide-react';
-import { getListLayout } from '../api/dashboardApi';
+import { getListLayout, getListImages } from '../api/dashboardApi';
 import api from '../../../services/api';
+import LayoutViewerModal from './LayoutViewerModal';
 
 // Cache the promise so we only call the API once when multiple components mount simultaneously
 let layoutPromise = null;
@@ -14,6 +15,7 @@ let layoutPromise = null;
 const LocationGroupSection = ({ prefix, count, children }) => {
     const [layoutImage, setLayoutImage] = useState(null);
     const [isHovered, setIsHovered] = useState(false);
+    const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -69,6 +71,7 @@ const LocationGroupSection = ({ prefix, count, children }) => {
                     className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-xl shadow-sm relative cursor-pointer hover:border-primary/50 transition-colors z-10 hover:z-50"
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
+                    onClick={() => setIsLayoutModalOpen(true)}
                 >
                     <MapPin className="w-4 h-4 text-primary" />
                     <span className="text-base font-bold text-text tracking-wide font-mono">
@@ -98,8 +101,16 @@ const LocationGroupSection = ({ prefix, count, children }) => {
 
             {/* Group content (cards or list items) */}
             {children}
+
+            {/* Layout Viewer Modal */}
+            <LayoutViewerModal
+                isOpen={isLayoutModalOpen}
+                onClose={() => setIsLayoutModalOpen(false)}
+                position={prefix}
+            />
         </section>
     );
 };
 
 export default LocationGroupSection;
+

@@ -146,5 +146,12 @@
     "savingSettings": "Đang lưu...",
     "saveSuccess": "Lưu cài đặt thành công",
     "saveError": "Lỗi khi lưu cài đặt"
+  },
+  "layout": {
+    "viewLayout": "Xem sơ đồ tầng",
+    "sensorImage": "Ảnh sensor",
+    "selectSensor": "Click sensor để xem ảnh",
+    "noSensorImage": "Không có ảnh sensor",
+    "close": "Đóng"
   }
 }

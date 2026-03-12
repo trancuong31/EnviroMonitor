@@ -3,3 +3,4 @@ export { default as LocationListItem } from './SensorListItem';
 export { default as LocationChartModal } from './SensorChartModal';
 export { default as ThresholdSettingsModal } from './ThresholdSettingsModal';
 export { default as LocationGroupSection } from './LocationGroupSection';
+export { default as LayoutViewerModal } from './LayoutViewerModal';

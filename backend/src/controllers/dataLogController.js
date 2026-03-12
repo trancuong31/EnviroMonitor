@@ -40,8 +40,42 @@ const getListLayout = catchAsync(async (req, res) => {
     });
 });
 
+/**
+ * get list images for table Type
+ */
+const getListImages = catchAsync(async (req, res) => {
+    const images = await dataLogs.getListImages();
+
+    res.status(HTTP_CODES.OK).json({
+        status: 'success',
+        data: { images },
+    });
+});
+
+/**
+ * Get layout detail with sensor hotspots
+ */
+const getLayoutDetail = catchAsync(async (req, res) => {
+    const { position } = req.query;
+    const layoutData = await dataLogs.getLayoutWithSensors(position);
+
+    if (!layoutData) {
+        return res.status(HTTP_CODES.NOT_FOUND).json({
+            status: 'fail',
+            message: 'Layout not found',
+        });
+    }
+
+    res.status(HTTP_CODES.OK).json({
+        status: 'success',
+        data: layoutData,
+    });
+});
+
 module.exports = {
     getLogs,
     getLogsByDateRange,
     getListLayout,
+    getListImages,
+    getLayoutDetail,
 };

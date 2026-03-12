@@ -23,6 +23,21 @@ const Type = sequelize.define('Type', {
         defaultValue: 'ROOM',
         field: 'TYPE',
     },
+    images: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        field: 'IMAGES',
+    },
+    xPercent: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'X_PERCENT',
+    },
+    yPercent: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'Y_PERCENT',
+    },
 }, {
     tableName: 'TYPE',
     timestamps: false,

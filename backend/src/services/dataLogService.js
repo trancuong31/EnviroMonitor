@@ -1,4 +1,4 @@
-const { TLog, Layout } = require('../models');
+const { TLog, Layout, Type } = require('../models');
 const { sequelize } = require('../config/database');
 const { Op } = require('sequelize');
 
@@ -59,8 +59,43 @@ const getListLayout = async () => {
     const layouts = await Layout.findAll();
     return layouts;
 };
+
+const getListImages = async () => {
+    const images = await Type.findAll();
+    return images;
+};
+
+/**
+ * Get layout detail with associated sensors by position prefix
+ * Sensors belong to a layout when TC_NAME starts with the layout's POSITION
+ */
+const getLayoutWithSensors = async (position) => {
+    const layout = await Layout.findOne({ where: { position } });
+
+    if (!layout) return null;
+
+    const sensors = await Type.findAll({
+        where: { tcName: { [Op.like]: `${position}%` } },
+        attributes: ['id', 'tcName', 'images', 'xPercent', 'yPercent'],
+        order: [['tcName', 'ASC']],
+    });
+
+    return {
+        layoutImage: layout.images,
+        sensors: sensors.map((s) => ({
+            id: s.id,
+            name: s.tcName,
+            image: s.images,
+            x: s.xPercent,
+            y: s.yPercent,
+        })),
+    };
+};
+
 module.exports = {
     getLogs,
     getLogsByDateRange,
-    getListLayout
+    getListLayout,
+    getListImages,
+    getLayoutWithSensors,
 };
