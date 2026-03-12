@@ -29,12 +29,12 @@ const Type = sequelize.define('Type', {
         field: 'IMAGES',
     },
     xPercent: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: true,
         field: 'X_PERCENT',
     },
     yPercent: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: true,
         field: 'Y_PERCENT',
     },

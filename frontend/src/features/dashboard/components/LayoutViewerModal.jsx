@@ -18,7 +18,7 @@ const LayoutViewerModal = ({ isOpen, onClose, position }) => {
     const [layoutData, setLayoutData] = useState(null);
     const [selectedSensor, setSelectedSensor] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-
+    const [tempDot, setTempDot] = useState(null);
     // Backend base URL without /api/v1
     const backendUrl = api.defaults.baseURL
         ? api.defaults.baseURL.replace(/\/api\/v1\/?$/, '')
@@ -114,6 +114,24 @@ const LayoutViewerModal = ({ isOpen, onClose, position }) => {
         }
     }
 
+    
+
+    const handleImageClick = (e) => {
+        const rect = e.target.getBoundingClientRect();
+
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+        const dot = {
+            x: Number(x.toFixed(1)),
+            y: Number(y.toFixed(1))
+        };
+
+        console.log("Sensor position:", dot);
+
+        setTempDot(dot);
+    };
+
     return (
         <div
             className="fixed inset-0 z-[9999] flex items-center justify-center"
@@ -164,8 +182,18 @@ const LayoutViewerModal = ({ isOpen, onClose, position }) => {
                                     alt={`${position} layout`}
                                     className="max-w-full max-h-[80vh] object-contain rounded-xl shadow-lg"
                                     draggable={false}
+                                    onClick={handleImageClick}
                                 />
-
+                                {tempDot && (
+                                    <div
+                                        className="absolute w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"
+                                        style={{
+                                            left: `${tempDot.x}%`,
+                                            top: `${tempDot.y}%`,
+                                            transform: "translate(-50%, -50%)"
+                                        }}
+                                    />
+                                )}
                                 {/* Sensor hotspot dots */}
                                 {layoutData?.sensors?.map((sensor) => {
                                     const isActive = selectedSensor?.id === sensor.id;
