@@ -10,4 +10,16 @@ router.use(authenticate);
 // Update threshold settings
 router.put('/settings', userController.updateSettings);
 
+// Create user
+router.post('/', userController.createUser);
+
+// Update user
+router.put('/:id', userController.updateUser);
+
+// Delete user
+router.delete('/:id', userController.deleteUser);
+
+// Get all users
+router.get('/', userController.getAllUsers);
+
 module.exports = router;

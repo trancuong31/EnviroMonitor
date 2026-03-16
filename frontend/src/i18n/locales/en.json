@@ -148,7 +148,8 @@
     "saveSuccess": "Settings saved successfully",
     "saveError": "Error saving settings",
     "offlineThreshold": "Offline Threshold",
-    "minutes": " minutes"
+    "minutes": " minutes",
+    "noChange": "No changes detected"
   },
   "layout": {
     "viewLayout": "View Floor Plan",

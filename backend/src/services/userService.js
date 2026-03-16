@@ -14,18 +14,12 @@ const THRESHOLD_FIELDS = [
 ];
 
 /**
- * Update user threshold settings
- * @param {number} userId
+ * Admin update threshold settings for ALL users
  * @param {object} settingsData - threshold values to update
- * @returns {Promise<User>}
+ * @returns {Promise<object>}
  */
-const updateSettings = async (userId, settingsData) => {
-    const user = await User.findByPk(userId);
-    if (!user) {
-        throw new AppError('User not found', HTTP_CODES.NOT_FOUND);
-    }
-
-    // Filter only allowed threshold fields
+const updateSettings = async (settingsData) => {
+    // 1. Lọc và parse các trường được phép cập nhật
     const updateData = {};
     for (const field of THRESHOLD_FIELDS) {
         if (settingsData[field] !== undefined) {
@@ -37,7 +31,11 @@ const updateSettings = async (userId, settingsData) => {
         }
     }
 
-    // Validate min < max pairs
+    if (Object.keys(updateData).length === 0) {
+        throw new AppError('No valid threshold fields provided', HTTP_CODES.BAD_REQUEST);
+    }
+
+    // 2. Validate các cặp min < max
     const pairs = [
         ['fridgeTempMin', 'fridgeTempMax'],
         ['fridgeHumMin', 'fridgeHumMax'],
@@ -46,22 +44,90 @@ const updateSettings = async (userId, settingsData) => {
     ];
 
     for (const [minField, maxField] of pairs) {
-        const minVal = updateData[minField] ?? user[minField];
-        const maxVal = updateData[maxField] ?? user[maxField];
+        const minVal = updateData[minField];
+        const maxVal = updateData[maxField];
+        
         if (minVal != null && maxVal != null && minVal >= maxVal) {
             throw new AppError(`${minField} must be less than ${maxField}`, HTTP_CODES.BAD_REQUEST);
         }
     }
 
-    await user.update(updateData);
+    // 3. Cập nhật cho TẤT CẢ user theo setting
+    await User.update(updateData, { where: {} });
 
-    // Exclude password from response
-    const userData = user.toJSON();
-    delete userData.password;
+    return updateData;
+};
 
-    return userData;
+// create user
+const createUser = async (userData, userId) => {
+    // validate user data
+    const { name, email, password, factory } = userData;
+    if (!name || !email || !password || !factory) {
+        throw new AppError('Missing required fields', HTTP_CODES.BAD_REQUEST);
+    }
+
+    // check if user exists
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+        throw new AppError('User already exists', HTTP_CODES.BAD_REQUEST);
+    }
+
+    // hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // create user
+    const user = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        factory,
+        created_by: userId,
+    });
+
+    return user;
+};
+
+//update user
+const updateUser = async (userId, userData, updated_by) => {
+    const user = await User.findByPk(userId);
+    if (!user) {
+        throw new AppError('User not found', HTTP_CODES.NOT_FOUND);
+    }
+    // validate user data
+    const { name, email, password, role, factory } = userData;
+    if (!name || !email || !password || !role || !factory) {
+        throw new AppError('Missing required fields', HTTP_CODES.BAD_REQUEST);
+    }
+    // check if user exists
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+        throw new AppError('User already exists', HTTP_CODES.BAD_REQUEST);
+    }
+    // update user
+    await user.update(userData, { where: { id: userId }, updated_by: updated_by });
+
+    return user;
+};
+
+//delete user
+const deleteUser = async (userId) => {
+    const user = await User.findByPk(userId);
+    if (!user) {
+        throw new AppError('User not found', HTTP_CODES.NOT_FOUND);
+    }
+    await user.destroy();
+    return user;
+};
+
+//get all users
+const getAllUsers = async () => {
+    return await User.findAll();
 };
 
 module.exports = {
     updateSettings,
+    createUser,
+    updateUser,
+    deleteUser,
+    getAllUsers
 };

@@ -5,8 +5,9 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    role: 'user' | 'admin' | 'moderator';
+    role: 'user' | 'admin' | 'manager';
     status: 'active' | 'inactive' | 'pending' | 'suspended';
+    factory?: string;
     avatar?: string;
     createdAt: string;
     updatedAt: string;

@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Static files
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use(express.static(path.join(__dirname, "public")));
 // API routes
 app.use('/api/v1', routes);

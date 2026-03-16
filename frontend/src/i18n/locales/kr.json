@@ -147,7 +147,8 @@
     "saveSuccess": "설정이 저장되었습니다",
     "saveError": "설정 저장 오류",
     "offlineThreshold": "오프라인 임계값",
-    "minutes": "분"
+    "minutes": "분",
+    "noChange": "변경사항이 없습니다"
   },
   "layout": {
     "viewLayout": "평면도 보기",

@@ -42,7 +42,7 @@ const User = sequelize.define('User', {
     fridgeTempMin: {
         type: DataTypes.FLOAT,
         allowNull: true,
-        defaultValue: 2,
+        defaultValue: 0,
     },
     fridgeTempMax: {
         type: DataTypes.FLOAT,

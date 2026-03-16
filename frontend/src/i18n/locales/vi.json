@@ -145,7 +145,8 @@
     "roomTab": "Nhiệt độ thường",
     "savingSettings": "Đang lưu...",
     "saveSuccess": "Lưu cài đặt thành công",
-    "saveError": "Lỗi khi lưu cài đặt"
+    "saveError": "Lỗi khi lưu cài đặt",
+    "noChange": "Không có thay đổi"
   },
   "layout": {
     "viewLayout": "Xem sơ đồ tầng",

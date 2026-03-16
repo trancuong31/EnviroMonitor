@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '../../../store';
 import { X, RotateCcw, Save, Thermometer, Droplets, Info, CircleAlert, Loader2, Clock } from 'lucide-react';
 import { useSettingsStore, DEFAULT_THRESHOLDS } from '../../../store';
 import { toast } from 'sonner';
@@ -117,11 +118,16 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     const { fridge, room, ng, updateSettings, isLoading } = useSettingsStore();
     const [showTooltip, setShowTooltip] = useState(false);
     const [activeTab, setActiveTab] = useState('fridge');
-
+    
     // Local state for form inputs
     const [formValues, setFormValues] = useState({ fridge, room, ng });
     const [errors, setErrors] = useState({ temp: false, hum: false });
     const [saveMessage, setSaveMessage] = useState(null);
+
+    // get user role
+    const { user } = useAuthStore();
+    const isAdmin = user?.role === 'admin';
+
 
     // Sync form values when modal opens or thresholds change
     useEffect(() => {
@@ -159,7 +165,14 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     // Handle save with validation
     const handleSave = async () => {
         if (!validateThresholds()) return;
-
+        const originalValues = activeTab === 'fridge' ? fridge : room;
+        const newValues = formValues[activeTab];
+        const isTabSame = Object.keys(originalValues).every(key => originalValues[key] === newValues[key]);
+        const isNgSame = formValues.ng === ng;
+        if (isTabSame && isNgSame) {
+            toast.warning(t('settings.noChange', 'Không có thay đổi'));
+            return;
+        }
         const result = await updateSettings(activeTab, formValues[activeTab], { ng: formValues.ng });
         if (result.success) {
             toast.success(t('settings.saveSuccess', 'Lưu cài đặt thành công'));
@@ -432,42 +445,44 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-surface-alt/50">
-                    <button
-                        onClick={handleReset}
-                        disabled={isLoading}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors disabled:opacity-50"
-                    >
-                        <RotateCcw className="w-4 h-4" />
-                        {t('settings.reset', 'Đặt lại mặc định')}
-                    </button>
-                    <div className="flex gap-2">
+                {isAdmin && (
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-surface-alt/50">
                         <button
-                            onClick={onClose}
+                            onClick={handleReset}
                             disabled={isLoading}
-                            className="px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors disabled:opacity-50"
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors disabled:opacity-50"
                         >
-                            {t('settings.cancel', 'Hủy')}
+                            <RotateCcw className="w-4 h-4" />
+                            {t('settings.reset', 'Đặt lại mặc định')}
                         </button>
-                        <button
-                            onClick={handleSave}
-                            disabled={isLoading}
-                            className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-primary/25 transition-all disabled:opacity-50"
-                        >
-                            {isLoading ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    {t('settings.savingSettings', 'Đang lưu...')}
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="w-4 h-4" />
-                                    {t('settings.save', 'Lưu')}
-                                </>
-                            )}
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={onClose}
+                                disabled={isLoading}
+                                className="px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors disabled:opacity-50"
+                            >
+                                {t('settings.cancel', 'Hủy')}
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={isLoading}
+                                className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-primary/25 transition-all disabled:opacity-50"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        {t('settings.savingSettings', 'Đang lưu...')}
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="w-4 h-4" />
+                                        {t('settings.save', 'Lưu')}
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );
