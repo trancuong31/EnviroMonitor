@@ -154,5 +154,37 @@
     "selectSensor": "Click sensor để xem ảnh",
     "noSensorImage": "Không có ảnh sensor",
     "close": "Đóng"
+  },
+  "profile": {
+    "title": "Thông tin người dùng",
+    "name": "Họ và tên",
+    "email": "Email",
+    "role": "Vai trò",
+    "factory": "Xưởng"
+  },
+  "admin": {
+    "userManagement": "Quản lý Người dùng",
+    "users": "Người dùng",
+    "addUser": "Thêm Người dùng",
+    "editUser": "Sửa Người dùng",
+    "deleteUser": "Xóa Người dùng",
+    "search": "Tìm kiếm người dùng...",
+    "save": "Lưu Thay Đổi",
+    "cancel": "Hủy",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa người dùng này?",
+    "statusActive": "Hoạt động",
+    "statusInactive": "Không hoạt động",
+    "createdSuccess": "Tạo người dùng thành công!",
+    "updatedSuccess": "Cập nhật người dùng thành công!",
+    "deletedSuccess": "Xóa người dùng thành công!",
+    "errorOccurred": "Đã xảy ra lỗi",
+    "noUsersFound": "Không tìm thấy người dùng nào",
+    "leaveEmptyToKeepCurrentPassword": "Để trống để giữ nguyên mật khẩu hiện tại",
+    "emailAlert": "Email Cảnh báo",
+    "emailAlertDesc": "Nhận cảnh báo qua email",
+    "emailAlertYes": "Có",
+    "emailAlertNo": "Không",
+    "cannotDeleteSelf": "Bạn không thể xóa tài khoản của mình.",
+    "noChanges": "Không có gì thay đổi"
   }
 }

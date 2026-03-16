@@ -156,5 +156,37 @@
     "selectSensor": "센서를 클릭하면 이미지를 볼 수 있습니다",
     "noSensorImage": "센서 이미지 없음",
     "close": "닫기"
+  },
+  "profile": {
+    "title": "사용자 프로필",
+    "name": "이름",
+    "email": "이메일",
+    "role": "역할",
+    "factory": "공장"
+  },
+  "admin": {
+    "userManagement": "사용자 관리",
+    "users": "사용자",
+    "addUser": "사용자 추가",
+    "editUser": "사용자 편집",
+    "deleteUser": "사용자 삭제",
+    "search": "사용자 검색...",
+    "save": "변경 사항 저장",
+    "cancel": "취소",
+    "deleteConfirm": "이 사용자를 삭제하시겠습니까?",
+    "statusActive": "활성",
+    "statusInactive": "비활성",
+    "createdSuccess": "사용자가 성공적으로 생성되었습니다",
+    "updatedSuccess": "사용자가 성공적으로 업데이트되었습니다",
+    "deletedSuccess": "사용자가 성공적으로 삭제되었습니다",
+    "errorOccurred": "오류가 발생했습니다",
+    "noUsersFound": "사용자를 찾을 수 없습니다",
+    "leaveEmptyToKeepCurrentPassword": "현재 비밀번호를 유지하려면 비워두세요",
+    "emailAlert": "이메일 알림",
+    "emailAlertDesc": "온습도 경고 알림",
+    "emailAlertYes": "예",
+    "emailAlertNo": "아니오",
+    "cannotDeleteSelf": "자신의 계정을 삭제할 수 없습니다.",
+    "noChanges": "변경 사항이 없습니다"
   }
 }

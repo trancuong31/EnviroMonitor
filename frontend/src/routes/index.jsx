@@ -7,6 +7,7 @@ import { lazy, Suspense } from 'react';
 
 const HomePage = lazy(() => import('../features/home/pages/HomePage'));
 const DashboardPage = lazy(() => import('../features/dashboard/pages/DashboardPage'));
+const UserManagementPage = lazy(() => import('../features/admin/pages/UserManagement'));
 const NotFoundPage = lazy(() => import('../features/common/pages/NotFoundPage'));
 
 // Loading component
@@ -51,6 +52,16 @@ const AppRoutes = () => {
           element={
             <PrivateRoute>
               <DashboardPage />
+            </PrivateRoute>
+          }
+        />
+        
+        {/* Admin routes */}
+        <Route
+          path="/admin/users"
+          element={
+            <PrivateRoute>
+              <UserManagementPage />
             </PrivateRoute>
           }
         />

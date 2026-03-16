@@ -3,6 +3,7 @@ const { sequelize } = require('../config/database');
 const { ROLES } = require('../constants/roles');
 const { STATUSES } = require('../constants/statuses');
 const { FACTORIES } = require('../constants/factories');
+const { EMAIL_ALERTS } = require('../constants/emailAlerts');
 
 const User = sequelize.define('User', {
     id: {
@@ -87,6 +88,11 @@ const User = sequelize.define('User', {
     avatar: {
         type: DataTypes.STRING(500),
         allowNull: true,
+    },
+    emailAlertEnabled: {
+        type: DataTypes.ENUM(...Object.values(EMAIL_ALERTS)),
+        allowNull: false,
+        defaultValue: EMAIL_ALERTS.YES,
     },
     lastAlertSentAt: {
         type: DataTypes.DATE,

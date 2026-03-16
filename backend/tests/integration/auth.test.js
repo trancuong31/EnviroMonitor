@@ -12,6 +12,7 @@ describe('Auth Routes', () => {
                     email: 'test@example.com',
                     password: 'password123',
                     confirmPassword: 'password123',
+                    factory: 'V0',
                 });
 
             expect(res.statusCode).toBe(201);
@@ -28,6 +29,7 @@ describe('Auth Routes', () => {
                     email: 'duplicate@example.com',
                     password: 'password123',
                     confirmPassword: 'password123',
+                    factory: 'V0',
                 });
 
             // Second registration with same email
@@ -38,6 +40,7 @@ describe('Auth Routes', () => {
                     email: 'duplicate@example.com',
                     password: 'password123',
                     confirmPassword: 'password123',
+                    factory: 'V0',
                 });
 
             expect(res.statusCode).toBe(400);
@@ -54,6 +57,7 @@ describe('Auth Routes', () => {
                     email: 'login@example.com',
                     password: 'password123',
                     confirmPassword: 'password123',
+                    factory: 'V0',
                 });
 
             // Login

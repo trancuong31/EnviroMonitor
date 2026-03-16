@@ -1,18 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore, useThemeStore } from '../../../store';
 import { Button, LanguageSwitcher } from '../../ui';
+import ProfileModal from './ProfileModal';
+
 
 /**
  * Main layout component with sticky header and scroll-to-top button
  */
 const MainLayout = ({ children }) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { isAuthenticated, user, logout } = useAuthStore();
     const { theme, toggleTheme } = useThemeStore();
     const { t } = useTranslation();
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const [showProfileModal, setShowProfileModal] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -22,6 +26,10 @@ const MainLayout = ({ children }) => {
     const handleScroll = useCallback(() => {
         setShowScrollTop(window.scrollY > 300);
     }, []);
+
+    const handleProfile = () => {
+        setShowProfileModal(true);
+    };
 
     useEffect(() => {
         window.addEventListener('scroll', handleScroll, { passive: true });
@@ -67,14 +75,50 @@ const MainLayout = ({ children }) => {
                     {isAuthenticated ? (
                         <>
                             <div className="hidden sm:flex items-center gap-2 text-sm text-text-muted">
-                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xs font-bold text-white">
+                                {user?.role === 'admin' && (
+                                    <Link to="/admin/users" className="relative group flex items-center h-full pt-1 pb-1">
+                                        <Button 
+                                            variant="ghost" 
+                                            size="small" 
+                                            className={`text-primary transition-colors hover:bg-transparent ${
+                                                location.pathname.startsWith('/admin/users') ? 'bg-primary/10 font-semibold' : ''
+                                            }`}
+                                        >
+                                            {t('admin.userManagement', 'Users')}
+                                        </Button>
+                                        <span className={`absolute bottom-0 left-2 right-2 h-[2.5px] bg-primary rounded-t-full transition-transform duration-300 origin-center  ${
+                                            location.pathname.startsWith('/admin/users') ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                                        }`} />
+                                    </Link>
+                                )}
+                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xs font-bold text-white ml-2">
                                     {(user?.name || 'U').charAt(0).toUpperCase()}
                                 </div>
-                                <span className="max-w-[120px] truncate">{user?.name || 'User'}</span>
+                                <div className="relative group flex items-center h-full pt-1 pb-1">
+                                    <Button 
+                                        variant="ghost" 
+                                        size="small" 
+                                        onClick={handleProfile}
+                                        className="text-primary transition-colors hover:bg-transparent"
+                                    >
+                                    {user?.name || 'User'}
+                                </Button>
+                                {/* Thanh gạch chân animation */}
+                                <span className="absolute bottom-0 left-2 right-2 h-[2.5px] bg-primary rounded-t-full transition-transform duration-300 origin-center scale-x-0 group-hover:scale-x-100" />
                             </div>
-                            <Button variant="ghost" size="small" onClick={handleLogout}>
-                                {t('common.logout')}
-                            </Button>
+                            </div>
+                            <div className="relative group flex items-center h-full pt-1 pb-1">
+                                <Button 
+                                    variant="ghost" 
+                                    size="small" 
+                                    onClick={handleLogout} 
+                                    className="text-primary transition-colors hover:bg-transparent"
+                                >
+                                    {t('common.logout')}
+                                </Button>
+                                {/* Thanh gạch chân animation */}
+                                <span className="absolute bottom-0 left-2 right-2 h-[2.5px] bg-primary rounded-t-full transition-transform duration-300 origin-center scale-x-0 group-hover:scale-x-100" />
+                            </div>
                         </>
                     ) : (
                         <>
@@ -104,6 +148,12 @@ const MainLayout = ({ children }) => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
                 </svg>
             </button>
+
+            {/* Profile Modal */}
+            <ProfileModal
+                isOpen={showProfileModal}
+                onClose={() => setShowProfileModal(false)}
+            />
         </div>
     );
 };

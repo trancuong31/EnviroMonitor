@@ -35,7 +35,7 @@ const getLogs = async ({ factory } = {}) => {
         },
         where: whereConditions,
         order: [['tc_name', 'ASC']],
-        limit: 20
+        limit: 40
     });
 
     return logs;

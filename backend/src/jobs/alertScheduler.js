@@ -5,7 +5,7 @@ const { getLogs } = require('../services/dataLogService');
 const { sendEmail } = require('../utils/email');
 const { buildAlertEmail } = require('../utils/alertEmailTemplate');
 const { User } = require('../models');
-
+const {EMAIL_ALERTS} = require('../constants/emailAlerts');
 const COOLDOWN_FALLBACK_MINUTES = 60;
 
 /**
@@ -49,7 +49,7 @@ const getStatus = (value, min, max) => {
  * Flow:
  *  1. Fetch all logs once
  *  2. Loop through each active user (outer loop)
- *  3. Filter logs by user.factory (tc_name prefix)
+ *  3. Filter logs by user.factory (tc_name prefix) and EMAIL_ALERT_ENABLED = YES
  *  4. Compare against user-specific thresholds (fridge/room from DB)
  *  5. Build & send personalized email per user
  */
@@ -67,7 +67,7 @@ const checkAndAlert = async () => {
         const cooldownMs = Math.max(cooldownMinutes, 0) * 60 * 1000;
 
         // 1. Fetch all active users with factory assigned
-        const userWhere = { status: 'active' };
+        const userWhere = { status: 'active', emailAlertEnabled: EMAIL_ALERTS.YES };
 
         const recipients = await User.findAll({ where: userWhere });
 
