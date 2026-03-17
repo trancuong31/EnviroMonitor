@@ -6,8 +6,8 @@ import api from '../services/api';
  */
 export const DEFAULT_THRESHOLDS = {
     fridge: {
-        tempMin: 2,
-        tempMax: 8,
+        tempMin: 0,
+        tempMax: 10,
         humMin: 30,
         humMax: 100,
     },

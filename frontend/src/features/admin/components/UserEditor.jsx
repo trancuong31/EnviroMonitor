@@ -8,7 +8,7 @@ import {
     Lock, 
     Shield, 
     Activity, 
-    Factory as FactoryIcon 
+    Factory as FactoryIcon
 } from 'lucide-react';
 import { Button, CustomSelect, CustomCheckbox } from '../../../components/ui';
 

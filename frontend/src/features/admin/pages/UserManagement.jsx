@@ -79,7 +79,7 @@ const UserManagement = () => {
     const handleSaveUser = async (userData) => {
         try {
             // if information is not changed, do not save
-            if (selectedUser?.name === userData.name && selectedUser?.email === userData.email && selectedUser?.role === userData.role && selectedUser?.factory === userData.factory && selectedUser?.status === userData.status && selectedUser?.emailAlertEnabled === userData.emailAlertEnabled) {
+            if (selectedUser?.name === userData.name && selectedUser?.email === userData.email && selectedUser?.role === userData.role && userData.password === '' && selectedUser?.factory === userData.factory && selectedUser?.status === userData.status && selectedUser?.emailAlertEnabled === userData.emailAlertEnabled) {
                 toast.warning(t('admin.noChanges', 'No changes made'));
                 return;
             }

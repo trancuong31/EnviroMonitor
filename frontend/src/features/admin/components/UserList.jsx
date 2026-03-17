@@ -58,7 +58,7 @@ const UserList = ({ users, selectedUser, onSelectUser, onDeleteUser, onAddNew })
                                         </span>
                                     )}
                                 </div>
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-muted">
                                     <div className="flex items-center gap-1.5 truncate">
                                         <Mail size={12} className="shrink-0" />
                                         <span className="truncate">{user.email}</span>
