@@ -188,6 +188,11 @@
     "emailAlertYes": "Yes",
     "emailAlertNo": "No",
     "cannotDeleteSelf": "You cannot delete your own account.",
-    "noChanges": "No changes made"
+    "noChanges": "No changes made",
+    "tableUser": "User",
+    "tableRole": "Role",
+    "tableFactory": "Factory",
+    "tableStatus": "Status",
+    "tableActions": "Actions"
   }
 }

@@ -185,6 +185,11 @@
     "emailAlertYes": "Có",
     "emailAlertNo": "Không",
     "cannotDeleteSelf": "Bạn không thể xóa tài khoản của mình.",
-    "noChanges": "Không có gì thay đổi"
+    "noChanges": "Không có gì thay đổi",
+    "tableUser": "Người dùng",
+    "tableRole": "Vai trò",
+    "tableFactory": "Xưởng",
+    "tableStatus": "Trạng thái",
+    "tableActions": "Hành động"
   }
 }

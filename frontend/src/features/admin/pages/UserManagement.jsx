@@ -172,7 +172,7 @@ const UserManagement = () => {
                     {/* Left Panel: User List */}
                     <div 
                         className={`transition-all duration-500 ease-in-out h-full flex flex-col ${
-                            isEditing ? 'lg:w-[60%] lg:pr-6' : 'w-full'
+                            isEditing ? 'lg:w-[65%] lg:pr-6' : 'w-full'
                         }`}
                     >
                         {loading ? (
@@ -197,11 +197,10 @@ const UserManagement = () => {
                     <div 
                         className={`absolute lg:relative right-0 top-0 h-full bg-background z-10 lg:z-auto transition-all duration-500 ease-in-out ${
                             isEditing 
-                                ? 'w-full lg:w-[40%] translate-x-0 opacity-100 visibility-visible' 
+                                ? 'w-full lg:w-[35%] translate-x-0 opacity-100 visibility-visible' 
                                 : 'w-full lg:w-0 translate-x-full lg:translate-x-0 opacity-0 invisible pointer-events-none'
                         }`}
                     >
-                        {/* Wrapper to maintain minimum width during animation to prevent squishing */}
                         <div className="w-full h-full lg:min-w-[340px] lg:pl-2">
                             <UserEditor
                                 user={selectedUser}

@@ -187,6 +187,11 @@
     "emailAlertYes": "예",
     "emailAlertNo": "아니오",
     "cannotDeleteSelf": "자신의 계정을 삭제할 수 없습니다.",
-    "noChanges": "변경 사항이 없습니다"
+    "noChanges": "변경 사항이 없습니다",
+    "tableUser": "사용자",
+    "tableRole": "역할",
+    "tableFactory": "공장",
+    "tableStatus": "상태",
+    "tableActions": "작업"
   }
 }
