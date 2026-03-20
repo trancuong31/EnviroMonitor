@@ -92,7 +92,7 @@ const User = sequelize.define('User', {
     emailAlertEnabled: {
         type: DataTypes.ENUM(...Object.values(EMAIL_ALERTS)),
         allowNull: false,
-        defaultValue: EMAIL_ALERTS.YES,
+        defaultValue: EMAIL_ALERTS.NO,
     },
     lastAlertSentAt: {
         type: DataTypes.DATE,

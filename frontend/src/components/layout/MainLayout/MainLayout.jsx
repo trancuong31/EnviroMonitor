@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Maximize2, Minimize2 } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore, useThemeStore } from '../../../store';
@@ -17,6 +18,21 @@ const MainLayout = ({ children }) => {
     const { t } = useTranslation();
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [showProfileModal, setShowProfileModal] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    const toggleFullscreen = useCallback(() => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+            document.exitFullscreen().catch(() => {});
+        }
+    }, []);
+
+    useEffect(() => {
+        const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+        document.addEventListener('fullscreenchange', onFsChange);
+        return () => document.removeEventListener('fullscreenchange', onFsChange);
+    }, []);
 
     const handleLogout = () => {
         logout();
@@ -42,9 +58,9 @@ const MainLayout = ({ children }) => {
 
     return (
         <div className="flex flex-col min-h-screen">
-            <header className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-8 py-3 bg-surface/80 backdrop-blur-xl border-b border-border shadow-sm transition-colors duration-300">
+            <header className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-8 py-1 bg-surface/80 backdrop-blur-xl border-b border-border shadow-sm transition-colors duration-300">
                 <Link to="/" className="text-xl font-bold font-mono bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent hover:opacity-80 transition-opacity">
-                    EnviroMonitor
+                    {t('dashboard.title')}
                 </Link>
                 <nav className="flex items-center gap-3">
                     {/* Theme toggle */}
@@ -91,7 +107,7 @@ const MainLayout = ({ children }) => {
                                         }`} />
                                     </Link>
                                 )}
-                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xs font-bold text-white ml-2">
+                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary flex items-center justify-center text-xs font-bold text-white ml-2">
                                     {(user?.name || 'U').charAt(0).toUpperCase()}
                                 </div>
                                 <div className="relative group flex items-center h-full pt-1 pb-1">
@@ -147,6 +163,16 @@ const MainLayout = ({ children }) => {
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
                 </svg>
+            </button>
+
+            {/* Fullscreen toggle button */}
+            <button
+                onClick={toggleFullscreen}
+                className="fixed bottom-10 right-6 z-50 w-9 h-9 rounded-full bg-surface border border-border text-text-muted shadow-md flex items-center justify-center transition-all duration-300 hover:scale-110 hover:text-primary hover:border-primary/30 hover:shadow-lg"
+                aria-label="Toggle fullscreen"
+                title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            >
+                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
 
             {/* Profile Modal */}

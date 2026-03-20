@@ -24,7 +24,7 @@ const LocationListItem = ({ location, locationId, temperature, humidity, sensorT
     return (
         <div
             onClick={onClick}
-            className={`group bg-surface rounded-2xl px-8 py-6 border-2 shadow-sm grid grid-cols-1 md:grid-cols-[auto_1fr_auto_auto] gap-6 md:gap-8 items-center transition-all duration-300 hover:shadow-md hover:translate-x-2 cursor-pointer ${
+            className={`group bg-surface rounded-2xl px-8 py-2 border-2 shadow-sm grid grid-cols-1 md:grid-cols-[auto_1fr_auto_auto] gap-6 md:gap-8 items-center transition-all duration-300 hover:shadow-md hover:translate-x-2 cursor-pointer ${
                 isOffline
                     ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:border-red-500/80'
                     : hasWarning
@@ -54,8 +54,7 @@ const LocationListItem = ({ location, locationId, temperature, humidity, sensorT
 
             {/* Info */}
             <div className="flex flex-col gap-1">
-                <div className="text-lg font-semibold text-text-secondary">{location}</div>
-                <div className="text-xs text-text-muted font-mono">ID: {locationId}</div>
+                <div className="text-lg font-semibold text-text-secondary">{location?.substring(6)}</div>
                 {isOffline ? (
                     <div className="flex items-center gap-1 text-red-500 text-xs font-medium mt-1">
                         <AlertOctagon className="w-3 h-3" />

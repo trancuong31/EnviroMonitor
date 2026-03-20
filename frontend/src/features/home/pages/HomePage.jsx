@@ -86,9 +86,9 @@ const HomePage = () => {
                                 >
                                     {t('common.login')}
                                 </button>
-                                <Button variant="primary" size="small" onClick={() => openAuthModal('register')}>
+                                {/* <Button variant="primary" size="small" onClick={() => openAuthModal('register')}>
                                     {t('common.getStarted')}
-                                </Button>
+                                </Button> */}
                             </>
                         )}
                     </div>

@@ -48,7 +48,9 @@
     "selectFactory": "Chọn xưởng",
     "enterFactory": "Nhập xưởng",
     "factory": "Xưởng",
-    "pleaseSelectFactory": " Vui lòng chọn nhà máy"
+    "pleaseSelectFactory": " Vui lòng chọn nhà máy",
+    "contactAdminForAccount": "Liên hệ quản trị viên để được cấp tài khoản",
+    "registrationDisabledDesc": "Đăng ký đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên để được cấp tài khoản."
   },
   "dashboard": {
     "title": "Giám sát Nhiệt độ & Độ ẩm",
@@ -60,7 +62,7 @@
     "search": "Tìm kiếm",
     "searchPlaceholder": "Nhập tên vị trí, mã ID...",
     "area": "Khu vực",
-    "allAreas": "Tất cả khu vực",
+    "allAreas": "Tất cả",
     "selectArea": "Chọn khu vực",
     "factory": "Xưởng",
     "allFactories": "Tất cả",
@@ -109,7 +111,15 @@
     "secondAgo": "{{count}} giây trước",
     "loading": "Đang tải dữ liệu...",
     "error": "Lỗi khi tải dữ liệu",
-    "retry": "Thử lại"
+    "retry": "Thử lại",
+    "type": "Vị trí",
+    "selectType": "Chọn vị trí",
+    "allTypes": "Tất cả",
+    "typeWh": "Kho",
+    "typeLine": "Line",
+    "line": "Line",
+    "selectLine": "Chọn line",
+    "allLines": "Tất cả"
   },
   "time": {
     "justNow": "vừa xong",

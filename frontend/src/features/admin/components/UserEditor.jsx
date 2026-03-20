@@ -23,7 +23,7 @@ const UserEditor = ({ user, onSave, onCancel, roles = [], factories = [] }) => {
         role: 'user',
         factory: '',
         status: 'active',
-        emailAlertEnabled: 'yes'
+        emailAlertEnabled: 'no'
     });
 
     const [errors, setErrors] = useState({});
@@ -38,7 +38,7 @@ const UserEditor = ({ user, onSave, onCancel, roles = [], factories = [] }) => {
                 role: user.role || 'user',
                 factory: user.factory || '',
                 status: user.status || 'active',
-                emailAlertEnabled: user.emailAlertEnabled || 'yes'
+                emailAlertEnabled: user.emailAlertEnabled || 'no'
             });
         } else {
             setFormData({
@@ -48,7 +48,7 @@ const UserEditor = ({ user, onSave, onCancel, roles = [], factories = [] }) => {
                 role: 'user',
                 factory: '',
                 status: 'active',
-                emailAlertEnabled: 'yes'
+                emailAlertEnabled: 'no'
             });
         }
         setErrors({});

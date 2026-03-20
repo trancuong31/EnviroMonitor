@@ -77,7 +77,13 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
     };
 
     const toggleMode = () => {
-        setMode((prev) => (prev === 'login' ? 'register' : 'login'));
+        if (mode === 'login') {
+            toast.info(t('auth.contactAdminForAccount'), {
+                description: t('auth.registrationDisabledDesc')
+            });
+            return;
+        }
+        setMode('login');
         setFormData({ name: '', email: '', password: '', confirmPassword: '', factory: '' });
         clearError();
     };
@@ -232,7 +238,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
                         </Button>
                     </form>
 
-                    <div className="text-center mt-6 text-text-secondary text-sm">
+                    {/* <div className="text-center mt-6 text-text-secondary text-sm">
                         <p>
                             {mode === 'login' ? t('auth.noAccount') : t('auth.alreadyHaveAccount')}{' '}
                             <button
@@ -243,7 +249,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
                                 {mode === 'login' ? t('auth.signUp') : t('common.login')}
                             </button>
                         </p>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

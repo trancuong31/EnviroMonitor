@@ -26,12 +26,12 @@
   },
   "auth": {
     "welcomeBack": "Welcome Back",
-    "signInDesc": "Sign in to your account",
+    "signInDesc": "Login to your account",
     "email": "Email",
     "password": "Password",
     "enterEmail": "Enter your email",
     "enterPassword": "Enter your password",
-    "signIn": "Sign In",
+    "signIn": "Login",
     "noAccount": "Don't have an account?",
     "signUp": "Sign up",
     "createAccount": "Create Account",
@@ -48,7 +48,9 @@
     "selectFactory": "Select factory",
     "enterFactory": "Enter factory",
     "factory": "Factory",
-    "pleaseSelectFactory": "Please select factory"
+    "pleaseSelectFactory": "Please select factory",
+    "contactAdminForAccount": "Contact admin for account",
+    "registrationDisabledDesc": "Registration is disabled. Please contact admin for account."
   },
   "dashboard": {
     "title": "Temperature & Humidity Monitor",
@@ -60,7 +62,7 @@
     "search": "Search",
     "searchPlaceholder": "Enter location name, ID...",
     "area": "Area",
-    "allAreas": "All areas",
+    "allAreas": "All",
     "selectArea": "Select area",
     "factory": "Factory",
     "allFactories": "All",
@@ -109,7 +111,15 @@
     "secondAgo": "{{count}} sec ago",
     "loading": "Loading data...",
     "error": "Error loading data",
-    "retry": "Retry"
+    "retry": "Retry",
+    "type": "Location",
+    "selectType": "Select type",
+    "allTypes": "All",
+    "typeWh": "Warehouse",
+    "typeLine": "Line",
+    "line": "Line",
+    "selectLine": "Select line",
+    "allLines": "All"
   },
   "time": {
     "justNow": "just now",
