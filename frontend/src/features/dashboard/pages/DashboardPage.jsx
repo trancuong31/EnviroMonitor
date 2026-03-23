@@ -46,7 +46,6 @@ const DashboardPage = () => {
     () => localStorage.getItem('dashboard_filterFactory') || 'all'
   );
   const [filterType, setFilterType] = useState('all');
-  const [filterLine, setFilterLine] = useState('all');
   const [refreshInterval, setRefreshInterval] = useState(
     () => parseInt(localStorage.getItem('dashboard_refreshInterval'), 10) || 300000
   );
@@ -56,8 +55,7 @@ const DashboardPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Hardcoded factory options — always visible
-  const factoryOptions = ['D2','V0', 'V4', 'V5'];
+  const allFactoryOptions = ['D2', 'V0', 'V4', 'V5'];
 
   // Fetch data on mount with saved factory filter
   useEffect(() => {
@@ -88,15 +86,36 @@ const DashboardPage = () => {
     };
   }, [loadFromUser]);
 
-  // Extract unique location prefixes for line filter
+  // Extract unique location prefixes for line filter based on selected filterType
   const lineOptions = useMemo(() => {
-    const names = locations.map((l) => l.location);
+    let validLocations = locations;
+
+    // Lọc lấy các location khớp với filterType hiện tại
+    if (filterType !== 'all') {
+      validLocations = validLocations.filter((l) => {
+        if (!l.location) return false;
+        const parts = l.location.split('_');
+        if (parts.length > 2) {
+          let typeStr = parts[2].trim().toUpperCase();
+          if (typeStr.startsWith('LINE')) typeStr = 'LINE';
+          else if (typeStr.startsWith('WH')) typeStr = 'WH';
+          else typeStr = parts[2].trim();
+          return typeStr === filterType;
+        }
+        return false;
+      });
+    }
+
+    const names = validLocations.map((l) => l.location);
     return [...new Set(names)];
-  }, [locations]);
+  }, [locations, filterType]);
 
   // Extract unique location types for type filter (after 2nd underscore)
   const typeOptions = useMemo(() => {
-    const types = locations.map((l) => {
+    const validLocations = filterFactory === 'all'
+      ? locations
+      : locations.filter(l => l.location && l.location.startsWith(filterFactory));
+    const types = validLocations.map((l) => {
       if (!l.location) return null;
       const parts = l.location.split('_');
       if (parts.length > 2) {
@@ -109,6 +128,40 @@ const DashboardPage = () => {
     }).filter(Boolean);
     return [...new Set(types)];
   }, [locations]);
+
+  // Factory dropdown options should match current "location type" filter.
+  // This prevents showing the full factory list when the visible locations are narrowed.
+  const factoryOptions = useMemo(() => {
+    const validLocations = filterType === 'all'
+      ? locations
+      : locations.filter((l) => {
+          if (!l.location) return false;
+          const parts = l.location.split('_');
+          if (parts.length > 2) {
+            let typeStr = parts[2].trim().toUpperCase();
+            if (typeStr.startsWith('LINE')) typeStr = 'LINE';
+            else if (typeStr.startsWith('WH')) typeStr = 'WH';
+            else typeStr = parts[2].trim();
+            return typeStr === filterType;
+          }
+          return false;
+        });
+
+    const availableFactorySet = new Set(
+      validLocations
+        .map((l) => (l.location ? l.location.split('_')[0]?.trim() : null))
+        .filter(Boolean)
+    );
+
+    let nextOptions = allFactoryOptions.filter((factory) => availableFactorySet.has(factory));
+
+    // Ensure current selected value is always present for CustomSelect rendering.
+    if (filterFactory !== 'all' && filterFactory) {
+      if (!nextOptions.includes(filterFactory)) nextOptions = [filterFactory, ...nextOptions];
+    }
+
+    return nextOptions;
+  }, [locations, filterType, filterFactory]);
 
   // Handle location card click
   const handleLocationClick = useCallback((location) => {
@@ -126,6 +179,7 @@ const DashboardPage = () => {
     setFilterFactory(factory);
     localStorage.setItem('dashboard_filterFactory', factory);
     fetchLocations(factory);
+    setFilterType('all');
   }, [fetchLocations]);
 
   // Refresh handler - full re-fetch from API
@@ -170,13 +224,6 @@ const DashboardPage = () => {
       });
     }
 
-    // Filter by line (prefix match on tc_name)
-    if (filterLine !== 'all') {
-      result = result.filter((l) => l.location.startsWith(filterLine));
-    }
-
-
-
     // Sort
     switch (sortBy) {
       case 'temp-asc':
@@ -199,7 +246,7 @@ const DashboardPage = () => {
     }
 
     return result;
-  }, [locations, filterType, filterLine, sortBy]);
+  }, [locations, filterType, sortBy]);
 
   // Group filtered locations by 5-char prefix of tc_name
   const groupedLocations = useMemo(
@@ -228,7 +275,6 @@ const DashboardPage = () => {
     // CSV headers
     const headers = [
       t('dashboard.locationName', 'Vị trí'),
-      t('dashboard.sensorId', 'Mã vị trí'),
       t('dashboard.temperature', 'Nhiệt độ') + ' (°C)',
       t('dashboard.humidity', 'Độ ẩm') + ' (%)',
       t('dashboard.lastUpdate', 'Cập nhật lần cuối'),
@@ -238,7 +284,6 @@ const DashboardPage = () => {
     // Convert filtered data to CSV rows
     const rows = filteredLocations.map((loc) => [
       loc.location,
-      loc.locationId,
       loc.temperature,
       Math.round(loc.humidity),
       loc.lastUpdate,
@@ -287,44 +332,10 @@ const DashboardPage = () => {
   return (
     <MainLayout>
       <div className="min-h-full overflow-hidden">
-        <div className="max-w-[1800px] mx-auto p-4 md:p-2">
+        <div className="max-w-[1700px] mx-auto p-4 md:p-3">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 animate-slide-down">
             <div>
-              {/* Factory filter tabs — always visible */}
-              <div className="flex items-center gap-3 mb-3 animate-fade-in">
-                  <div className="flex items-center gap-2 text-text-muted">
-                    <Building2 className="w-4 h-4" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">
-                      {t('dashboard.factory')}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      onClick={() => handleFilterFactoryChange('all')}
-                      className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 border ${
-                        filterFactory === 'all'
-                          ? 'bg-primary text-white border-primary shadow-[0_2px_8px_rgba(79,106,240,0.35)]'
-                          : 'bg-surface text-text-muted border-border hover:text-text hover:border-primary/30 hover:shadow-sm'
-                      }`}
-                    >
-                      {t('dashboard.allFactories')}
-                    </button>
-                    {factoryOptions.map((factory) => (
-                      <button
-                        key={factory}
-                        onClick={() => handleFilterFactoryChange(factory)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-semibold font-mono transition-all duration-300 border ${
-                          filterFactory === factory
-                            ? 'bg-primary text-white border-primary shadow-[0_2px_8px_rgba(79,106,240,0.35)]'
-                            : 'bg-surface text-text-muted border-border hover:text-text hover:border-primary/30 hover:shadow-sm'
-                        }`}
-                      >
-                        {factory}
-                      </button>
-                    ))}
-                  </div>
-              </div>
             </div>
 
             <div className="flex items-center gap-3">
@@ -397,13 +408,15 @@ const DashboardPage = () => {
                   </span>
                 }
                 value={filterType}
-                onChange={(val) => setFilterType(val)}
+                onChange={(val) => {
+                  setFilterType(val);
+                }}
                 options={[
                   { label: t('dashboard.allTypes', 'Tất cả loại'), value: 'all' },
                   ...typeOptions.map((type) => {
                     let label = type;
-                    if (type === 'WH') label = t('dashboard.typeWh', 'Warehouse');
-                    else if (type === 'LINE') label = t('dashboard.typeLine', 'Line');
+                    if (type === 'WH') label = t('dashboard.typeWh', 'WAREHOUSE');
+                    else if (type === 'PL') label = t('dashboard.typeLine', 'LINE');
                     return { label, value: type };
                   }),
                 ]}
@@ -411,22 +424,22 @@ const DashboardPage = () => {
               />
             </div>
 
-            {/* Filter by Line */}
+            {/* Filter by factory */}
             <div className="bg-surface rounded-lg border border-border p-2.5 shadow-sm transition-all duration-200">
               <CustomSelect
                 label={
                   <span className="flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5" />
-                    {t('dashboard.area')}
+                    {t('dashboard.factory')}
                   </span>
                 }
-                value={filterLine}
-                onChange={(val) => setFilterLine(val)}
+                value={filterFactory}
+                onChange={handleFilterFactoryChange}
                 options={[
-                  { label: t('dashboard.allAreas'), value: 'all' },
-                  ...lineOptions.map((line) => ({ label: line, value: line })),
+                  { label: t('dashboard.allFactories'), value: 'all' },
+                  ...factoryOptions.map((factory) => ({ label: factory, value: factory })),
                 ]}
-                placeholder={t('dashboard.selectArea')}
+                placeholder={t('dashboard.selectFactory')}
               />
             </div>
 
@@ -470,12 +483,11 @@ const DashboardPage = () => {
               <span className="text-text font-semibold">{filteredLocations.length}</span>{' '}
               {t('dashboard.of')} {locations.length} {t('dashboard.locations')}
             </p>
-            {(filterFactory !== 'all' || filterType !== 'all' || filterLine !== 'all' || sortBy !== 'default') && (
+            {(filterFactory !== 'all' || filterType !== 'all' || sortBy !== 'default') && (
               <button
                 onClick={() => {
                   handleFilterFactoryChange('all');
                   setFilterType('all');
-                  setFilterLine('all');
                   setSortBy('default');
                 }}
                 className="text-xs text-primary hover:text-primary-light transition-colors font-medium"
@@ -528,9 +540,9 @@ const DashboardPage = () => {
                     <div className="flex flex-col gap-3">
                       {childGroups.map((group) => (
                         <LocationGroupSection key={group.prefix} prefix={group.prefix} count={group.items.length}>
-                          <div className="flex flex-wrap gap-2 mt-2">
+                          <div className="flex flex-wrap gap-5 mt-2">
                             {group.items.map((loc) => (
-                              <div key={loc.id} className="w-[143px]">
+                              <div key={loc.id} className="w-[153px] lg:w-[212px] 2xl:w-[253px]">
                                 <LocationCard
                                   location={loc.location}
                                   locationId={loc.locationId}

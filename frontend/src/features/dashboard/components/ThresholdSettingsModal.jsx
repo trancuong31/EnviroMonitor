@@ -117,7 +117,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     const { t } = useTranslation();
     const { fridge, room, ng, updateSettings, isLoading } = useSettingsStore();
     const [showTooltip, setShowTooltip] = useState(false);
-    const [activeTab, setActiveTab] = useState('fridge');
+    const [activeTab, setActiveTab] = useState('room');
     
     // Local state for form inputs
     const [formValues, setFormValues] = useState({ fridge, room, ng });
@@ -127,7 +127,6 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     // get user role
     const { user } = useAuthStore();
     const isAdmin = user?.role === 'admin';
-
 
     // Sync form values when modal opens or thresholds change
     useEffect(() => {
@@ -258,17 +257,18 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                 {/* Tab Buttons */}
                 <div className="flex gap-2 px-6 pt-5 pb-2">
                     <TabButton
-                        active={activeTab === 'fridge'}
-                        icon=""
-                        label={t('settings.fridgeTab', 'Tủ lạnh')}
-                        onClick={() => handleTabSwitch('fridge')}
-                    />
-                    <TabButton
                         active={activeTab === 'room'}
                         icon=""
-                        label={t('settings.roomTab', 'Nhiệt độ thường')}
+                        label={t('settings.roomTab', 'Normal')}
                         onClick={() => handleTabSwitch('room')}
                     />
+                    <TabButton
+                        active={activeTab === 'fridge'}
+                        icon=""
+                        label={t('settings.fridgeTab', 'Cool')}
+                        onClick={() => handleTabSwitch('fridge')}
+                    />
+                    
                 </div>
 
                 {/* Body */}

@@ -116,7 +116,7 @@
     "selectType": "위치 선택",
     "allTypes": "모든 위치",
     "typeWh": "창고",
-    "typeLine": "라인",
+    "typeLine": "생산 라인",
     "line": "Line",
     "selectLine": "Line 선택",
     "allLines": "모든 Line"

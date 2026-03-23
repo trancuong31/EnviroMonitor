@@ -209,7 +209,6 @@ const LayoutViewerModal = ({ isOpen, onClose, position }) => {
                                                 transform: 'translate(-50%, -50%)',
                                             }}
                                             onClick={() => handleSensorClick(sensor)}
-                                            title={sensor.name}
                                         >
                                             {/* Pulse ring */}
                                             <span
@@ -228,10 +227,6 @@ const LayoutViewerModal = ({ isOpen, onClose, position }) => {
                                                         : 'bg-red-500 group-hover:scale-125 group-hover:bg-primary'
                                                 }`}
                                             />
-                                            {/* Label tooltip */}
-                                            <span className="absolute left-1/2 -translate-x-1/2 -bottom-6 whitespace-nowrap text-[10px] font-mono font-semibold text-text bg-surface/90 backdrop-blur px-2 py-0.5 rounded-md border border-border shadow opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                                {sensor.name}
-                                            </span>
                                         </button>
                                     );
                                 })}

@@ -1,15 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { MapPin, Image as ImageIcon, Layers } from 'lucide-react';
-import { getListLayout, getListImages } from '../api/dashboardApi';
+import { getListLayout } from '../api/dashboardApi';
 import api from '../../../services/api';
 import LayoutViewerModal from './LayoutViewerModal';
 
 let layoutPromise = null;
 
 /**
- * ==========================================
- * 1. COMPONENT NHÓM CON (5 KÝ TỰ ĐẦU)
- * ==========================================
  * @param {string} prefix - location group name (first 5 chars of tc_name)
  * @param {number} count - number of items in this group
  * @param {React.ReactNode} children - card or list item elements
@@ -63,18 +60,18 @@ const LocationGroupSection = ({ prefix, count, children }) => {
     const imageUrl = layoutImage 
         ? (layoutImage.startsWith('http') ? layoutImage : `${backendUrl}${layoutImage.startsWith('/') ? '' : '/'}${layoutImage}`) 
         : null;
-
+    
     return (
-        <section className="animate-fade-in relative p-2.5 pt-5 rounded-xl border-2 border-dashed border-border/70 bg-surface/40">
+        <section className="animate-fade-in relative mt-1 p-2.5 pt-5 rounded-xl border-2 border-dashed border-border">
             <div className="absolute top-0 left-4 -translate-y-1/2 flex items-center gap-1.5">
-                <div 
+                <div
                     className="flex items-center gap-1.5 px-2 py-1 bg-surface border border-border rounded-lg shadow-sm relative cursor-pointer hover:border-primary/50 transition-colors z-10 hover:z-50"
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                     onClick={() => setIsLayoutModalOpen(true)}
                 >
                     <MapPin className="w-3 h-3 text-primary" />
-                    <span className="text-xs font-bold text-text tracking-wide font-mono">
+                    <span className="text-sm font-bold text-text tracking-wide font-mono">
                         {prefix?.substring(3)}
                     </span>
                     {imageUrl && (

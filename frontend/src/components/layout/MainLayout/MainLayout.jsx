@@ -165,10 +165,10 @@ const MainLayout = ({ children }) => {
                 </svg>
             </button>
 
-            {/* Fullscreen toggle button */}
+            {/* Fullscreen toggle button*/}
             <button
                 onClick={toggleFullscreen}
-                className="fixed bottom-10 right-6 z-50 w-9 h-9 rounded-full bg-surface border border-border text-text-muted shadow-md flex items-center justify-center transition-all duration-300 hover:scale-110 hover:text-primary hover:border-primary/30 hover:shadow-lg"
+                className="fixed bottom-5 left-5 z-10 w-9 h-9 rounded-full bg-surface border border-border text-text-muted shadow-md flex items-center justify-center transition-all duration-300 hover:scale-110 hover:text-primary hover:border-primary/30 hover:shadow-lg"
                 aria-label="Toggle fullscreen"
                 title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
             >
