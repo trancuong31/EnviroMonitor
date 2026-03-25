@@ -47,7 +47,7 @@ const LocationCard = ({ location, locationId, temperature, humidity, sensorType 
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(79,106,240,0.04)_0%,transparent_50%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             {/* Header: Location name + Status Badge */}
-            <div className="relative z-10 flex items-center justify-between mb-3.5">
+            <div className="relative z-10 flex items-center justify-between mb-2.5">
                 <div className="text-text text-[0.85rem] font-bold tracking-wide truncate" title={location}>
                     {location?.substring(6) || 'Unknown'}
                 </div>
@@ -56,18 +56,18 @@ const LocationCard = ({ location, locationId, temperature, humidity, sensorType 
                         isOffline ? 'bg-red-500/10 text-red-500' : 'bg-warning/10 text-warning'
                     }`}>
                         {isOffline ? <WifiOff className="w-2.5 h-2.5" /> : <AlertTriangle className="w-2.5 h-2.5" />}
-                        <span>{isOffline ? 'OFFLINE' : 'WARN'}</span>
+                        <span>{isOffline ? 'OFFLINE' : 'WARNING'}</span>
                     </div>
                 )}
             </div>
 
             {/* Body: Temperature & Humidity Columns */}
-            <div className="relative z-10 flex items-center gap-4 mb-3">
+            <div className="relative z-10 flex items-center gap-4 mb-2">
                 {/* Temperature Column */}
                 <div className="flex flex-col flex-1 gap-1.5">
                     <div className="flex items-end gap-1">
-                        <Thermometer className={`w-3.5 h-3.5 mb-1 ${isOffline ? 'text-red-500' : tempWarning ? 'text-warning' : 'text-temp'}`} />
-                        <span className={`text-[1.3rem] font-bold font-mono tracking-tight leading-none bg-clip-text text-transparent ${
+                        <Thermometer className={`w-4 h-4 mb-1 ${isOffline ? 'text-red-500' : tempWarning ? 'text-warning' : 'text-temp'}`} />
+                        <span className={`text-[1.5rem] font-bold font-mono tracking-tight leading-none bg-clip-text text-transparent ${
                             isOffline ? 'bg-red-500' : tempWarning ? 'bg-gradient-to-r from-warning to-warning' : 'bg-gradient-to-r from-temp to-temp-end'
                         }`}>
                             {finalTemp}
@@ -91,8 +91,8 @@ const LocationCard = ({ location, locationId, temperature, humidity, sensorType 
                 {/* Humidity Column */}
                 <div className="flex flex-col flex-1 gap-1.5">
                     <div className="flex items-end gap-1">
-                        <Droplets className={`w-3.5 h-3.5 mb-1 ${isOffline ? 'text-red-500' : humWarning ? 'text-warning' : 'text-humidity'}`} />
-                        <span className={`text-[1.3rem] font-bold font-mono tracking-tight leading-none bg-clip-text text-transparent ${
+                        <Droplets className={`w-4 h-4 mb-1 ${isOffline ? 'text-red-500' : humWarning ? 'text-warning' : 'text-humidity'}`} />
+                        <span className={`text-[1.5rem] font-bold font-mono tracking-tight leading-none bg-clip-text text-transparent ${
                             isOffline ? 'bg-red-500' : humWarning ? 'bg-gradient-to-r from-warning to-warning' : 'bg-gradient-to-r from-humidity to-humidity-end'
                         }`}>
                             {finalHum}
