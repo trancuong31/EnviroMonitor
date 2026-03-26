@@ -27,7 +27,7 @@ const LocationCard = ({ location, locationId, temperature, humidity, sensorType 
     return (
         <div
             onClick={onClick}
-            className={`group relative bg-surface rounded-xl p-3.5 border overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-lg hover:-translate-y-1 ${
+            className={`group relative bg-surface rounded-xl p-3.5 border overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-lg ${
                 isOffline
                     ? 'border-red-500/60 shadow-[0_0_12px_rgba(239,68,68,0.15)] hover:border-red-500'
                     : hasWarning
@@ -47,8 +47,8 @@ const LocationCard = ({ location, locationId, temperature, humidity, sensorType 
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(79,106,240,0.04)_0%,transparent_50%)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
             {/* Header: Location name + Status Badge */}
-            <div className="relative z-10 flex items-center justify-between mb-2.5">
-                <div className="text-text text-[0.85rem] font-bold tracking-wide truncate" title={location}>
+            <div className="relative z-10 flex items-center justify-between mb-4.5">
+                <div className="text-text xl:text-[16px] font-bold tracking-wide truncate" title={location}>
                     {location?.substring(6) || 'Unknown'}
                 </div>
                 {(isOffline || hasWarning) && (
@@ -62,17 +62,32 @@ const LocationCard = ({ location, locationId, temperature, humidity, sensorType 
             </div>
 
             {/* Body: Temperature & Humidity Columns */}
-            <div className="relative z-10 flex items-center gap-4 mb-2">
+            <div className="relative z-10 flex items-center gap-4 mb-8">
                 {/* Temperature Column */}
                 <div className="flex flex-col flex-1 gap-1.5">
-                    <div className="flex items-end gap-1">
-                        <Thermometer className={`w-4 h-4 mb-1 ${isOffline ? 'text-red-500' : tempWarning ? 'text-warning' : 'text-temp'}`} />
-                        <span className={`text-[1.5rem] font-bold font-mono tracking-tight leading-none bg-clip-text text-transparent ${
-                            isOffline ? 'bg-red-500' : tempWarning ? 'bg-gradient-to-r from-warning to-warning' : 'bg-gradient-to-r from-temp to-temp-end'
-                        }`}>
-                            {finalTemp}
-                        </span>
-                        <span className="text-[0.7rem] text-text-muted font-semibold mb-0.5">°C</span>
+                    <div className="flex items-center gap-1 w-full justify-center">
+                        <Thermometer
+                            className={`flex-none w-[clamp(16px,1.8vw,20px)] h-[clamp(16px,1.8vw,20px)] ${
+                                isOffline ? 'text-red-500' : tempWarning ? 'text-warning' : 'text-temp'
+                            }`}
+                        />
+                        {/* Keep value+unit equal width between temp/hum */}
+                        <div className="flex items-baseline justify-center min-w-[clamp(2.9rem,4.2vw,3.4rem)]">
+                            <span
+                                className={`flex-none tabular-nums xl:text-[1.2rem] 2xl:text-[1.6rem] font-bold font-mono tracking-tight leading-none bg-clip-text text-transparent ${
+                                    isOffline
+                                        ? 'bg-red-500'
+                                        : tempWarning
+                                          ? 'bg-gradient-to-r from-warning to-warning'
+                                          : 'bg-gradient-to-r from-temp to-temp-end'
+                                }`}
+                            >
+                                {finalTemp}
+                            </span>
+                            <span className="flex-none ml-0.5 text-[clamp(0.55rem,0.9vw,0.7rem)] text-gray-500 font-semibold leading-none">
+                                °C
+                            </span>
+                        </div>
                     </div>
                     {/* Mini progress bar */}
                     <div className="h-[3px] bg-border/50 rounded-full overflow-hidden">
@@ -90,14 +105,29 @@ const LocationCard = ({ location, locationId, temperature, humidity, sensorType 
 
                 {/* Humidity Column */}
                 <div className="flex flex-col flex-1 gap-1.5">
-                    <div className="flex items-end gap-1">
-                        <Droplets className={`w-4 h-4 mb-1 ${isOffline ? 'text-red-500' : humWarning ? 'text-warning' : 'text-humidity'}`} />
-                        <span className={`text-[1.5rem] font-bold font-mono tracking-tight leading-none bg-clip-text text-transparent ${
-                            isOffline ? 'bg-red-500' : humWarning ? 'bg-gradient-to-r from-warning to-warning' : 'bg-gradient-to-r from-humidity to-humidity-end'
-                        }`}>
-                            {finalHum}
-                        </span>
-                        <span className="text-[0.7rem] text-text-muted font-semibold mb-0.5">%</span>
+                    <div className="flex items-center gap-1 w-full justify-center">
+                        <Droplets
+                            className={`flex-none w-[clamp(16px,1.8vw,20px)] h-[clamp(16px,1.8vw,20px)] ${
+                                isOffline ? 'text-red-500' : humWarning ? 'text-warning' : 'text-humidity'
+                            }`}
+                        />
+                        {/* Keep value+unit equal width between temp/hum */}
+                        <div className="flex items-baseline justify-center min-w-[clamp(2.9rem,4.2vw,3.4rem)]">
+                            <span
+                                className={`flex-none tabular-nums xl:text-[1.2rem] 2xl:text-[1.6rem] font-bold font-mono tracking-tight leading-none bg-clip-text text-transparent ${
+                                    isOffline
+                                        ? 'bg-red-500'
+                                        : humWarning
+                                          ? 'bg-gradient-to-r from-warning to-warning'
+                                          : 'bg-gradient-to-r from-humidity to-humidity-end'
+                                }`}
+                            >
+                                {finalHum}
+                            </span>
+                            <span className="flex-none ml-0.5 text-gray-500 font-semibold leading-none">
+                                %
+                            </span>
+                        </div>
                     </div>
                     {/* Mini progress bar */}
                     <div className="h-[3px] bg-border/50 rounded-full overflow-hidden">
@@ -112,9 +142,9 @@ const LocationCard = ({ location, locationId, temperature, humidity, sensorType 
             </div>
 
             {/* Footer: Time Update */}
-            <div className="relative z-10 flex items-center gap-1.5 pt-2.5 border-t border-border/40 text-[0.65rem] text-text-muted/70 font-medium">
-                <Clock className="w-3 h-3 text-text-muted/50" />
-                <span>{lastUpdate}</span>
+            <div className="relative z-10 flex items-center gap-1.5 pt-2.5 border-t border-border/40 text-[0.65rem] text-text-muted/60 font-medium">
+                <Clock className="w-4 h-4 text-gray-500" />
+                <span className='text-sm text-gray-500'>{lastUpdate}</span>
             </div>
         </div>
     );

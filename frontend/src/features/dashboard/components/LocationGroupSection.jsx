@@ -70,12 +70,12 @@ const LocationGroupSection = ({ prefix, count, children }) => {
                     onMouseLeave={() => setIsHovered(false)}
                     onClick={() => setIsLayoutModalOpen(true)}
                 >
-                    <MapPin className="w-3 h-3 text-primary" />
-                    <span className="text-sm font-bold text-text tracking-wide font-mono">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <span className="text-[18px] font-bold text-text tracking-wide font-mono">
                         {prefix?.substring(3)}
                     </span>
                     {imageUrl && (
-                        <ImageIcon className="w-3 h-3 text-text-muted ml-0.5" />
+                        <ImageIcon className="w-4 h-4 text-text-muted ml-0.5" />
                     )}
                 </div>
                 {/* Huy hiệu số lượng item */}
@@ -139,10 +139,10 @@ export const LocationHierarchyList = ({ items, renderItem }) => {
                     
                     {/* Header Nhóm Cha */}
                     <div className="flex items-center gap-3 mb-6 pb-3 border-b border-border/40">
-                        <Layers className="w-6 h-6 text-primary" />
-                        <h1 className="text-2xl font-bold text-text uppercase tracking-wider">
+                        <Layers className="w-7 h-7 text-primary" />
+                        <div className="text-3xl font-bold text-text uppercase tracking-wider leading-none">
                             {parentPrefix}
-                        </h1>
+                        </div>
                     </div>
 
                     {/* Lưới các Nhóm Con (5 ký tự) */}

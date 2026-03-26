@@ -49,7 +49,6 @@ const DashboardPage = () => {
   const [refreshInterval, setRefreshInterval] = useState(
     () => parseInt(localStorage.getItem('dashboard_refreshInterval'), 10) || 300000
   );
-  const [sortBy, setSortBy] = useState('default');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,7 +59,6 @@ const DashboardPage = () => {
   // Fetch data on mount with saved factory filter
   useEffect(() => {
     fetchLocations(filterFactory);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchLocations]);
 
   // Always fetch latest user settings on dashboard load
@@ -224,29 +222,8 @@ const DashboardPage = () => {
       });
     }
 
-    // Sort
-    switch (sortBy) {
-      case 'temp-asc':
-        result.sort((a, b) => a.temperature - b.temperature);
-        break;
-      case 'temp-desc':
-        result.sort((a, b) => b.temperature - a.temperature);
-        break;
-      case 'hum-asc':
-        result.sort((a, b) => a.humidity - b.humidity);
-        break;
-      case 'hum-desc':
-        result.sort((a, b) => b.humidity - a.humidity);
-        break;
-      case 'recent':
-        result.sort((a, b) => getAgeInMinutes(a.lastUpdateISO) - getAgeInMinutes(b.lastUpdateISO));
-        break;
-      default:
-        break;
-    }
-
     return result;
-  }, [locations, filterType, sortBy]);
+  }, [locations, filterType]);
 
   // Group filtered locations by 5-char prefix of tc_name
   const groupedLocations = useMemo(
@@ -334,168 +311,105 @@ const DashboardPage = () => {
       <div className="min-h-full overflow-hidden">
         <div className="max-w-[1700px] mx-auto p-4 md:p-3">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 animate-slide-down">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 animate-slide-down">
+
+            {/* ── Left: Filters ── */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:w-[70%] 2xl:w-[80%]">
+              <div className="w-full sm:flex-1 bg-surface rounded-lg border border-border p-2.5 shadow-sm">
+                <CustomSelect
+                  label={<span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5" />{t('dashboard.type', 'Loại khu vực')}</span>}
+                  value={filterType}
+                  onChange={(val) => setFilterType(val)}
+                  options={[
+                    { label: t('dashboard.allTypes', 'Tất cả loại'), value: 'all' },
+                    ...typeOptions.map((type) => {
+                      let label = type;
+                      if (type === 'WH') label = t('dashboard.typeWh', 'WAREHOUSE');
+                      else if (type === 'PL') label = t('dashboard.typeLine', 'LINE');
+                      return { label, value: type };
+                    }),
+                  ]}
+                  placeholder={t('dashboard.selectType', 'Chọn loại')}
+                />
+              </div>
+
+              <div className="w-full sm:flex-1 bg-surface rounded-lg border border-border p-2.5 shadow-sm">
+                <CustomSelect
+                  label={<span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" />{t('dashboard.factory')}</span>}
+                  value={filterFactory}
+                  onChange={handleFilterFactoryChange}
+                  options={[
+                    { label: t('dashboard.allFactories'), value: 'all' },
+                    ...factoryOptions.map((factory) => ({ label: factory, value: factory })),
+                  ]}
+                  placeholder={t('dashboard.selectFactory')}
+                />
+              </div>
+
+              <div className="w-full sm:flex-1 bg-surface rounded-lg border border-border p-2.5 shadow-sm">
+                <CustomSelect
+                  label={<span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{t('dashboard.refreshInterval')}</span>}
+                  value={String(refreshInterval)}
+                  onChange={handleRefreshIntervalChange}
+                  options={refreshIntervalOptions}
+                  placeholder={t('dashboard.selectInterval')}
+                />
+              </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              {/* Settings */}
+            {/* ── Right: Actions ── */}
+            <div className="flex items-center justify-end gap-2 sm:w-[30%] 2xl:w-[20%]">
               <button
                 onClick={() => setIsSettingsOpen(true)}
-                className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-text-muted hover:text-purple-500 hover:border-purple-500/30 shadow-sm hover:shadow transition-all duration-300"
+                className="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-purple-500 hover:border-purple-500/30 shadow-sm hover:shadow transition-all duration-200"
                 title={t('settings.thresholdTitle', 'Cài đặt ngưỡng cảnh báo')}
               >
-                <Settings className="w-[18px] h-[18px]" />
+                <Settings className="w-4 h-4" />
               </button>
 
-              {/* Export */}
               <button
                 onClick={handleExport}
-                className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-text-muted hover:text-green-500 hover:border-green-500/30 shadow-sm hover:shadow transition-all duration-300"
+                className="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-green-500 hover:border-green-500/30 shadow-sm hover:shadow transition-all duration-200"
                 title={t('dashboard.export', 'Xuất báo cáo CSV')}
               >
-                <Download className="w-[18px] h-[18px]" />
+                <Download className="w-4 h-4" />
               </button>
 
-              {/* Refresh */}
               <button
                 onClick={handleRefresh}
-                className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-text-muted hover:text-primary hover:border-primary/30 shadow-sm hover:shadow transition-all duration-300"
+                className="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-primary hover:border-primary/30 shadow-sm hover:shadow transition-all duration-200"
                 title={t('dashboard.refresh', 'Refresh data')}
               >
-                <RefreshCw
-                  className={`w-[18px] h-[18px] transition-transform duration-600 ${isRefreshing ? 'animate-spin' : ''}`}
-                />
+                <RefreshCw className={`w-4 h-4 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
               </button>
 
-              {/* View toggle */}
-              <div className="flex gap-1 bg-surface p-1 rounded-xl border border-border shadow-sm">
+              <div className="w-px h-6 bg-border mx-1" />
+
+              <div className="flex gap-1 bg-surface p-1 rounded-lg border border-border shadow-sm">
                 <button
                   onClick={() => setView('grid')}
-                  className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
-                    view === 'grid'
-                      ? 'bg-primary text-white shadow-[0_2px_8px_rgba(79,106,240,0.35)]'
-                      : 'text-text-muted hover:text-text hover:bg-surface-hover'
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                    view === 'grid' ? 'bg-primary text-white shadow-sm' : 'text-text-muted hover:text-text hover:bg-surface-hover'
                   }`}
                 >
-                  <LayoutGrid className="w-4 h-4" />
+                  <LayoutGrid className="w-3.5 h-3.5" />
                   {t('dashboard.grid')}
                 </button>
                 <button
                   onClick={() => setView('list')}
-                  className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
-                    view === 'list'
-                      ? 'bg-primary text-white shadow-[0_2px_8px_rgba(79,106,240,0.35)]'
-                      : 'text-text-muted hover:text-text hover:bg-surface-hover'
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                    view === 'list' ? 'bg-primary text-white shadow-sm' : 'text-text-muted hover:text-text hover:bg-surface-hover'
                   }`}
                 >
-                  <List className="w-4 h-4" />
+                  <List className="w-3.5 h-3.5" />
                   {t('dashboard.list')}
                 </button>
               </div>
             </div>
+
           </div>
           
-          {/* Filter bar */}
-          <div className="max-w-[1800px] mx-auto grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-2 animate-fade-in">
-            {/* Filter by Type */}
-            <div className="bg-surface rounded-lg border border-border p-2.5 shadow-sm transition-all duration-200">
-              <CustomSelect
-                label={
-                  <span className="flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5" />
-                    {t('dashboard.type', 'Loại khu vực')}
-                  </span>
-                }
-                value={filterType}
-                onChange={(val) => {
-                  setFilterType(val);
-                }}
-                options={[
-                  { label: t('dashboard.allTypes', 'Tất cả loại'), value: 'all' },
-                  ...typeOptions.map((type) => {
-                    let label = type;
-                    if (type === 'WH') label = t('dashboard.typeWh', 'WAREHOUSE');
-                    else if (type === 'PL') label = t('dashboard.typeLine', 'LINE');
-                    return { label, value: type };
-                  }),
-                ]}
-                placeholder={t('dashboard.selectType', 'Chọn loại')}
-              />
-            </div>
-
-            {/* Filter by factory */}
-            <div className="bg-surface rounded-lg border border-border p-2.5 shadow-sm transition-all duration-200">
-              <CustomSelect
-                label={
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5" />
-                    {t('dashboard.factory')}
-                  </span>
-                }
-                value={filterFactory}
-                onChange={handleFilterFactoryChange}
-                options={[
-                  { label: t('dashboard.allFactories'), value: 'all' },
-                  ...factoryOptions.map((factory) => ({ label: factory, value: factory })),
-                ]}
-                placeholder={t('dashboard.selectFactory')}
-              />
-            </div>
-
-            {/* Refresh Interval */}
-            <div className="bg-surface rounded-lg border border-border p-2.5 shadow-sm transition-all duration-200">
-              <CustomSelect
-                label={
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5" />
-                    {t('dashboard.refreshInterval')}
-                  </span>
-                }
-                value={String(refreshInterval)}
-                onChange={handleRefreshIntervalChange}
-                options={refreshIntervalOptions}
-                placeholder={t('dashboard.selectInterval')}
-              />
-            </div>
-
-            {/* Sort */}
-            <div className="bg-surface rounded-lg border border-border p-2.5 shadow-sm transition-all duration-200">
-              <CustomSelect
-                label={
-                  <span className="flex items-center gap-1.5">
-                    <ArrowUpDown className="w-3.5 h-3.5" />
-                    {t('dashboard.sort')}
-                  </span>
-                }
-                value={sortBy}
-                onChange={(val) => setSortBy(val)}
-                options={sortOptions}
-                placeholder={t('dashboard.selectSort')}
-              />
-            </div>
-          </div>
-
-          {/* Results count */}
-          <div className="flex items-center justify-between mb-2 animate-fade-in">
-            <p className="text-text-muted text-sm">
-              {t('dashboard.showing')}{' '}
-              <span className="text-text font-semibold">{filteredLocations.length}</span>{' '}
-              {t('dashboard.of')} {locations.length} {t('dashboard.locations')}
-            </p>
-            {(filterFactory !== 'all' || filterType !== 'all' || sortBy !== 'default') && (
-              <button
-                onClick={() => {
-                  handleFilterFactoryChange('all');
-                  setFilterType('all');
-                  setSortBy('default');
-                }}
-                className="text-xs text-primary hover:text-primary-light transition-colors font-medium"
-              >
-                {t('dashboard.clearFilters')}
-              </button>
-            )}
-          </div>
+          
 
           {/* Loading state */}
           {isLoading && locations.length === 0 && (
@@ -530,8 +444,8 @@ const DashboardPage = () => {
                   <div key={parentPrefix} className="w-full bg-surface/20 px-3 py-2 rounded-2xl border border-border/60">
                     {/* Compact Header Nhóm Cha */}
                     <div className="flex items-center gap-1.5 mb-2 pb-1 border-b border-border/30">
-                      <Factory className="w-4 h-4 text-primary" />
-                      <h2 className="text-sm font-bold text-text uppercase tracking-wider">
+                      <Factory className="w-6 h-6 text-primary" />
+                      <h2 className="text-[24px] font-bold text-text uppercase tracking-wider">
                         {parentPrefix}
                       </h2>
                     </div>
@@ -540,9 +454,12 @@ const DashboardPage = () => {
                     <div className="flex flex-col gap-3">
                       {childGroups.map((group) => (
                         <LocationGroupSection key={group.prefix} prefix={group.prefix} count={group.items.length}>
-                          <div className="flex flex-wrap gap-5 mt-2">
+                          <div className="flex flex-wrap sm:flex-nowrap gap-3 sm:gap-5 mt-2 w-full sm:overflow-hidden">
                             {group.items.map((loc) => (
-                              <div key={loc.id} className="w-[153px] lg:w-[212px] 2xl:w-[253px]">
+                              <div
+                                key={loc.id}
+                                className="w-full sm:w-[153px] lg:w-[212px] 2xl:w-[253px] min-w-0 overflow-hidden"
+                              >
                                 <LocationCard
                                   location={loc.location}
                                   locationId={loc.locationId}
