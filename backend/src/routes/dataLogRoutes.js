@@ -6,7 +6,9 @@ const router = express.Router();
 // Public routes
 router.get('/getLogs', dataLogController.getLogs);
 router.get('/getLogsByDateRange', dataLogController.getLogsByDateRange);
-router.get('/getListLayout', dataLogController.getListLayout);
-router.get('/getListImages', dataLogController.getListImages);
+router.get('/getListSensors', dataLogController.getListSensors);
+router.get('/getSensorsByPrefix', dataLogController.getSensorsByPrefix);
+router.put('/sensors/:id', dataLogController.updateSensor);
 router.get('/getLayoutDetail', dataLogController.getLayoutDetail);
+
 module.exports = router;

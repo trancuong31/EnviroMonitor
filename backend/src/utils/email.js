@@ -16,9 +16,6 @@ const createTransporter = () => {
     });
 };
 
-/**
- * Send email
- */
 const sendEmail = async (options) => {
     const transporter = createTransporter();
 
@@ -44,7 +41,7 @@ const sendEmail = async (options) => {
  */
 const sendPasswordResetEmail = async (user, resetURL) => {
     await sendEmail({
-        email: user.email,
+        email: user.userid || user.email,
         subject: 'Password Reset Request (valid for 10 minutes)',
         text: `Forgot your password? Submit a request with your new password to: ${resetURL}. If you didn't forget your password, please ignore this email.`,
         html: `

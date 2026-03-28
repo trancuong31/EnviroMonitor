@@ -19,8 +19,8 @@ const getLogs = catchAsync(async (req, res) => {
  * get logs by date range
  */
 const getLogsByDateRange = catchAsync(async (req, res) => {
-    const { logidx, startDate, endDate } = req.query;
-    const logs = await dataLogs.getLogsByDateRange(logidx, startDate, endDate);
+    const { sensorId, startDate, endDate } = req.query;
+    const logs = await dataLogs.getLogsByDateRange(sensorId, startDate, endDate);
 
     res.status(HTTP_CODES.OK).json({
         status: 'success',
@@ -29,26 +29,54 @@ const getLogsByDateRange = catchAsync(async (req, res) => {
 });
 
 /**
- * get list layout
+ * get list sensors from SENSOR table
  */
-const getListLayout = catchAsync(async (req, res) => {
-    const layouts = await dataLogs.getListLayout();
+const getListSensors = catchAsync(async (req, res) => {
+    const sensors = await dataLogs.getListSensors();
 
     res.status(HTTP_CODES.OK).json({
         status: 'success',
-        data: { layouts },
+        data: { sensors },
     });
 });
 
 /**
- * get list images for table Type
+ * Get sensors by prefix (for layout hotspots)
  */
-const getListImages = catchAsync(async (req, res) => {
-    const images = await dataLogs.getListImages();
+const getSensorsByPrefix = catchAsync(async (req, res) => {
+    const { prefix } = req.query;
+    const sensors = await dataLogs.getSensorsByPrefix(prefix);
+
+    if (!sensors || sensors.length === 0) {
+        return res.status(HTTP_CODES.NOT_FOUND).json({
+            status: 'fail',
+            message: 'No sensors found',
+        });
+    }
 
     res.status(HTTP_CODES.OK).json({
         status: 'success',
-        data: { images },
+        data: { sensors },
+    });
+});
+
+/**
+ * Update per-sensor threshold settings
+ */
+const updateSensor = catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const sensor = await dataLogs.updateSensor(id, req.body);
+
+    if (!sensor) {
+        return res.status(HTTP_CODES.NOT_FOUND).json({
+            status: 'fail',
+            message: 'Sensor not found',
+        });
+    }
+
+    res.status(HTTP_CODES.OK).json({
+        status: 'success',
+        data: { sensor },
     });
 });
 
@@ -57,7 +85,7 @@ const getListImages = catchAsync(async (req, res) => {
  */
 const getLayoutDetail = catchAsync(async (req, res) => {
     const { position } = req.query;
-    const layoutData = await dataLogs.getLayoutWithSensors(position);
+    const layoutData = await dataLogs.getLayoutDetail(position);
 
     if (!layoutData) {
         return res.status(HTTP_CODES.NOT_FOUND).json({
@@ -75,7 +103,8 @@ const getLayoutDetail = catchAsync(async (req, res) => {
 module.exports = {
     getLogs,
     getLogsByDateRange,
-    getListLayout,
-    getListImages,
+    getListSensors,
+    getSensorsByPrefix,
+    updateSensor,
     getLayoutDetail,
 };

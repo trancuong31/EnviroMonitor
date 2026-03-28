@@ -7,7 +7,7 @@ const router = express.Router();
 // All routes require authentication
 router.use(authenticate);
 
-// Update threshold settings
+// Update user settings
 router.put('/settings', userController.updateSettings);
 
 // Create user

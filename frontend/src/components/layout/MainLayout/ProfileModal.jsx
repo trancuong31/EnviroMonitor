@@ -87,11 +87,11 @@ const ProfileModal = ({ isOpen, onClose }) => {
                         <div className="flex flex-col gap-6">
                             <div className="flex items-center gap-4">
                                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-2xl font-bold text-white shadow-lg shrink-0">
-                                    {(userData.name || 'U').charAt(0).toUpperCase()}
+                                    {(userData.fullname || 'U').charAt(0).toUpperCase()}
                                 </div>
                                 <div className="min-w-0">
-                                    <h3 className="text-lg font-semibold truncate" title={userData.name}>{userData.name}</h3>
-                                    <p className="text-sm text-text-muted truncate" title={userData.email}>{userData.email}</p>
+                                    <h3 className="text-lg font-semibold truncate" title={userData.fullname}>{userData.fullname}</h3>
+                                    <p className="text-sm text-text-muted truncate" title={userData.userid}>{userData.userid}</p>
                                 </div>
                             </div>
 
@@ -102,7 +102,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-xs text-text-muted font-medium mb-0.5">{t('profile.name', 'Name')}</p>
-                                        <p className="text-sm font-semibold truncate" title={userData.name}>{userData.name}</p>
+                                        <p className="text-sm font-semibold truncate" title={userData.fullname}>{userData.fullname}</p>
                                     </div>
                                 </div>
 
@@ -112,7 +112,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-xs text-text-muted font-medium mb-0.5">{t('profile.email', 'Email')}</p>
-                                        <p className="text-sm font-semibold truncate" title={userData.email}>{userData.email}</p>
+                                        <p className="text-sm font-semibold truncate" title={userData.userid}>{userData.userid}</p>
                                     </div>
                                 </div>
 

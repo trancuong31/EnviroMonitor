@@ -17,13 +17,13 @@ const UserEditor = ({ user, onSave, onCancel, roles = [], factories = [] }) => {
     const isEditing = !!user?.id;
     
     const [formData, setFormData] = useState({
-        name: '',
-        email: '',
+        fullname: '',
+        userid: '',
         password: '',
-        role: 'user',
+        role: 'User',
         factory: '',
         status: 'active',
-        emailAlertEnabled: 'no'
+        emailAlert: 'no'
     });
 
     const [errors, setErrors] = useState({});
@@ -32,23 +32,23 @@ const UserEditor = ({ user, onSave, onCancel, roles = [], factories = [] }) => {
     useEffect(() => {
         if (user) {
             setFormData({
-                name: user.name || '',
-                email: user.email || '',
-                password: '', // Never show existing password
-                role: user.role || 'user',
+                fullname: user.fullname || '',
+                userid: user.userid || '',
+                password: '',
+                role: user.role || 'User',
                 factory: user.factory || '',
                 status: user.status || 'active',
-                emailAlertEnabled: user.emailAlertEnabled || 'no'
+                emailAlert: user.emailAlert || 'no'
             });
         } else {
             setFormData({
-                name: '',
-                email: '',
+                fullname: '',
+                userid: '',
                 password: '',
-                role: 'user',
+                role: 'User',
                 factory: '',
                 status: 'active',
-                emailAlertEnabled: 'no'
+                emailAlert: 'no'
             });
         }
         setErrors({});
@@ -70,9 +70,9 @@ const UserEditor = ({ user, onSave, onCancel, roles = [], factories = [] }) => {
 
     const validate = () => {
         const newErrors = {};
-        if (!formData.name.trim()) newErrors.name = t('auth.enterName', 'Name is required');
-        if (!formData.email.trim()) newErrors.email = t('auth.enterEmail', 'Email is required');
-        else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email format';
+        if (!formData.fullname.trim()) newErrors.fullname = t('auth.enterName', 'Name is required');
+        if (!formData.userid.trim()) newErrors.userid = t('auth.enterEmail', 'Email is required');
+        else if (!/\S+@\S+\.\S+/.test(formData.userid)) newErrors.userid = 'Invalid email format';
         
         if (!isEditing && !formData.password) newErrors.password = t('auth.enterPassword', 'Password is required for new users');
         if (formData.password && formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
@@ -120,14 +120,14 @@ const UserEditor = ({ user, onSave, onCancel, roles = [], factories = [] }) => {
                         </label>
                         <input
                             type="text"
-                            id="name"
-                            name="name"
-                            value={formData.name}
+                            id="fullname"
+                            name="fullname"
+                            value={formData.fullname}
                             onChange={handleChange}
-                            className={`${inputClasses} ${errors.name ? errorClasses : ''}`}
+                            className={`${inputClasses} ${errors.fullname ? errorClasses : ''}`}
                             placeholder="John Doe"
                         />
-                        {errors.name && <p className="mt-1.5 text-xs text-error flex items-center gap-1"><AlertCircle size={12}/>{errors.name}</p>}
+                        {errors.fullname && <p className="mt-1.5 text-xs text-error flex items-center gap-1"><AlertCircle size={12}/>{errors.fullname}</p>}
                     </div>
 
                     {/* Email */}
@@ -138,15 +138,15 @@ const UserEditor = ({ user, onSave, onCancel, roles = [], factories = [] }) => {
                         </label>
                         <input
                             type="email"
-                            id="email"
-                            name="email"
-                            value={formData.email}
+                            id="userid"
+                            name="userid"
+                            value={formData.userid}
                             onChange={handleChange}
-                            className={`${inputClasses} ${errors.email ? errorClasses : ''}`}
+                            className={`${inputClasses} ${errors.userid ? errorClasses : ''}`}
                             placeholder="john@example.com"
                             autoComplete="off"
                         />
-                        {errors.email && <p className="mt-1.5 text-xs text-error flex items-center gap-1"><AlertCircle size={12}/>{errors.email}</p>}
+                        {errors.userid && <p className="mt-1.5 text-xs text-error flex items-center gap-1"><AlertCircle size={12}/>{errors.userid}</p>}
                     </div>
 
                     {/* Password */}
@@ -196,8 +196,8 @@ const UserEditor = ({ user, onSave, onCancel, roles = [], factories = [] }) => {
                                 value={formData.status}
                                 onChange={(val) => handleChange({ target: { name: 'status', value: val } })}
                                 options={[
-                                    { value: 'active', label: t('admin.statusActive', 'Active') },
-                                    { value: 'inactive', label: t('admin.statusInactive', 'Inactive') }
+                                    { value: 'Active', label: t('admin.statusActive', 'Active') },
+                                    { value: 'Inactive', label: t('admin.statusInactive', 'Inactive') }
                                 ]}
                             />
                         </div>
@@ -224,18 +224,18 @@ const UserEditor = ({ user, onSave, onCancel, roles = [], factories = [] }) => {
                     <div>
                         <div className="mt-2 p-4 rounded-xl border border-border bg-surface-alt/30">
                             <CustomCheckbox
-                                checked={formData.emailAlertEnabled === 'yes'}
-                                onChange={(checked) => handleChange({ target: { name: 'emailAlertEnabled', value: checked ? 'yes' : 'no' } })}
+                                checked={formData.emailAlert === 'yes'}
+                                onChange={(checked) => handleChange({ target: { name: 'emailAlert', value: checked ? 'yes' : 'no' } })}
                                 label={
                                     <span className="flex items-center gap-1.5">
                                         {t('admin.emailAlert', 'Email Alert')}
                                     </span>
                                 }
                                 description={t('admin.emailAlertDesc', 'Receive email alerts for temperature and humidity warnings')}
-                                className={`${errors.emailAlertEnabled ? 'border-error' : ''}`}
+                                className={`${errors.emailAlert ? 'border-error' : ''}`}
                             />
                         </div>
-                        {errors.emailAlertEnabled && <p className="mt-1.5 text-xs text-error">{errors.emailAlertEnabled}</p>}
+                        {errors.emailAlert && <p className="mt-1.5 text-xs text-error">{errors.emailAlert}</p>}
                     </div>
 
                 </form>

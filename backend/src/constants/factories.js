@@ -2,6 +2,7 @@
  * Factory codes
  */
 const FACTORIES = {
+    ALL: 'ALL',
     D1: 'D1',
     D2: 'D2',
     V0: 'V0',

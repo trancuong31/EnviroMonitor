@@ -83,15 +83,15 @@ const UserList = ({ users, selectedUser, onSelectUser, onDeleteUser, onAddNew })
                                                     ? 'bg-primary text-white' 
                                                     : 'bg-gradient-to-br from-surface-alt to-border text-text'
                                             }`}>
-                                                {(user.name || 'U').charAt(0).toUpperCase()}
+                                                {(user.fullname || 'U').charAt(0).toUpperCase()}
                                             </div>
                                             {/* Name & Email */}
                                             <div className="ml-3 min-w-0">
                                                 <p className={`text-sm font-semibold truncate ${selectedUser?.id === user.id ? 'text-primary' : 'text-text'}`}>
-                                                    {user.name}
+                                                    {user.fullname}
                                                 </p>
                                                 <p className="text-xs text-text-muted truncate mt-0.5">
-                                                    {user.email}
+                                                    {user.userid}
                                                 </p>
                                             </div>
                                         </div>
@@ -100,7 +100,7 @@ const UserList = ({ users, selectedUser, onSelectUser, onDeleteUser, onAddNew })
                                     {/* Column: Role */}
                                     <td className="py-3 px-6">
                                         <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold capitalize tracking-wide rounded-md border ${
-                                            user.role === 'admin'
+                                            user.role === 'Admin'
                                                 ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
                                                 : 'bg-blue-500/10 text-blue-600 border-blue-500/20'
                                         }`}>
@@ -117,7 +117,7 @@ const UserList = ({ users, selectedUser, onSelectUser, onDeleteUser, onAddNew })
 
                                     {/* Column: Status */}
                                     <td className="py-3 px-6">
-                                        {user.status === 'inactive' ? (
+                                        {user.status === 'Inactive' ? (
                                             <span className="inline-flex items-center px-2.5 py-1 text-xs font-semibold uppercase tracking-wider bg-error/10 text-error rounded-full">
                                                 {t('admin.statusInactive', 'Inactive')}
                                             </span>

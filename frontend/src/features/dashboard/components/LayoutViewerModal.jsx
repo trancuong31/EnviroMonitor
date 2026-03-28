@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Camera, MapPin } from 'lucide-react';
-import { getLayoutDetail } from '../api/dashboardApi';
 import api from '../../../services/api';
-
+import { getLayoutDetail } from '../api/dashboardApi';
 /**
  * Full-screen modal to display a layout (floor plan) image
  * with clickable sensor hotspot dots.
@@ -13,6 +12,19 @@ import api from '../../../services/api';
  * @param {function} onClose - callback to close the modal
  * @param {string} position - layout position key (e.g. "V4_1F")
  */
+
+const LAYOUT_IMAGES = {
+    "D2_2F": "/uploads/images/D2_2F.jpg",
+    "V0_1F": "/uploads/images/V0_1F.jpg",
+    "V0_2F": "/uploads/images/V0_2F.jpg",
+    "V0_3F": "/uploads/images/V0_3F.jpg",
+    "V4_1F": "/uploads/images/V4_1F.jpg",
+    "V4_2F": "/uploads/images/V4_2F.jpg",
+    "V4_3F": "/uploads/images/V4_3F.jpg",
+    "V5_1F": "/uploads/images/V5_1F.jpg",
+    "V5_2F": "/uploads/images/V5_2F.jpg",
+    "V5_3F": "/uploads/images/V5_3F.jpg",
+};
 const LayoutViewerModal = ({ isOpen, onClose, position }) => {
     const { t } = useTranslation();
     const [layoutData, setLayoutData] = useState(null);
@@ -101,20 +113,8 @@ const LayoutViewerModal = ({ isOpen, onClose, position }) => {
         setSelectedSensor((prev) => (prev?.id === sensor.id ? null : sensor));
     };
 
-    // Parse layout image (may be JSON array or plain string)
-    let layoutImageUrl = null;
-    if (layoutData?.layoutImage) {
-        try {
-            const parsed = JSON.parse(layoutData.layoutImage);
-            layoutImageUrl = resolveImageUrl(
-                Array.isArray(parsed) ? parsed[0] : parsed
-            );
-        } catch {
-            layoutImageUrl = resolveImageUrl(layoutData.layoutImage);
-        }
-    }
-
-    
+    const rawImageUrl = LAYOUT_IMAGES[position];
+    const layoutImageUrl = rawImageUrl ? buildUrl(rawImageUrl) : null;
 
     const handleImageClick = (e) => {
         const rect = e.target.getBoundingClientRect();
@@ -158,9 +158,9 @@ const LayoutViewerModal = ({ isOpen, onClose, position }) => {
                 <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-4 py-2 bg-surface/80 backdrop-blur border border-border rounded-xl shadow-lg">
                     <MapPin className="w-4 h-4 text-primary" />
                     <span className="text-sm font-bold font-mono text-text">{position}</span>
-                    {layoutData?.sensors?.length > 0 && (
+                    {layoutData?.data?.length > 0 && (
                         <span className="text-xs text-text-muted bg-surface-alt px-2 py-0.5 rounded-lg border border-border">
-                            {layoutData.sensors.length} sensors
+                            {layoutData.data.length} sensors
                         </span>
                     )}
                 </div>
@@ -195,7 +195,7 @@ const LayoutViewerModal = ({ isOpen, onClose, position }) => {
                                     />
                                 )}
                                 {/* Sensor hotspot dots */}
-                                {layoutData?.sensors?.map((sensor) => {
+                                {layoutData?.data?.map((sensor) => {
                                     const isActive = selectedSensor?.id === sensor.id;
                                     if (sensor.x == null || sensor.y == null) return null;
 

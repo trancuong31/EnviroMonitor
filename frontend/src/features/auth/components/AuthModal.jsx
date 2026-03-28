@@ -185,6 +185,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
                                     }
                                     placeholder={t('auth.selectFactory')}
                                     options={[
+                                        { value: 'ALL', label: 'ALL' },
                                         { value: 'D2', label: 'D2' },
                                         { value: 'V0', label: 'V0' },
                                         { value: 'V1', label: 'V1' },

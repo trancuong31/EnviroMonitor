@@ -1,39 +1,42 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
-const TLog = sequelize.define('TLog', {
+const DataInfo = sequelize.define('DataInfo', {
     id: {
         type: DataTypes.BIGINT,
         primaryKey: true,
         autoIncrement: true,
     },
-    logidx: {
-        type: DataTypes.STRING(14),
-        allowNull: false,
-    },
-    tc_name: {
+    sensorId: {
         type: DataTypes.STRING(100),
         allowNull: true,
+        field: 'SENSORID',
     },
-    log_date: {
+    date: {
         type: DataTypes.DATE,
         allowNull: true,
+        field: 'DATE',
     },
-    value_0: {
+    temperature: {
         type: DataTypes.FLOAT,
         allowNull: true,
+        field: 'TEMPERATURE',
     },
-    value_1: {
+    humidity: {
         type: DataTypes.FLOAT,
         allowNull: true,
+        field: 'HUMIDITY',
     },
-    event_time: {
+    eventTime: {
         type: DataTypes.DATE,
         allowNull: true,
+        defaultValue: DataTypes.NOW,
+        field: 'EVENTTIME',
     },
 }, {
-    tableName: 'tlog',
+    tableName: 'data_info',
     timestamps: false,
+    underscored: false,
 });
 
-module.exports = TLog;
+module.exports = DataInfo;

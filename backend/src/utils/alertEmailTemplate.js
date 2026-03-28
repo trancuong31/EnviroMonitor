@@ -2,7 +2,10 @@
  * Format date to Vietnamese format: dd/MM/yyyy HH:mm:ss
  */
 const formatDate = (date, includeYear = true) => {
+    if (!date) return '—';
     const d = new Date(date);
+    if (isNaN(d.getTime())) return '—';
+    
     const pad = (n) => String(n).padStart(2, '0');
     const day = pad(d.getDate());
     const month = pad(d.getMonth() + 1);
@@ -10,57 +13,72 @@ const formatDate = (date, includeYear = true) => {
     const hours = pad(d.getHours());
     const minutes = pad(d.getMinutes());
     const seconds = pad(d.getSeconds());
+    
     if (includeYear) return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
     return `${day}/${month} ${hours}:${minutes}:${seconds}`;
 };
 
 /**
  * Build personalized HTML email template for environment alert
- * @param {Array} alerts - Array of { logidx, tc_name, value_0, value_1, log_date, sensorType, tempStatus, humStatus }
- * @param {Object} thresholds - { fridgeTempMin, fridgeTempMax, fridgeHumMin, fridgeHumMax, roomTempMin, roomTempMax, roomHumMin, roomHumMax }
+ * @param {Array} alerts - Array of { sensorId, temperature, humidity, logDate, sensorType, tempStatus, humStatus, limits }
  * @param {string} userName - Name of the recipient user
- * @param {string} factoryName - Factory code (e.g. V4, V5)
+ * @param {string} factoryName - Factory code (e.g. V4, All)
  * @returns {Object} { subject, html }
  */
-const buildAlertEmail = (alerts, thresholds, userName, factoryName) => {
+const buildAlertEmail = (alerts, userName, factoryName) => {
     const now = formatDate(new Date());
     const totalAlerts = alerts.length;
 
     const tableRows = alerts.map((a, i) => {
-        const logDate = a.log_date ? formatDate(a.log_date, false) : '—';
-        const tempBg = a.tempStatus !== 'normal' ? '#fef2f2' : '#f0fdf4';
-        const tempColor = a.tempStatus !== 'normal' ? '#dc2626' : '#16a34a';
-        const humBg = a.humStatus !== 'normal' ? '#fef2f2' : '#f0fdf4';
-        const humColor = a.humStatus !== 'normal' ? '#dc2626' : '#16a34a';
+        const logDate = a.logDate ? formatDate(a.logDate, false) : '—';
+        
+        // Status checks
+        const tempIsNormal = a.tempStatus === 'normal';
+        const humIsNormal = a.humStatus === 'normal';
 
-        const typeLabel = a.sensorType === 'FRIDGE' ? 'Tủ lạnh' : 'Phòng';
+        // Styling
+        const tempBg = !tempIsNormal ? '#fef2f2' : '#f0fdf4';
+        const tempColor = !tempIsNormal ? '#dc2626' : '#16a34a';
+        const humBg = !humIsNormal ? '#fef2f2' : '#f0fdf4';
+        const humColor = !humIsNormal ? '#dc2626' : '#16a34a';
 
-        const tempLabel = a.tempStatus === 'high' ? 'Vượt UCL'
-            : a.tempStatus === 'low' ? 'Dưới LCL'
-                : 'Bình thường';
+        // Labels
+        const tempLabel = a.tempStatus === 'high' ? 'Vượt ngưỡng' : a.tempStatus === 'low' ? 'Dưới ngưỡng' : 'Bình thường';
+        const humLabel = a.humStatus === 'high' ? 'Vượt ngưỡng' : a.humStatus === 'low' ? 'Dưới ngưỡng' : 'Bình thường';
 
-        const humLabel = a.humStatus === 'high' ? 'Vượt UCL'
-            : a.humStatus === 'low' ? 'Dưới LCL'
-                : 'Bình thường';
+        // Values
+        const tempVal = a.temperature != null ? a.temperature.toFixed(1) : '—';
+        const humVal = a.humidity != null ? a.humidity.toFixed(1) : '—';
+        const limits = a.limits || {};
 
         return `
-        <tr style="border-bottom: 1px solid #e5e7eb;">
+        <tr style="border-bottom: 1px solid #e5e7eb; background-color: ${i % 2 === 0 ? '#ffffff' : '#f9fafb'};">
             <td style="padding: 12px 16px; font-size: 14px; color: #374151; text-align: center;">${i + 1}</td>
-            <td style="padding: 12px 16px; font-size: 14px; color: #374151;">${a.tc_name || '—'}</td>
-            <td style="padding: 12px 16px; font-size: 13px; color: #374151; text-align: center;">${typeLabel}</td>
-            <td style="padding: 12px 16px; font-size: 14px; font-weight: 700; color: ${tempColor}; text-align: center;">${a.value_0 != null ? a.value_0.toFixed(1) : '—'}°C</td>
-            <td style="padding: 12px 16px; font-size: 12px; text-align: center;">
-                <span style="display: inline-block; padding: 4px 10px; border-radius: 20px; background: ${tempBg}; color: ${tempColor}; font-weight: 600;">${tempLabel}</span>
+            <td style="padding: 12px 16px; font-size: 14px; font-weight: 600; color: #111827;">${a.sensorId || '—'}</td>
+            <td style="padding: 12px 16px; font-size: 13px; color: #4b5563; text-align: center;">${a.sensorType || '—'}</td>
+            
+            <td style="padding: 12px 16px; text-align: center;">
+                <div style="font-size: 15px; font-weight: 700; color: ${tempColor};">${tempVal}°C</div>
+                ${!tempIsNormal ? `<div style="font-size: 11px; color: #6b7280; margin-top: 4px; white-space: nowrap;">(Cho phép: ${limits.tempMin} - ${limits.tempMax})</div>` : ''}
             </td>
-            <td style="padding: 12px 16px; font-size: 14px; font-weight: 700; color: ${humColor}; text-align: center;">${a.value_1 != null ? a.value_1.toFixed(1) : '—'}%</td>
-            <td style="padding: 12px 16px; font-size: 12px; text-align: center;">
-                <span style="display: inline-block; padding: 4px 10px; border-radius: 20px; background: ${humBg}; color: ${humColor}; font-weight: 600;">${humLabel}</span>
+            <td style="padding: 12px 16px; text-align: center;">
+                <span style="display: inline-block; padding: 4px 10px; border-radius: 20px; background: ${tempBg}; color: ${tempColor}; font-weight: 600; font-size: 12px; white-space: nowrap;">${tempLabel}</span>
             </td>
+            
+            <td style="padding: 12px 16px; text-align: center;">
+                <div style="font-size: 15px; font-weight: 700; color: ${humColor};">${humVal}%</div>
+                ${!humIsNormal ? `<div style="font-size: 11px; color: #6b7280; margin-top: 4px; white-space: nowrap;">(Cho phép: ${limits.humMin} - ${limits.humMax})</div>` : ''}
+            </td>
+            <td style="padding: 12px 16px; text-align: center;">
+                <span style="display: inline-block; padding: 4px 10px; border-radius: 20px; background: ${humBg}; color: ${humColor}; font-weight: 600; font-size: 12px; white-space: nowrap;">${humLabel}</span>
+            </td>
+            
             <td style="padding: 12px 16px; font-size: 13px; color: #6b7280; text-align: center;">${logDate}</td>
         </tr>`;
     }).join('');
 
-    const subject = `[EnviroMonitor] Cảnh báo ${factoryName} — ${totalAlerts} cảm biến vượt ngưỡng (${now})`;
+    const displayFactory = factoryName === 'All' ? 'Tất cả các xưởng' : factoryName;
+    const subject = `[Temperature & Humidity Monitoring] Cảnh báo ${displayFactory} — ${totalAlerts} vị trí bất thường (${now})`;
 
     const html = `
 <!DOCTYPE html>
@@ -72,28 +90,26 @@ const buildAlertEmail = (alerts, thresholds, userName, factoryName) => {
 <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
     <div style="max-width: 960px; margin: 0 auto; padding: 24px;">
         
-        <!-- Header -->
         <div style="background-color: #dc2626; border-radius: 16px 16px 0 0; padding: 32px; text-align: center;">
-            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700;">CẢNH BÁO MÔI TRƯỜNG</h1>
-            <p style="margin: 8px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">Hệ thống EnviroMonitor phát hiện cảm biến vượt ngưỡng an toàn</p>
+            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700; letter-spacing: 0.5px;">CẢNH BÁO MÔI TRƯỜNG</h1>
+            <p style="margin: 8px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">Hệ thống Giám sát nhiệt độ và độ ẩm phát hiện cảm biến vượt ngưỡng an toàn</p>
         </div>
 
-        <!-- User & Factory Info -->
         <div style="background: #ffffff; padding: 24px 32px; border-bottom: 1px solid #e5e7eb;">
             <table style="width: 100%;" cellpadding="0" cellspacing="0">
                 <tr>
                     <td style="padding: 6px 0;">
-                        <span style="font-size: 13px; color: #6b7280;">Người nhận:</span>
-                        <strong style="color: #1f2937; margin-left: 8px;">${userName || '—'}</strong>
+                        <span style="font-size: 13px; color: #6b7280;">Kính gửi:</span>
+                        <strong style="color: #1f2937; margin-left: 8px; font-size: 15px;">${userName || 'Quản trị viên'}</strong>
                     </td>
                     <td style="padding: 6px 0; text-align: right;">
-                        <span style="font-size: 13px; color: #6b7280;">Nhà máy:</span>
-                        <strong style="color: #1f2937; margin-left: 8px;">${factoryName || '—'}</strong>
+                        <span style="font-size: 13px; color: #6b7280;">Khu vực:</span>
+                        <strong style="color: #1f2937; margin-left: 8px; font-size: 15px;">${displayFactory}</strong>
                     </td>
                 </tr>
                 <tr>
                     <td style="padding: 6px 0;">
-                        <span style="font-size: 13px; color: #6b7280;">Thời gian kiểm tra:</span>
+                        <span style="font-size: 13px; color: #6b7280;">Thời điểm kiểm tra:</span>
                         <strong style="color: #1f2937; margin-left: 8px;">${now}</strong>
                     </td>
                     <td style="padding: 6px 0; text-align: right;">
@@ -105,19 +121,18 @@ const buildAlertEmail = (alerts, thresholds, userName, factoryName) => {
             </table>
         </div>
 
-        <!-- Alert Table -->
         <div style="background: #ffffff; overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; min-width: 780px;" cellpadding="0" cellspacing="0">
+            <table style="width: 100%; border-collapse: collapse; min-width: 800px;" cellpadding="0" cellspacing="0">
                 <thead>
                     <tr style="background: #f8fafc;">
-                        <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border-bottom: 2px solid #e5e7eb;">STT</th>
-                        <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; border-bottom: 2px solid #e5e7eb;">Tên vị trí</th>
-                        <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border-bottom: 2px solid #e5e7eb;">Loại</th>
-                        <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border-bottom: 2px solid #e5e7eb;">Nhiệt độ</th>
-                        <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border-bottom: 2px solid #e5e7eb;">Trạng thái</th>
-                        <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border-bottom: 2px solid #e5e7eb;">Độ ẩm</th>
-                        <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border-bottom: 2px solid #e5e7eb;">Trạng thái</th>
-                        <th style="padding: 14px 16px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border-bottom: 2px solid #e5e7eb;">Thời gian đo</th>
+                        <th style="padding: 14px 16px; font-size: 12px; color: #4b5563; font-weight: 700; text-transform: uppercase; text-align: center; border-bottom: 2px solid #e5e7eb;">STT</th>
+                        <th style="padding: 14px 16px; font-size: 12px; color: #4b5563; font-weight: 700; text-transform: uppercase; text-align: left; border-bottom: 2px solid #e5e7eb;">Sensor</th>
+                        <th style="padding: 14px 16px; font-size: 12px; color: #4b5563; font-weight: 700; text-transform: uppercase; text-align: center; border-bottom: 2px solid #e5e7eb;">Loại</th>
+                        <th style="padding: 14px 16px; font-size: 12px; color: #4b5563; font-weight: 700; text-transform: uppercase; text-align: center; border-bottom: 2px solid #e5e7eb;">Nhiệt độ</th>
+                        <th style="padding: 14px 16px; font-size: 12px; color: #4b5563; font-weight: 700; text-transform: uppercase; text-align: center; border-bottom: 2px solid #e5e7eb;">Cảnh báo</th>
+                        <th style="padding: 14px 16px; font-size: 12px; color: #4b5563; font-weight: 700; text-transform: uppercase; text-align: center; border-bottom: 2px solid #e5e7eb;">Độ ẩm</th>
+                        <th style="padding: 14px 16px; font-size: 12px; color: #4b5563; font-weight: 700; text-transform: uppercase; text-align: center; border-bottom: 2px solid #e5e7eb;">Cảnh báo</th>
+                        <th style="padding: 14px 16px; font-size: 12px; color: #4b5563; font-weight: 700; text-transform: uppercase; text-align: center; border-bottom: 2px solid #e5e7eb;">Cập nhật cuối</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -126,42 +141,13 @@ const buildAlertEmail = (alerts, thresholds, userName, factoryName) => {
             </table>
         </div>
 
-        <!-- Threshold Reference — split Fridge / Room -->
-        <div style="background: #fffbeb; padding: 20px 32px; border-top: 1px solid #fde68a;">
-            <p style="margin: 0 0 12px; font-size: 13px; font-weight: 700; color: #92400e;">📋 Ngưỡng an toàn cá nhân của bạn:</p>
-            <table style="width: 100%;" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td colspan="2" style="padding: 6px 0; font-size: 13px; font-weight: 600; color: #78350f;">Tủ lạnh (Fridge)</td>
-                </tr>
-                <tr>
-                    <td style="padding: 4px 0 4px 16px; font-size: 13px; color: #78350f;">
-                        🌡️ Nhiệt độ: <strong>${thresholds.fridgeTempMin}°C — ${thresholds.fridgeTempMax}°C</strong>
-                    </td>
-                    <td style="padding: 4px 0; font-size: 13px; color: #78350f;">
-                        💧 Độ ẩm: <strong>${thresholds.fridgeHumMin}% — ${thresholds.fridgeHumMax}%</strong>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="padding: 10px 0 6px; font-size: 13px; font-weight: 600; color: #78350f;">Phòng (Room)</td>
-                </tr>
-                <tr>
-                    <td style="padding: 4px 0 4px 16px; font-size: 13px; color: #78350f;">
-                        🌡️ Nhiệt độ: <strong>${thresholds.roomTempMin}°C — ${thresholds.roomTempMax}°C</strong>
-                    </td>
-                    <td style="padding: 4px 0; font-size: 13px; color: #78350f;">
-                        💧 Độ ẩm: <strong>${thresholds.roomHumMin}% — ${thresholds.roomHumMax}%</strong>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <!-- Footer -->
         <div style="background: #1f2937; border-radius: 0 0 16px 16px; padding: 24px 32px; text-align: center;">
             <p style="margin: 0; font-size: 12px; color: #9ca3af;">
-                Email này được gửi tự động bởi hệ thống <strong style="color: #60a5fa;">EnviroMonitor</strong>
+                Email này được gửi tự động bởi hệ thống giám sát <strong style="color: #60a5fa;">EnviroMonitor</strong>
             </p>
             <p style="margin: 8px 0 0; font-size: 11px; color: #6b7280;">
-                Vui lòng không trả lời email này. Để thay đổi ngưỡng cảnh báo, vào phần Cài đặt trên hệ thống.
+                Bạn nhận được email này vì tài khoản được phân quyền giám sát khu vực tương ứng.<br>
+                Ngưỡng an toàn được thiết lập riêng trên cấu hình của từng thiết bị cảm biến.
             </p>
         </div>
 

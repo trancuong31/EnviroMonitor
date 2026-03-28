@@ -91,7 +91,7 @@ const MainLayout = ({ children }) => {
                     {isAuthenticated ? (
                         <>
                             <div className="hidden sm:flex items-center gap-2 text-sm text-text-muted">
-                                {user?.role === 'admin' && (
+                                {user?.role === 'Admin' && (
                                     <Link to="/admin/users" className="relative group flex items-center h-full pt-1 pb-1">
                                         <Button 
                                             variant="ghost" 
@@ -108,7 +108,7 @@ const MainLayout = ({ children }) => {
                                     </Link>
                                 )}
                                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary flex items-center justify-center text-xs font-bold text-white ml-2">
-                                    {(user?.name || 'U').charAt(0).toUpperCase()}
+                                    {(user?.fullname || 'U').charAt(0).toUpperCase()}
                                 </div>
                                 <div className="relative group flex items-center h-full pt-1 pb-1">
                                     <Button 
@@ -117,7 +117,7 @@ const MainLayout = ({ children }) => {
                                         onClick={handleProfile}
                                         className="text-primary transition-colors hover:bg-transparent"
                                     >
-                                    {user?.name || 'User'}
+                                    {user?.fullname || 'User'}
                                 </Button>
                                 {/* Thanh gạch chân animation */}
                                 <span className="absolute bottom-0 left-2 right-2 h-[2.5px] bg-primary rounded-t-full transition-transform duration-300 origin-center scale-x-0 group-hover:scale-x-100" />

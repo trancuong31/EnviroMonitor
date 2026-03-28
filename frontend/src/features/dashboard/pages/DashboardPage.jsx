@@ -314,7 +314,7 @@ const DashboardPage = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 animate-slide-down">
 
             {/* ── Left: Filters ── */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:w-[70%] 2xl:w-[80%]">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:w-[70%] 2xl:w-[75%]">
               <div className="w-full sm:flex-1 bg-surface rounded-lg border border-border p-2.5 shadow-sm">
                 <CustomSelect
                   label={<span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5" />{t('dashboard.type', 'Loại khu vực')}</span>}
@@ -358,7 +358,7 @@ const DashboardPage = () => {
             </div>
 
             {/* ── Right: Actions ── */}
-            <div className="flex items-center justify-end gap-2 sm:w-[30%] 2xl:w-[20%]">
+            <div className="flex items-center justify-end gap-2 sm:w-[30%] 2xl:w-[25%]">
               <button
                 onClick={() => setIsSettingsOpen(true)}
                 className="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-purple-500 hover:border-purple-500/30 shadow-sm hover:shadow transition-all duration-200"
@@ -406,9 +406,7 @@ const DashboardPage = () => {
                 </button>
               </div>
             </div>
-
-          </div>
-          
+          </div>     
           
 
           {/* Loading state */}
@@ -469,6 +467,10 @@ const DashboardPage = () => {
                                   lastUpdate={loc.lastUpdate}
                                   lastUpdateISO={loc.lastUpdateISO}
                                   status={loc.status}
+                                  tempMin={loc.tempMin}
+                                  tempMax={loc.tempMax}
+                                  humMin={loc.humMin}
+                                  humMax={loc.humMax}
                                   onClick={() => handleLocationClick(loc)}
                                 />
                               </div>
@@ -519,6 +521,10 @@ const DashboardPage = () => {
                                 lastUpdate={loc.lastUpdate}
                                 lastUpdateISO={loc.lastUpdateISO}
                                 chartData={loc.chartData}
+                                tempMin={loc.tempMin}
+                                tempMax={loc.tempMax}
+                                humMin={loc.humMin}
+                                humMax={loc.humMax}
                                 onClick={() => handleLocationClick(loc)}
                               />
                             ))}

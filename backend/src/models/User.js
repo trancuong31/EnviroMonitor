@@ -10,18 +10,18 @@ const User = sequelize.define('User', {
         type: DataTypes.BIGINT,
         primaryKey: true,
         autoIncrement: true,
-    },
-    name: {
-        type: DataTypes.STRING(100),
-        allowNull: false,
-    },
-    email: {
+    },    
+    userid: {
         type: DataTypes.STRING(255),
         allowNull: false,
         unique: true,
         validate: {
             isEmail: true,
         },
+    },
+    fullname: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
     },
     password: {
         type: DataTypes.STRING(255),
@@ -37,59 +37,10 @@ const User = sequelize.define('User', {
     },
     factory: {
         type: DataTypes.ENUM(...Object.values(FACTORIES)),
-        allowNull: true,
-        defaultValue: null,
+        allowNull: false,
+        defaultValue: FACTORIES.ALL,
     },
-    fridgeTempMin: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 0,
-    },
-    fridgeTempMax: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 10,
-    },
-    fridgeHumMin: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 50,
-    },
-    fridgeHumMax: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 100,
-    },
-    roomTempMin: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 18,
-    },
-    roomTempMax: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 28,
-    },
-    roomHumMin: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 40,
-    },
-    roomHumMax: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 60,
-    },
-    ng: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        defaultValue: 15,
-    },
-    avatar: {
-        type: DataTypes.STRING(500),
-        allowNull: true,
-    },
-    emailAlertEnabled: {
+    emailAlert: {
         type: DataTypes.ENUM(...Object.values(EMAIL_ALERTS)),
         allowNull: false,
         defaultValue: EMAIL_ALERTS.NO,
@@ -99,10 +50,20 @@ const User = sequelize.define('User', {
         allowNull: true,
         defaultValue: null,
     },
+    eventuser: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        defaultValue: null,
+    },
+    eventtime: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+    },
 }, {
-    tableName: 'users',
-    timestamps: true,
-    underscored: true,
+    tableName: 'user_info',
+    timestamps: false,
+    underscored: false,
 });
 
 module.exports = User;

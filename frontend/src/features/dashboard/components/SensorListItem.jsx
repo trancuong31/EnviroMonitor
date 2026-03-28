@@ -7,10 +7,18 @@ import { isWarning, isTemperatureWarning, isHumidityWarning } from '../utils/war
  * Location List Item - displays combined temp & humidity for a factory location
  * With warning highlight when values exceed configurable thresholds
  */
-const LocationListItem = ({ location, locationId, temperature, humidity, sensorType = 'ROOM', chartData = [], lastUpdate, lastUpdateISO, onClick }) => {
+const LocationListItem = ({ location, locationId, temperature, humidity, sensorType = 'ROOM', chartData = [], lastUpdate, lastUpdateISO, onClick, tempMin, tempMax, humMin, humMax }) => {
     const { t } = useTranslation();
-    const thresholds = useSettingsStore((s) => (sensorType === 'FRIDGE' ? s.fridge : s.room));
+    const globalThresholds = useSettingsStore((s) => (sensorType === 'FRIDGE' ? s.fridge : s.room));
     const ngThreshold = useSettingsStore((s) => s.ng);
+
+    // Per-sensor thresholds with fallback to global
+    const thresholds = {
+        tempMin: tempMin ?? globalThresholds.tempMin,
+        tempMax: tempMax ?? globalThresholds.tempMax,
+        humMin: humMin ?? globalThresholds.humMin,
+        humMax: humMax ?? globalThresholds.humMax,
+    };
 
     const isOffline = lastUpdateISO ? (Date.now() - new Date(lastUpdateISO).getTime()) / 60000 > ngThreshold : false;
 

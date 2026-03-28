@@ -42,11 +42,14 @@ const register = async (userData) => {
  */
 const login = async (email, password) => {
     // Find user
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { userid: email } });
     if (!user) {
         throw new AppError('Invalid email or password', HTTP_CODES.UNAUTHORIZED);
     }
-
+    //if status is inactive, show error message and logout
+    if (user.status === 'Inactive') {
+        throw new AppError('Your account is inactive. Please contact the administrator.', HTTP_CODES.UNAUTHORIZED);
+    }
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {

@@ -1,101 +1,161 @@
-const { TLog, Layout, Type } = require('../models');
+const { DataInfo, Sensor } = require('../models');
 const { sequelize } = require('../config/database');
 const { Op } = require('sequelize');
 
 const getLogs = async ({ factory } = {}) => {
     const whereConditions = {
-        log_date: {
+        date: {
             [Op.eq]: sequelize.literal(`(
-                SELECT MAX(t2.log_date)
-                FROM tlog t2
-                WHERE t2.logidx = TLog.logidx
+                SELECT MAX(t2.\`DATE\`)
+                FROM data_info t2
+                WHERE t2.\`SENSORID\` = DataInfo.\`SENSORID\`
             )`)
         }
     };
 
-    // Filter by factory prefix (first 2 chars of tc_name, e.g. V4, V5)
+    // Filter by factory prefix (first 2 chars of sensorId, e.g. V4, V5)
     if (factory) {
-        whereConditions.tc_name = { [Op.like]: `${factory}%` };
+        whereConditions.sensorId = { [Op.like]: `${factory}%` };
     }
 
-    const logs = await TLog.findAll({
+    const logs = await DataInfo.findAll({
         attributes: {
             include: [
-                // Attach sensorType (FRIDGE/ROOM) from TYPE table based on tc_name mapping
+                // Attach sensorType (FRIDGE/ROOM) from SENSOR table
                 [
                     sequelize.literal(`(
-                        SELECT TT.\`TYPE\`
-                        FROM \`TYPE\` TT
-                        WHERE TT.\`TC_NAME\` = TLog.tc_name
+                        SELECT S.\`TYPE\`
+                        FROM \`sensor_info\` S
+                        WHERE S.\`SENSORID\` = DataInfo.sensorId
                         LIMIT 1
                     )`),
                     'sensorType',
                 ],
+                // Attach per-sensor thresholds from SENSOR table
+                [
+                    sequelize.literal(`(
+                        SELECT S.\`TEMPERATUREMIN\`
+                        FROM \`sensor_info\` S
+                        WHERE S.\`SENSORID\` = DataInfo.sensorId
+                        LIMIT 1
+                    )`),
+                    'temperatureMin',
+                ],
+                [
+                    sequelize.literal(`(
+                        SELECT S.\`TEMPERATUREMAX\`
+                        FROM \`sensor_info\` S
+                        WHERE S.\`SENSORID\` = DataInfo.sensorId
+                        LIMIT 1
+                    )`),
+                    'temperatureMax',
+                ],
+                [
+                    sequelize.literal(`(
+                        SELECT S.\`HUMIDITYMIN\`
+                        FROM \`sensor_info\` S
+                        WHERE S.\`SENSORID\` = DataInfo.sensorId
+                        LIMIT 1
+                    )`),
+                    'humidityMin',
+                ],
+                [
+                    sequelize.literal(`(
+                        SELECT S.\`HUMIDITYMAX\`
+                        FROM \`sensor_info\` S
+                        WHERE S.\`SENSORID\` = DataInfo.sensorId
+                        LIMIT 1
+                    )`),
+                    'humidityMax',
+                ],
             ],
         },
         where: whereConditions,
-        order: [['tc_name', 'ASC']],
+        order: [['sensorId', 'ASC']],
         limit: 40
     });
 
     return logs;
 };
 
-const getLogsByDateRange = async (logidx, startDate, endDate) => {
-    const logs = await TLog.findAll({
+const getLogsByDateRange = async (sensorId, startDate, endDate) => {
+    const logs = await DataInfo.findAll({
         where: {
-            log_date: {
+            date: {
                 [Op.between]: [new Date(startDate), new Date(endDate)]
             },
-            logidx: logidx
+            sensorId: sensorId
         },
-        order: [['log_date', 'ASC']],
+        order: [['date', 'ASC']],
     });
 
     return logs;
 };
 
-const getListLayout = async () => {
-    const layouts = await Layout.findAll();
-    return layouts;
-};
-
-const getListImages = async () => {
-    const images = await Type.findAll();
-    return images;
+const getListSensors = async () => {
+    const sensors = await Sensor.findAll();
+    return sensors;
 };
 
 /**
- * Get layout detail with associated sensors by position prefix
- * Sensors belong to a layout when TC_NAME starts with the layout's POSITION
+ * Get sensor detail with position info by sensorId prefix
  */
-const getLayoutWithSensors = async (position) => {
-    const layout = await Layout.findOne({ where: { position } });
-
-    if (!layout) return null;
-
-    const sensors = await Type.findAll({
-        where: { tcName: { [Op.like]: `${position}%` } },
-        attributes: ['id', 'tcName', 'images', 'xPercent', 'yPercent'],
-        order: [['tcName', 'ASC']],
+const getSensorsByPrefix = async (prefix) => {
+    const sensors = await Sensor.findAll({
+        where: { sensorId: { [Op.like]: `${prefix}%` } },
+        attributes: ['id', 'sensorId', 'images', 'xPosition', 'yPosition'],
+        order: [['sensorId', 'ASC']],
     });
 
-    return {
-        layoutImage: layout.images,
-        sensors: sensors.map((s) => ({
-            id: s.id,
-            name: s.tcName,
-            image: s.images,
-            x: s.xPercent,
-            y: s.yPercent,
-        })),
-    };
+    return sensors.map((s) => ({
+        id: s.id,
+        name: s.sensorId,
+        image: s.images,
+        x: s.xPosition,
+        y: s.yPosition,
+    }));
+};
+
+/**
+ * Update per-sensor threshold settings
+ */
+const updateSensor = async (sensorId, data) => {
+    const sensor = await Sensor.findOne({ where: { sensorId: sensorId } });
+    if (!sensor) return null;
+
+    const allowedFields = ['temperatureMin', 'temperatureMax', 'humidityMin', 'humidityMax'];
+    const updateData = {};
+    for (const field of allowedFields) {
+        if (data[field] !== undefined) {
+            updateData[field] = data[field];
+        }
+    }
+
+    await sensor.update(updateData);
+    return sensor;
+};
+
+const getLayoutDetail = async (position) => {
+    const sensors = await Sensor.findAll({
+        where: { position: position },
+        attributes: ['id', 'sensorId', 'images', 'xPosition', 'yPosition'],
+        order: [['sensorId', 'ASC']],
+    });
+
+    return sensors.map((s) => ({
+        id: s.id,
+        name: s.sensorId,
+        image: s.images,
+        x: s.xPosition,
+        y: s.yPosition,
+    }));
 };
 
 module.exports = {
     getLogs,
     getLogsByDateRange,
-    getListLayout,
-    getListImages,
-    getLayoutWithSensors,
+    getListSensors,
+    getSensorsByPrefix,
+    updateSensor,
+    getLayoutDetail,
 };

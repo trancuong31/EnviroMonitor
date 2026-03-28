@@ -1,11 +1,8 @@
-const { User } = require('../models');
+const { User, Sensor } = require('../models');
 const { AppError } = require('../utils/appError');
 const { HTTP_CODES } = require('../constants/httpCodes');
 const bcrypt = require('bcryptjs');
 
-/**
- * Allowed threshold fields for update
- */
 const THRESHOLD_FIELDS = [
     'fridgeTempMin', 'fridgeTempMax',
     'fridgeHumMin', 'fridgeHumMax',
@@ -15,12 +12,11 @@ const THRESHOLD_FIELDS = [
 ];
 
 /**
- * Admin update threshold settings for ALL users
+ * Admin update threshold settings for Sensor_Info table
  * @param {object} settingsData - threshold values to update
  * @returns {Promise<object>}
  */
 const updateSettings = async (settingsData) => {
-    // 1. Lọc và parse các trường được phép cập nhật
     const updateData = {};
     for (const field of THRESHOLD_FIELDS) {
         if (settingsData[field] !== undefined) {
@@ -36,7 +32,6 @@ const updateSettings = async (settingsData) => {
         throw new AppError('No valid threshold fields provided', HTTP_CODES.BAD_REQUEST);
     }
 
-    // 2. Validate các cặp min < max
     const pairs = [
         ['fridgeTempMin', 'fridgeTempMax'],
         ['fridgeHumMin', 'fridgeHumMax'],
@@ -53,8 +48,35 @@ const updateSettings = async (settingsData) => {
         }
     }
 
-    // 3. Cập nhật cho TẤT CẢ user theo setting
-    await User.update(updateData, { where: {} });
+    const fridgePayload = {};
+    const roomPayload = {};
+
+    if (updateData.fridgeTempMin !== undefined) fridgePayload.temperatureMin = updateData.fridgeTempMin;
+    if (updateData.fridgeTempMax !== undefined) fridgePayload.temperatureMax = updateData.fridgeTempMax;
+    if (updateData.fridgeHumMin !== undefined) fridgePayload.humidityMin = updateData.fridgeHumMin;
+    if (updateData.fridgeHumMax !== undefined) fridgePayload.humidityMax = updateData.fridgeHumMax;
+    
+    if (updateData.roomTempMin !== undefined) roomPayload.temperatureMin = updateData.roomTempMin;
+    if (updateData.roomTempMax !== undefined) roomPayload.temperatureMax = updateData.roomTempMax;
+    if (updateData.roomHumMin !== undefined) roomPayload.humidityMin = updateData.roomHumMin;
+    if (updateData.roomHumMax !== undefined) roomPayload.humidityMax = updateData.roomHumMax;
+
+    if (updateData.ng !== undefined) {
+        fridgePayload.ng = updateData.ng;
+        roomPayload.ng = updateData.ng;
+    }
+    
+    if (Object.keys(fridgePayload).length > 0) {
+        await Sensor.update(fridgePayload, { 
+            where: { type: 'C' } 
+        });
+    }
+
+    if (Object.keys(roomPayload).length > 0) {
+        await Sensor.update(roomPayload, { 
+            where: { type: 'N' } 
+        });
+    }
 
     return updateData;
 };
@@ -62,13 +84,13 @@ const updateSettings = async (settingsData) => {
 // create user
 const createUser = async (userData, userId) => {
     // validate user data
-    const { name, email, password, factory, emailAlertEnabled } = userData;
-    if (!name || !email || !password || !factory) {
+    const { fullname, userid, password, factory, emailAlert, eventuser } = userData;
+    if (!fullname || !userid || !password || !factory || !eventuser) {
         throw new AppError('Missing required fields', HTTP_CODES.BAD_REQUEST);
     }
 
     // check if user exists
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({ where: { userid: userid } });
     if (existingUser) {
         throw new AppError('User already exists', HTTP_CODES.BAD_REQUEST);
     }
@@ -78,12 +100,12 @@ const createUser = async (userData, userId) => {
 
     // create user
     const user = await User.create({
-        name,
-        email,
+        fullname: fullname,
+        userid: userid,
         password: hashedPassword,
         factory,
-        emailAlertEnabled: emailAlertEnabled,
-        created_by: userId,
+        emailAlert: emailAlert,
+        eventuser: eventuser,
     }); 
 
     return user;
@@ -96,27 +118,27 @@ const updateUser = async (userId, userData, updated_by) => {
         throw new AppError('User not found', HTTP_CODES.NOT_FOUND);
     }
     // validate user data
-    const { name, email, password, role, factory, status, emailAlertEnabled } = userData;
-    if (!name || !email || !role || !factory) {
+    const { fullname, userid, password, role, factory, status, emailAlert } = userData;
+    if (!fullname || !userid || !role || !factory) {
         throw new AppError('Missing required fields', HTTP_CODES.BAD_REQUEST);
     }
     
     // check if user exists (only if email changed)
-    if (email !== user.email) {
-        const existingUser = await User.findOne({ where: { email } });
+    if (userid !== user.userid) {
+        const existingUser = await User.findOne({ where: { userid: userid } });
         if (existingUser) {
             throw new AppError('User with this email already exists', HTTP_CODES.BAD_REQUEST);
         }
     }
 
     const updatePayload = {
-        name,
-        email,
+        fullname: fullname,
+        userid: userid,
         role,
         factory,
         status,
-        emailAlertEnabled: emailAlertEnabled,
-        updated_by
+        emailAlert: emailAlert,
+        eventuser: updated_by
     };
 
     if (password) {
@@ -143,7 +165,7 @@ const deleteUser = async (userId) => {
 const getAllUsers = async () => {
     return await User.findAll({
         attributes: { exclude: ['password'] },
-        order: [['createdAt', 'DESC']]
+        order: [['eventtime', 'DESC']]
     });
 };
 

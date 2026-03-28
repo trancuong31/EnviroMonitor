@@ -10,11 +10,12 @@ import { ArrowLeft } from 'lucide-react';
 import MainLayout from '../../../components/layout/MainLayout/MainLayout';
 
 const ROLES = [
-    { value: 'admin', label: 'Admin' },
-    { value: 'user', label: 'User' },
+    { value: 'Admin', label: 'Admin' },
+    { value: 'User', label: 'User' },
 ];
 
 const FACTORIES = [
+    { value: 'ALL', label: 'ALL' },
     { value: 'D2', label: 'D2' },
     { value: 'V0', label: 'V0' },
     { value: 'V1', label: 'V1' },
@@ -51,13 +52,13 @@ const UserManagement = () => {
     }, [t]);
 
     useEffect(() => {
-        if (currentUser?.role === 'admin') {
+        if (currentUser?.role === 'Admin') {
             fetchUsers();
         }
     }, [currentUser, fetchUsers]);
 
     // Redirect if not admin (must happen after hooks)
-    if (currentUser?.role !== 'admin') {
+    if (currentUser?.role !== 'Admin') {
         return <Navigate to="/dashboard" replace />;
     }
 
@@ -79,10 +80,12 @@ const UserManagement = () => {
     const handleSaveUser = async (userData) => {
         try {
             // if information is not changed, do not save
-            if (selectedUser?.name === userData.name && selectedUser?.email === userData.email && selectedUser?.role === userData.role && userData.password === '' && selectedUser?.factory === userData.factory && selectedUser?.status === userData.status && selectedUser?.emailAlertEnabled === userData.emailAlertEnabled) {
+            if (selectedUser?.fullname === userData.fullname && selectedUser?.userid === userData.userid && selectedUser?.role === userData.role && userData.password === '' && selectedUser?.factory === userData.factory && selectedUser?.status === userData.status && selectedUser?.emailAlert === userData.emailAlert) {
                 toast.warning(t('admin.noChanges', 'No changes made'));
                 return;
             }
+            // add eventuser to userData
+            userData.eventuser = currentUser.id;
             if (selectedUser?.id) {
                 // Update
                 await api.put(`/users/${selectedUser.id}`, userData);

@@ -5,7 +5,9 @@ const { getLogs } = require('../services/dataLogService');
 const { sendEmail } = require('../utils/email');
 const { buildAlertEmail } = require('../utils/alertEmailTemplate');
 const { User } = require('../models');
-const {EMAIL_ALERTS} = require('../constants/emailAlerts');
+const { EMAIL_ALERTS } = require('../constants/emailAlerts');
+const { STATUSES } = require('../constants/statuses');
+const { FACTORIES } = require('../constants/factories');
 const COOLDOWN_FALLBACK_MINUTES = 60;
 
 /**
@@ -15,25 +17,6 @@ const canSendToUser = (user, now, cooldownMs) => {
     const lastSentAt = user?.lastAlertSentAt ? new Date(user.lastAlertSentAt) : null;
     if (!lastSentAt || Number.isNaN(lastSentAt.getTime())) return true;
     return now.getTime() - lastSentAt.getTime() >= cooldownMs;
-};
-
-const getThresholdsForSensor = (user, sensorType) => {
-    if (sensorType === 'FRIDGE') {
-        return {
-            tempMin: user.fridgeTempMin,
-            tempMax: user.fridgeTempMax,
-            humMin: user.fridgeHumMin,
-            humMax: user.fridgeHumMax,
-        };
-    }
-
-    // Default to ROOM thresholds
-    return {
-        tempMin: user.roomTempMin,
-        tempMax: user.roomTempMax,
-        humMin: user.roomHumMin,
-        humMax: user.roomHumMax,
-    };
 };
 
 const getStatus = (value, min, max) => {
@@ -59,132 +42,101 @@ const checkAndAlert = async () => {
         const now = new Date();
 
         if (!alert.enabled) {
-            logger.info('[AlertScheduler] Alert system is disabled, skipping check');
+            logger.info('[AlertScheduler] Alert system is disabled.');
             return;
         }
 
         const cooldownMinutes = Number.isFinite(alert.cooldownMinutes) ? alert.cooldownMinutes : COOLDOWN_FALLBACK_MINUTES;
         const cooldownMs = Math.max(cooldownMinutes, 0) * 60 * 1000;
 
-        // 1. Fetch all active users with factory assigned
-        const userWhere = { status: 'active', emailAlertEnabled: EMAIL_ALERTS.YES };
-
+        // User model uses STATUSES.ACTIVE ('active'), not 'Active'
+        const userWhere = { status: STATUSES.ACTIVE, emailAlert: EMAIL_ALERTS.YES };
         const recipients = await User.findAll({ where: userWhere });
 
-        if (!recipients.length) {
-            logger.warn('[AlertScheduler] No alert recipients found, skipping');
-            return;
-        }
+        if (!recipients.length) return;
 
-        // 2. Fetch all sensor logs once (avoid repeated DB calls)
+        // Lấy tất cả logs (Đã chứa min/max từ literal của bạn)
         const allLogs = await getLogs();
-
-        if (!allLogs || allLogs.length === 0) {
-            logger.info('[AlertScheduler] No sensor data found, skipping');
-            return;
-        }
-
-        logger.info(`[AlertScheduler] Starting personalized check — ${recipients.length} users, ${allLogs.length} sensors`);
+        if (!allLogs || allLogs.length === 0) return;
 
         let totalEmailsSent = 0;
-        let totalSkipped = 0;
 
-        // 3. Outer loop: iterate each user
         for (const user of recipients) {
             try {
-                // Skip users without factory configured
-                if (!user.factory) {
-                    logger.debug(`[AlertScheduler] User ${user.email} has no factory assigned, skipping`);
-                    totalSkipped++;
-                    continue;
+                if (!user.factory) continue;
+                if (!canSendToUser(user, now, cooldownMs)) continue;
+
+                let userLogs = [];
+                
+                if (user.factory === FACTORIES.ALL) {
+                    userLogs = allLogs;
+                } else {
+                    userLogs = allLogs.filter(log => 
+                        log.sensorId && log.sensorId.startsWith(user.factory)
+                    );
                 }
 
-                // Skip users in cooldown
-                if (!canSendToUser(user, now, cooldownMs)) {
-                    logger.debug(`[AlertScheduler] User ${user.email} is in cooldown, skipping`);
-                    totalSkipped++;
-                    continue;
-                }
+                if (userLogs.length === 0) continue;
 
-                // 4. Filter logs matching this user's factory (tc_name starts with factory code)
-                const userLogs = allLogs.filter(log =>
-                    log.tc_name && log.tc_name.startsWith(user.factory)
-                );
-
-                if (userLogs.length === 0) {
-                    logger.debug(`[AlertScheduler] No sensors found for factory ${user.factory} (user: ${user.email})`);
-                    continue;
-                }
-
-                // 5. Compare each log against user-specific thresholds
                 const userAlerts = [];
 
                 for (const log of userLogs) {
-                    const temp = log.value_0;
-                    const hum = log.value_1;
-                    const sensorType = log.getDataValue('sensorType') || 'ROOM';
+                    const temp = log.temperature;
+                    const hum = log.humidity;
 
-                    const thresholds = getThresholdsForSensor(user, sensorType);
+                    // Đọc từ getDataValue do bạn dùng literal
+                    const tempMin = log.getDataValue('temperatureMin') ?? 18; 
+                    const tempMax = log.getDataValue('temperatureMax') ?? 28;
+                    const humMin = log.getDataValue('humidityMin') ?? 40;
+                    const humMax = log.getDataValue('humidityMax') ?? 60;
+                    const typeCode = log.getDataValue('sensorType') || 'N';
 
-                    const tempStatus = getStatus(temp, thresholds.tempMin, thresholds.tempMax);
-                    const humStatus = getStatus(hum, thresholds.humMin, thresholds.humMax);
+                    const tempStatus = getStatus(temp, tempMin, tempMax);
+                    const humStatus = getStatus(hum, humMin, humMax);
 
                     if (tempStatus !== 'normal' || humStatus !== 'normal') {
                         userAlerts.push({
-                            logidx: log.logidx,
-                            tc_name: log.tc_name,
-                            value_0: temp,
-                            value_1: hum,
-                            log_date: log.log_date,
-                            sensorType,
+                            sensorId: log.sensorId,
+                            temperature: temp,
+                            humidity: hum,
+                            logDate: log.date,
+                            sensorType: typeCode === 'C' ? 'Cold' : 'Normal',
                             tempStatus,
                             humStatus,
+                            limits: { tempMin, tempMax, humMin, humMax }
                         });
                     }
                 }
 
-                // No alerts for this user → skip
-                if (userAlerts.length === 0) {
-                    logger.debug(`[AlertScheduler] Factory ${user.factory} — all sensors OK for ${user.email}`);
+                if (userAlerts.length === 0) continue;
+
+                const { subject, html } = buildAlertEmail(userAlerts, user.fullname, user.factory);
+
+                // Login/email address is stored in `userid`, not `email`
+                const toAddress = user.userid;
+                if (!toAddress) {
+                    logger.warn(`[AlertScheduler] Skip ${user.id}: missing userid (email)`);
                     continue;
                 }
 
-                // 6. Build personalized email for this user
-                const userThresholds = {
-                    fridgeTempMin: user.fridgeTempMin,
-                    fridgeTempMax: user.fridgeTempMax,
-                    fridgeHumMin: user.fridgeHumMin,
-                    fridgeHumMax: user.fridgeHumMax,
-                    roomTempMin: user.roomTempMin,
-                    roomTempMax: user.roomTempMax,
-                    roomHumMin: user.roomHumMin,
-                    roomHumMax: user.roomHumMax,
-                };
-
-                const { subject, html } = buildAlertEmail(userAlerts, userThresholds, user.name, user.factory);
-
-                // 7. Send email
-                await sendEmail({ email: user.email, subject, html });
+                await sendEmail({ email: toAddress, subject, html });
                 await user.update({ lastAlertSentAt: now });
-
                 totalEmailsSent++;
-                logger.warn(`[AlertScheduler] ⚠️ Alert sent to ${user.email} — factory: ${user.factory}, ${userAlerts.length} sensors exceeded thresholds`);
+                
+                logger.warn(`[AlertScheduler] Sent to ${user.userid} - Factory: ${user.factory} - ${userAlerts.length} issues.`);
 
             } catch (err) {
-                logger.error(`[AlertScheduler] Failed to process user ${user.email}:`, err.message);
+                logger.error(`[AlertScheduler] User ${user.userid} failed: ${err.message}`);
             }
         }
 
-        logger.info(`[AlertScheduler] Alert cycle completed — ${totalEmailsSent} emails sent, ${totalSkipped} users skipped`);
+        logger.info(`[AlertScheduler] Complete - Sent: ${totalEmailsSent}`);
 
     } catch (error) {
-        logger.error('[AlertScheduler] Error during check:', error.message);
+        logger.error(`[AlertScheduler] Error: ${error.message}`);
     }
 };
 
-/**
- * Start the alert scheduler cron job — runs every hour
- */
 const startAlertScheduler = () => {
     const { alert } = env;
 
@@ -193,18 +145,16 @@ const startAlertScheduler = () => {
         return;
     }
 
-    // Run every hour
-    const cronExpression = '0 * * * *';
+    const cronExpression = '* * * * *';
 
     cron.schedule(cronExpression, () => {
         logger.info('[AlertScheduler] Scheduled check triggered');
         checkAndAlert();
     });
 
-    logger.info(`[AlertScheduler] Started — checking every minute (cron: ${cronExpression})`);
-    logger.info(`[AlertScheduler] Cooldown: ${alert.cooldownMinutes || COOLDOWN_FALLBACK_MINUTES} minutes`);
+    logger.info(`[AlertScheduler] Started — checking every hour (cron: ${cronExpression})`);
+    logger.info(`[AlertScheduler] Cooldown: ${alert.cooldownMinutes || COOLDOWN_FALLBACK_MINUTES} hours`);
 
-    // Run initial check on startup
     checkAndAlert();
 };
 

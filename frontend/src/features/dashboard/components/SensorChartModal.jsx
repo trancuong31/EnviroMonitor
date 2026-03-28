@@ -7,9 +7,10 @@ import { format, setHours, setMinutes, setSeconds } from 'date-fns';
 import { vi, enUS } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import 'react-datepicker/dist/react-datepicker.css';
-import { ChartNoAxesCombined, SearchAlert, Thermometer, Droplets } from 'lucide-react';
+import { ChartNoAxesCombined, SearchAlert, Thermometer, Droplets, Settings } from 'lucide-react';
 import { getLogsByDateRange } from '../api/dashboardApi';
 import { useSettingsStore } from '../../../store';
+import SensorSettingsModal from './SensorSettingsModal';
 
 /**
  * Utility: Check if dark mode is active
@@ -79,10 +80,10 @@ const transformLogsToChartData = (logs) => {
     const timestamps = [];
 
     logs.forEach((log) => {
-        const date = new Date(log.log_date);
+        const date = new Date(log.date);
         categories.push(format(date, 'dd/MM HH:mm:ss'));
-        tempData.push(log.value_0);
-        humData.push(log.value_1);
+        tempData.push(log.temperature);
+        humData.push(log.humidity);
         timestamps.push(date);
     });
 
@@ -165,10 +166,20 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
     const [loading, setLoading] = useState(false);
     // Chart view mode: 'temperature' | 'humidity'
     const [chartMode, setChartMode] = useState('temperature');
-
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [updatedThresholds, setUpdatedThresholds] = useState(null);
     const sensorType = locationData?.sensorType || 'ROOM';
-    const thresholds = useSettingsStore((s) => (sensorType === 'FRIDGE' ? s.fridge : s.room));
+    const globalThresholds = useSettingsStore((s) => (sensorType === 'FRIDGE' ? s.fridge : s.room));
     const ngThreshold = useSettingsStore((s) => s.ng);
+
+    // Per-sensor thresholds with fallback to global
+    const thresholds = {
+        tempMin: updatedThresholds?.temperatureMin ?? locationData?.tempMin ?? globalThresholds.tempMin,
+        tempMax: updatedThresholds?.temperatureMax ?? locationData?.tempMax ?? globalThresholds.tempMax,
+        humMin: updatedThresholds?.humidityMin ?? locationData?.humMin ?? globalThresholds.humMin,
+        humMax: updatedThresholds?.humidityMax ?? locationData?.humMax ?? globalThresholds.humMax,
+    };
 
     const isOffline = locationData?.lastUpdateISO ? (Date.now() - new Date(locationData.lastUpdateISO).getTime()) / 60000 > ngThreshold : false;
     const finalTemp = isOffline ? 0 : locationData?.temperature;
@@ -177,9 +188,13 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
     // Reset chartMode every time modal opens
     useEffect(() => {
         if (isOpen) {
+            const start = new Date();
+            setStartDate(setSeconds(setMinutes(setHours(start, 0), 0), 0));
+            setEndDate(new Date());
             setChartMode('temperature');
+            setUpdatedThresholds(null);
         }
-    }, [isOpen]);
+    }, [isOpen, locationData?.id]);
 
     // Handle date range change
     const handleDateChange = useCallback((dates) => {
@@ -217,8 +232,13 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
         };
 
         fetchData();
-    }, [locationData, startDate, endDate]);
+    }, [locationData, startDate, endDate, refreshTrigger]);
 
+    const handleSettingsSaveSuccess = (newValues) => {
+        setUpdatedThresholds(newValues);
+        setIsSettingsOpen(false);
+        setRefreshTrigger(prev => prev + 1);
+    };
     // Export to Excel
     const handleExportExcel = useCallback(() => {
         if (!chartData || !locationData) return;
@@ -279,13 +299,6 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                     color: colors.textPrimary,
                     fontSize: '15px',
                     fontWeight: '600'
-                }
-            },
-            subtitle: {
-                text: `${t('dashboard.sensorId', 'Mã vị trí')}: ${locationData.locationId}`,
-                style: {
-                    color: colors.textSecondary,
-                    fontSize: '12px'
                 }
             },
             xAxis: {
@@ -424,12 +437,6 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                                 >
                                     {locationData.location}
                                 </h2>
-                                <p
-                                    className="text-xs font-mono mt-0.5"
-                                    style={{ color: colors.textMuted }}
-                                >
-                                    ID: {locationData.locationId}
-                                </p>
                             </div>
                         </div>
                     </div>
@@ -538,6 +545,24 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Excel
+                        </button>
+
+                        <button
+                            onClick={() => setIsSettingsOpen(true)}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                            style={{
+                                backgroundColor: isDark ? 'rgba(168, 85, 247, 0.15)' : '#f3e8ff',
+                                color: isDark ? '#c084fc' : '#7c3aed'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = isDark ? 'rgba(168, 85, 247, 0.25)' : '#e9d5ff';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = isDark ? 'rgba(168, 85, 247, 0.15)' : '#f3e8ff';
+                            }}
+                            title={t('settings.sensorSettings', 'Cài đặt sensor')}
+                        >
+                            <Settings className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
@@ -793,6 +818,15 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                     border-radius: 8px !important;
                 }
             `}</style>
+
+            {/* Sensor Settings Modal */}
+            <SensorSettingsModal
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+                locationData={locationData}
+                currentThresholds={thresholds}
+                onSaveSuccess={handleSettingsSaveSuccess}
+            />
         </div>
     );
 };

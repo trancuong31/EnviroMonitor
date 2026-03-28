@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../../../store';
-import { X, RotateCcw, Save, Thermometer, Droplets, Info, CircleAlert, Loader2, Clock } from 'lucide-react';
-import { useSettingsStore, DEFAULT_THRESHOLDS } from '../../../store';
+import { X, Save, Thermometer, Droplets, Loader2, CircleAlert, Info } from 'lucide-react';
+import { updateSensorSettings } from '../api/dashboardApi';
+import { useSettingsStore } from '../../../store';
+import { useDashboardStore } from '../store/useDashboardStore';
 import { toast } from 'sonner';
 /**
  * Range Slider with Number Input - modern dual-thumb style visualization
@@ -92,136 +93,112 @@ const RangeSliderInput = ({
         </div>
     );
 };
-
-/**
- * Tab button for switching between Fridge and Room settings
- */
-const TabButton = ({ active, icon, label, onClick }) => (
-    <button
-        onClick={onClick}
-        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${active
-            ? 'bg-primary text-white shadow-lg shadow-primary/25'
-            : 'bg-surface-alt text-text-muted hover:text-text hover:bg-surface-hover'
-            }`}
-    >
-        <span className="text-base">{icon}</span>
-        {label}
-    </button>
-);
-
-/**
- * ThresholdSettingsModal - Modal for configuring temperature and humidity warning thresholds
- * Features: Tabbed UI (Fridge / Room), range sliders with number inputs, saves to DB via API
- */
-const ThresholdSettingsModal = ({ isOpen, onClose }) => {
+const SensorSettingsModal = ({ isOpen, onClose, locationData, currentThresholds, onSaveSuccess }) => {
     const { t } = useTranslation();
-    const { fridge, room, ng, updateSettings, isLoading } = useSettingsStore();
-    const [showTooltip, setShowTooltip] = useState(false);
-    const [activeTab, setActiveTab] = useState('room');
-    
-    // Local state for form inputs
-    const [formValues, setFormValues] = useState({ fridge, room, ng });
+    const [isLoading, setIsLoading] = useState(false);
+
+    const sensorType = locationData?.sensorType || 'ROOM';
+    const globalThresholds = useSettingsStore((s) => (sensorType === 'FRIDGE' ? s.fridge : s.room));
+
+    const [formValues, setFormValues] = useState({
+        temperatureMin: 0,
+        temperatureMax: 50,
+        humidityMin: 0,
+        humidityMax: 100,
+    });
+
     const [errors, setErrors] = useState({ temp: false, hum: false });
-    const [saveMessage, setSaveMessage] = useState(null);
 
-    // get user role
-    const { user } = useAuthStore();
-    const isAdmin = user?.role === 'Admin';
-
-    // Sync form values when modal opens or thresholds change
     useEffect(() => {
-        if (isOpen) {
-            setFormValues({ fridge, room, ng });
+        if (isOpen && currentThresholds) {
+            setFormValues({
+                temperatureMin: currentThresholds.tempMin ?? globalThresholds.tempMin,
+                temperatureMax: currentThresholds.tempMax ?? globalThresholds.tempMax,
+                humidityMin: currentThresholds.humMin ?? globalThresholds.humMin,
+                humidityMax: currentThresholds.humMax ?? globalThresholds.humMax,
+            });
             setErrors({ temp: false, hum: false });
-            setSaveMessage(null);
         }
-    }, [isOpen, fridge, room, ng]);
+    }, [isOpen, locationData, globalThresholds]);
 
-    // Get current tab values
-    const currentValues = formValues[activeTab];
-
-    // Handle input changes
     const handleChange = (field, value) => {
-        setFormValues(prev => ({
-            ...prev,
-            [activeTab]: { ...prev[activeTab], [field]: value },
-        }));
+        setFormValues((prev) => ({ ...prev, [field]: parseFloat(value) || 0 }));
         setErrors({ temp: false, hum: false });
-        setSaveMessage(null);
     };
 
-    // Validate thresholds
-    const validateThresholds = () => {
-        const vals = formValues[activeTab];
-        const tempError = vals.tempMax <= vals.tempMin;
-        const humError = vals.humMax <= vals.humMin;
-
+    const validate = () => {
+        const tempError = formValues.temperatureMax <= formValues.temperatureMin;
+        const humError = formValues.humidityMax <= formValues.humidityMin;
         setErrors({ temp: tempError, hum: humError });
-
         return !tempError && !humError;
     };
-
-    // Handle save with validation
     const handleSave = async () => {
-        if (!validateThresholds()) return;
-        const originalValues = activeTab === 'fridge' ? fridge : room;
-        const newValues = formValues[activeTab];
-        const isTabSame = Object.keys(originalValues).every(key => originalValues[key] === newValues[key]);
-        const isNgSame = formValues.ng === ng;
-        if (isTabSame && isNgSame) {
-            toast.warning(t('settings.noChange', 'Không có thay đổi'));
-            return;
-        }
-        const result = await updateSettings(activeTab, formValues[activeTab], { ng: formValues.ng });
-        if (result.success) {
+        if (!validate()) return;
+
+        setIsLoading(true);
+        try {
+            await updateSensorSettings(locationData.locationId, formValues);
+
+            const { locations } = useDashboardStore.getState();
+            const updated = locations.map((loc) =>
+                loc.id === locationData.id
+                    ? {
+                          ...loc,
+                          tempMin: formValues.temperatureMin,
+                          tempMax: formValues.temperatureMax,
+                          humMin: formValues.humidityMin,
+                          humMax: formValues.humidityMax,
+                      }
+                    : loc
+            );
+            useDashboardStore.setState({ locations: updated });
+
             toast.success(t('settings.saveSuccess', 'Lưu cài đặt thành công'));
-            onClose();
-        } else {
+            if (onSaveSuccess) {
+                onSaveSuccess(formValues);
+            } else {
+                onClose();
+            }
+        } catch (error) {
+            console.error('Failed to save sensor settings:', error);
             toast.error(t('settings.saveError', 'Lỗi khi lưu cài đặt'));
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Handle reset to defaults
-    const handleReset = () => {
-        setFormValues(prev => ({
-            ...prev,
-            [activeTab]: { ...DEFAULT_THRESHOLDS[activeTab] },
-            ng: DEFAULT_THRESHOLDS.ng,
-        }));
-        setErrors({ temp: false, hum: false });
-        setSaveMessage(null);
-    };
-
-    // Handle tab switch
-    const handleTabSwitch = (tab) => {
-        setActiveTab(tab);
-        setErrors({ temp: false, hum: false });
-        setSaveMessage(null);
-    };
-
-    // Handle backdrop click
     const handleBackdropClick = (e) => {
-        if (e.target === e.currentTarget) {
-            onClose();
-        }
+        if (e.target === e.currentTarget) onClose();
     };
 
-    // Temperature slider range varies by type
-    const tempMaxRange = activeTab === 'fridge' ? 20 : 50;
+    // ==========================================
+    // 2. STATE & BIẾN PHỤ TRỢ CHO GIAO DIỆN MỚI
+    // ==========================================
+    const [showTooltip, setShowTooltip] = useState(false);
+    const tempMaxRange = sensorType === 'FRIDGE' ? 20 : 50;
+    const tempBaseMin = sensorType === 'FRIDGE' ? -10 : 0;
 
-    if (!isOpen) return null;
+    if (!isOpen || !locationData) return null;
 
+    // ==========================================
+    // 3. RENDER GIAO DIỆN MỚI (COPY TỪ THRESHOLD)
+    // ==========================================
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
             onClick={handleBackdropClick}
         >
             <div className="relative w-full max-w-md bg-surface rounded-2xl border border-border shadow-2xl overflow-hidden animate-scale-in">
-                {/* Header with tooltip */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-gradient-to-r from-primary/5 to-secondary/5">
-                    <h2 className="text-lg font-semibold text-text">
-                        {t('settings.thresholdTitle', 'Cài đặt ngưỡng cảnh báo')}
-                    </h2>
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-gradient-to-r from-purple-500/5 to-primary/5">
+                    <div>
+                        <h2 className="text-lg font-semibold text-text">
+                            {t('settings.sensorSettings', 'Cài đặt sensor')}
+                        </h2>
+                        <p className="text-xs text-text-muted font-mono mt-0.5">
+                            {locationData.locationId}
+                        </p>
+                    </div>
                     <div className="flex items-center gap-2">
                         {/* Info tooltip */}
                         <div className="relative">
@@ -254,23 +231,6 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                     </div>
                 </div>
 
-                {/* Tab Buttons */}
-                <div className="flex gap-2 px-6 pt-5 pb-2">
-                    <TabButton
-                        active={activeTab === 'room'}
-                        icon=""
-                        label={t('settings.roomTab', 'Normal')}
-                        onClick={() => handleTabSwitch('room')}
-                    />
-                    <TabButton
-                        active={activeTab === 'fridge'}
-                        icon=""
-                        label={t('settings.fridgeTab', 'Cool')}
-                        onClick={() => handleTabSwitch('fridge')}
-                    />
-                    
-                </div>
-
                 {/* Body */}
                 <div className="p-6 space-y-8">
                     {/* Temperature thresholds */}
@@ -285,9 +245,9 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                         <div className="grid grid-cols-2 gap-6">
                             <RangeSliderInput
                                 label={t('settings.min', 'Tối thiểu')}
-                                value={currentValues.tempMin}
-                                onChange={(val) => handleChange('tempMin', val)}
-                                min={activeTab === 'fridge' ? -10 : 0}
+                                value={formValues.temperatureMin}
+                                onChange={(val) => handleChange('temperatureMin', val)}
+                                min={tempBaseMin}
                                 max={tempMaxRange}
                                 step={0.5}
                                 unit="°C"
@@ -295,9 +255,9 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                             />
                             <RangeSliderInput
                                 label={t('settings.max', 'Tối đa')}
-                                value={currentValues.tempMax}
-                                onChange={(val) => handleChange('tempMax', val)}
-                                min={activeTab === 'fridge' ? -10 : 0}
+                                value={formValues.temperatureMax}
+                                onChange={(val) => handleChange('temperatureMax', val)}
+                                min={tempBaseMin}
                                 max={tempMaxRange}
                                 step={0.5}
                                 unit="°C"
@@ -305,25 +265,25 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                             />
                         </div>
 
-                        {/* Visual range indicator */}
+                        {/* Visual range indicator for Temp */}
                         <div className="relative h-3 bg-gradient-to-r from-blue-400 via-green-400 to-red-400 rounded-full overflow-hidden">
                             {/* Safe zone highlight */}
                             <div
                                 className="absolute top-0 h-full bg-surface/80 rounded-l-full"
-                                style={{ left: 0, width: `${((currentValues.tempMin - (activeTab === 'fridge' ? -10 : 0)) / tempMaxRange) * 100}%` }}
+                                style={{ left: 0, width: `${((formValues.temperatureMin - tempBaseMin) / tempMaxRange) * 100}%` }}
                             />
                             <div
                                 className="absolute top-0 h-full bg-surface/80 rounded-r-full"
-                                style={{ left: `${((currentValues.tempMax - (activeTab === 'fridge' ? -10 : 0)) / tempMaxRange) * 100}%`, right: 0 }}
+                                style={{ left: `${((formValues.temperatureMax - tempBaseMin) / tempMaxRange) * 100}%`, right: 0 }}
                             />
                             {/* Markers */}
                             <div
                                 className="absolute top-0 w-0.5 h-full bg-temp shadow-lg"
-                                style={{ left: `${((currentValues.tempMin - (activeTab === 'fridge' ? -10 : 0)) / tempMaxRange) * 100}%` }}
+                                style={{ left: `${((formValues.temperatureMin - tempBaseMin) / tempMaxRange) * 100}%` }}
                             />
                             <div
                                 className="absolute top-0 w-0.5 h-full bg-temp shadow-lg"
-                                style={{ left: `${((currentValues.tempMax - (activeTab === 'fridge' ? -10 : 0)) / tempMaxRange) * 100}%` }}
+                                style={{ left: `${((formValues.temperatureMax - tempBaseMin) / tempMaxRange) * 100}%` }}
                             />
                         </div>
                         <div className="flex justify-between text-[10px] text-text-muted/60">
@@ -332,12 +292,12 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                             <span>{t('settings.hot', 'Nóng')}</span>
                         </div>
 
-                        {/* Temperature validation error */}
+                        {/* Validation Error */}
                         {errors.temp && (
                             <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-lg animate-fade-in">
                                 <CircleAlert className="w-4 h-4 text-red-500" />
                                 <span className="text-red-500 text-xs font-medium">
-                                 {t('settings.errorMaxMin', 'Giá trị tối đa phải lớn hơn tối thiểu')}
+                                    {t('settings.errorMaxMin', 'Giá trị tối đa phải lớn hơn tối thiểu')}
                                 </span>
                             </div>
                         )}
@@ -355,8 +315,8 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                         <div className="grid grid-cols-2 gap-6">
                             <RangeSliderInput
                                 label={t('settings.min', 'Tối thiểu')}
-                                value={currentValues.humMin}
-                                onChange={(val) => handleChange('humMin', val)}
+                                value={formValues.humidityMin}
+                                onChange={(val) => handleChange('humidityMin', val)}
                                 min={0}
                                 max={100}
                                 step={1}
@@ -365,8 +325,8 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                             />
                             <RangeSliderInput
                                 label={t('settings.max', 'Tối đa')}
-                                value={currentValues.humMax}
-                                onChange={(val) => handleChange('humMax', val)}
+                                value={formValues.humidityMax}
+                                onChange={(val) => handleChange('humidityMax', val)}
                                 min={0}
                                 max={100}
                                 step={1}
@@ -375,25 +335,25 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                             />
                         </div>
 
-                        {/* Visual range indicator */}
+                        {/* Visual range indicator for Humidity */}
                         <div className="relative h-3 bg-gradient-to-r from-orange-400 via-cyan-400 to-blue-500 rounded-full overflow-hidden">
                             {/* Safe zone highlight */}
                             <div
                                 className="absolute top-0 h-full bg-surface/80 rounded-l-full"
-                                style={{ left: 0, width: `${currentValues.humMin}%` }}
+                                style={{ left: 0, width: `${formValues.humidityMin}%` }}
                             />
                             <div
                                 className="absolute top-0 h-full bg-surface/80 rounded-r-full"
-                                style={{ left: `${currentValues.humMax}%`, right: 0 }}
+                                style={{ left: `${formValues.humidityMax}%`, right: 0 }}
                             />
                             {/* Markers */}
                             <div
                                 className="absolute top-0 w-0.5 h-full bg-humidity shadow-lg"
-                                style={{ left: `${currentValues.humMin}%` }}
+                                style={{ left: `${formValues.humidityMin}%` }}
                             />
                             <div
                                 className="absolute top-0 w-0.5 h-full bg-humidity shadow-lg"
-                                style={{ left: `${currentValues.humMax}%` }}
+                                style={{ left: `${formValues.humidityMax}%` }}
                             />
                         </div>
                         <div className="flex justify-between text-[10px] text-text-muted/60">
@@ -402,90 +362,48 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                             <span>{t('settings.humid', 'Ẩm')}</span>
                         </div>
 
-                        {/* Humidity validation error */}
+                        {/* Validation Error */}
                         {errors.hum && (
                             <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-lg animate-fade-in">
                                 <CircleAlert className="w-4 h-4 text-red-500" />
                                 <span className="text-red-500 text-xs font-medium">
-                                     {t('settings.errorMaxMin', 'Giá trị tối đa phải lớn hơn tối thiểu')}
+                                    {t('settings.errorMaxMin', 'Giá trị tối đa phải lớn hơn tối thiểu')}
                                 </span>
                             </div>
                         )}
                     </div>
-
-                    {/* Offline Threshold */}
-                    <div className="space-y-4 pt-4 border-t border-border">
-                        <div className="flex items-center gap-2 text-text-muted">
-                            <Clock className="w-5 h-5" />
-                            <span className="text-sm font-semibold uppercase tracking-wider">
-                                {t('settings.offlineThreshold', 'Thời gian cảnh báo Offline')}
-                            </span>
-                        </div>
-                        <RangeSliderInput
-                            label={t('settings.offlineMinutes', 'Số phút')}
-                            value={formValues.ng}
-                            onChange={(val) => setFormValues(prev => ({ ...prev, ng: val }))}
-                            min={5}
-                            max={200}
-                            step={1}
-                            unit={t('settings.minutes', ' phút')}
-                            color="temp"
-                        />
-                    </div>
-
-                    {/* Save message */}
-                    {saveMessage && (
-                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg animate-fade-in ${saveMessage.type === 'success'
-                            ? 'bg-green-500/10 border border-green-500/20 text-green-500'
-                            : 'bg-red-500/10 border border-red-500/20 text-red-500'
-                            }`}>
-                            <span className="text-xs font-medium">{saveMessage.text}</span>
-                        </div>
-                    )}
                 </div>
 
                 {/* Footer */}
-                {isAdmin && (
-                    <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-surface-alt/50">
-                        <button
-                            onClick={handleReset}
-                            disabled={isLoading}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors disabled:opacity-50"
-                        >
-                            <RotateCcw className="w-4 h-4" />
-                            {t('settings.reset', 'Đặt lại mặc định')}
-                        </button>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={onClose}
-                                disabled={isLoading}
-                                className="px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors disabled:opacity-50"
-                            >
-                                {t('settings.cancel', 'Hủy')}
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                disabled={isLoading}
-                                className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-primary/25 transition-all disabled:opacity-50"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        {t('settings.savingSettings', 'Đang lưu...')}
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="w-4 h-4" />
-                                        {t('settings.save', 'Lưu')}
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                )}
+                <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border bg-surface-alt/50">
+                    <button
+                        onClick={onClose}
+                        disabled={isLoading}
+                        className="px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors disabled:opacity-50"
+                    >
+                        {t('settings.cancel', 'Hủy')}
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={isLoading}
+                        className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-primary/25 transition-all disabled:opacity-50"
+                    >
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                {t('settings.savingSettings', 'Đang lưu...')}
+                            </>
+                        ) : (
+                            <>
+                                <Save className="w-4 h-4" />
+                                {t('settings.save', 'Lưu')}
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
         </div>
     );
 };
 
-export default ThresholdSettingsModal;
+export default SensorSettingsModal;

@@ -54,6 +54,8 @@
   },
   "dashboard": {
     "title": "Temperature & Humidity Monitoring",
+    "chartTitleTemp": "Temperature Chart",
+    "chartTitleHum": "Humidity Chart",
     "subtitle": "Real-time temperature & humidity tracking",
     "export": "Export CSV report",
     "refresh": "Refresh data",

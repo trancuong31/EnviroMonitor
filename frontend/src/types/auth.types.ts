@@ -5,10 +5,11 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    role: 'user' | 'admin' | 'manager';
-    status: 'active' | 'inactive' | 'pending' | 'suspended';
+    role: 'User' | 'Admin' | 'Manager';
+    status: 'Active' | 'Inactive';
     factory?: string;
     avatar?: string;
+    emailAlertEnabled?: boolean;
     createdAt: string;
     updatedAt: string;
 }

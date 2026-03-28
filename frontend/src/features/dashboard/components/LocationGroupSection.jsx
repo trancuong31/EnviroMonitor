@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { MapPin, Image as ImageIcon, Layers } from 'lucide-react';
-import { getListLayout } from '../api/dashboardApi';
+import { getListSensors } from '../api/dashboardApi';
 import api from '../../../services/api';
 import LayoutViewerModal from './LayoutViewerModal';
 
-let layoutPromise = null;
+let sensorPromise = null;
 
 /**
- * @param {string} prefix - location group name (first 5 chars of tc_name)
+ * @param {string} prefix - location group name (first 5 chars of sensorId)
  * @param {number} count - number of items in this group
  * @param {React.ReactNode} children - card or list item elements
  */
@@ -19,36 +19,36 @@ const LocationGroupSection = ({ prefix, count, children }) => {
     useEffect(() => {
         let isMounted = true;
         
-        const fetchLayout = async () => {
+        const fetchSensors = async () => {
             try {
-                if (!layoutPromise) {
-                    layoutPromise = getListLayout();
+                if (!sensorPromise) {
+                    sensorPromise = getListSensors();
                 }
-                const response = await layoutPromise;
+                const response = await sensorPromise;
                 if (!isMounted) return;
                 
-                const layouts = response?.data?.layouts || [];
-                const layout = layouts.find(l => l.position === prefix);
+                const sensors = response?.data?.sensors || [];
+                const sensor = sensors.find(s => s.sensorId === prefix || s.position === prefix);
                 
-                if (layout && layout.images) {
+                if (sensor && sensor.images) {
                     try {
-                        const parsedImages = JSON.parse(layout.images);
+                        const parsedImages = JSON.parse(sensor.images);
                         if (Array.isArray(parsedImages) && parsedImages.length > 0) {
                             setLayoutImage(parsedImages[0]);
                         } else if (typeof parsedImages === 'string') {
                             setLayoutImage(parsedImages);
                         }
                     } catch (e) {
-                        setLayoutImage(layout.images);
+                        setLayoutImage(sensor.images);
                     }
                 }
             } catch (error) {
-                console.error("Failed to fetch layout:", error);
-                layoutPromise = null;
+                console.error("Failed to fetch sensors:", error);
+                sensorPromise = null;
             }
         };
 
-        fetchLayout();
+        fetchSensors();
 
         return () => {
             isMounted = false;

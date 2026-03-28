@@ -1,15 +1,18 @@
 const User = require('./User');
-const TLog = require('./TLog');
-const Type = require('./Type');
-const Layout = require('./Layout');
-// Define associations here
-// Example:
-// User.hasMany(Post);
-// Post.belongsTo(User);
+const DataInfo = require('./DataInfo');
+const Sensor = require('./Sensor');
+DataInfo.belongsTo(Sensor, {
+    foreignKey: 'sensorId',
+    targetKey: 'sensorId',
+    as: 'sensor'
+});
 
+Sensor.hasMany(DataInfo, {
+    foreignKey: 'sensorId',
+    sourceKey: 'sensorId',
+});
 module.exports = {
     User,
-    TLog,
-    Type,
-    Layout,
+    DataInfo,
+    Sensor,
 };
