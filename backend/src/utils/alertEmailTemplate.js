@@ -90,7 +90,7 @@ const buildAlertEmail = (alerts, userName, factoryName) => {
 <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
     <div style="max-width: 960px; margin: 0 auto; padding: 24px;">
         
-        <div style="background-color: #dc2626; border-radius: 16px 16px 0 0; padding: 32px; text-align: center;">
+        <div style="background-color: #dc2626; border-radius: 16px 16px 0 0; padding: 24px; text-align: center;">
             <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700; letter-spacing: 0.5px;">CẢNH BÁO MÔI TRƯỜNG</h1>
             <p style="margin: 8px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">Hệ thống Giám sát nhiệt độ và độ ẩm phát hiện cảm biến vượt ngưỡng an toàn</p>
         </div>
@@ -143,7 +143,7 @@ const buildAlertEmail = (alerts, userName, factoryName) => {
 
         <div style="background: #1f2937; border-radius: 0 0 16px 16px; padding: 24px 32px; text-align: center;">
             <p style="margin: 0; font-size: 12px; color: #9ca3af;">
-                Email này được gửi tự động bởi hệ thống giám sát <strong style="color: #60a5fa;">EnviroMonitor</strong>
+                Email này được gửi tự động bởi hệ thống giám sát <strong style="color: #60a5fa;">Nhiệt độ và độ ẩm</strong>
             </p>
             <p style="margin: 8px 0 0; font-size: 11px; color: #6b7280;">
                 Bạn nhận được email này vì tài khoản được phân quyền giám sát khu vực tương ứng.<br>

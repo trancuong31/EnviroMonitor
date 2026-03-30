@@ -140,6 +140,7 @@
   },
   "settings": {
     "thresholdTitle": "Warning Threshold Settings",
+    "sensorSettings": "Sensor Settings",
     "temperature": "Temperature",
     "humidity": "Humidity",
     "min": "Minimum",

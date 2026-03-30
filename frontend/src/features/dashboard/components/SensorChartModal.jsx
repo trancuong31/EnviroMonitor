@@ -11,6 +11,7 @@ import { ChartNoAxesCombined, SearchAlert, Thermometer, Droplets, Settings } fro
 import { getLogsByDateRange } from '../api/dashboardApi';
 import { useSettingsStore } from '../../../store';
 import SensorSettingsModal from './SensorSettingsModal';
+import { useAuthStore } from '../../../store';
 
 /**
  * Utility: Check if dark mode is active
@@ -120,6 +121,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
     const isDark = useTheme();
     const modalRef = useRef(null);
     const chartRef = useRef(null);
+    const { user } = useAuthStore();
 
     // Date range state (default: today 00:00 to now)
     const [startDate, setStartDate] = useState(() => {
@@ -546,24 +548,25 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                             </svg>
                             Excel
                         </button>
-
-                        <button
-                            onClick={() => setIsSettingsOpen(true)}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                            style={{
-                                backgroundColor: isDark ? 'rgba(168, 85, 247, 0.15)' : '#f3e8ff',
-                                color: isDark ? '#c084fc' : '#7c3aed'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = isDark ? 'rgba(168, 85, 247, 0.25)' : '#e9d5ff';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = isDark ? 'rgba(168, 85, 247, 0.15)' : '#f3e8ff';
-                            }}
-                            title={t('settings.sensorSettings', 'Cài đặt sensor')}
-                        >
-                            <Settings className="w-4 h-4" />
-                        </button>
+                        {user?.role === 'Admin' && (
+                            <button
+                                onClick={() => setIsSettingsOpen(true)}
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                                style={{
+                                    backgroundColor: isDark ? 'rgba(168, 85, 247, 0.15)' : '#f3e8ff',
+                                    color: isDark ? '#c084fc' : '#7c3aed'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = isDark ? 'rgba(168, 85, 247, 0.25)' : '#e9d5ff';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = isDark ? 'rgba(168, 85, 247, 0.15)' : '#f3e8ff';
+                                }}
+                                title={t('settings.sensorSettings', 'Cài đặt sensor')}
+                            >
+                                <Settings className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
                 </div>
 

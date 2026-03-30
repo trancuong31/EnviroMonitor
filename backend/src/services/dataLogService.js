@@ -21,7 +21,15 @@ const getLogs = async ({ factory } = {}) => {
     const logs = await DataInfo.findAll({
         attributes: {
             include: [
-                // Attach sensorType (FRIDGE/ROOM) from SENSOR table
+                [
+                    sequelize.literal(`(
+                        SELECT S.\`NG\`
+                        FROM \`sensor_info\` S
+                        WHERE S.\`SENSORID\` = DataInfo.sensorId
+                        LIMIT 1
+                    )`),
+                    'NG',
+                ],
                 [
                     sequelize.literal(`(
                         SELECT S.\`TYPE\`
@@ -31,7 +39,6 @@ const getLogs = async ({ factory } = {}) => {
                     )`),
                     'sensorType',
                 ],
-                // Attach per-sensor thresholds from SENSOR table
                 [
                     sequelize.literal(`(
                         SELECT S.\`TEMPERATUREMIN\`

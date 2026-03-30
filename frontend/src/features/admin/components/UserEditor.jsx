@@ -224,8 +224,8 @@ const UserEditor = ({ user, onSave, onCancel, roles = [], factories = [] }) => {
                     <div>
                         <div className="mt-2 p-4 rounded-xl border border-border bg-surface-alt/30">
                             <CustomCheckbox
-                                checked={formData.emailAlert === 'yes'}
-                                onChange={(checked) => handleChange({ target: { name: 'emailAlert', value: checked ? 'yes' : 'no' } })}
+                                checked={formData.emailAlert === 'Yes'}
+                                onChange={(checked) => handleChange({ target: { name: 'emailAlert', value: checked ? 'Yes' : 'No' } })}
                                 label={
                                     <span className="flex items-center gap-1.5">
                                         {t('admin.emailAlert', 'Email Alert')}

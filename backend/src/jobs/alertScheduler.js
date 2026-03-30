@@ -58,7 +58,7 @@ const checkAndAlert = async () => {
         // Lấy tất cả logs (Đã chứa min/max từ literal của bạn)
         const allLogs = await getLogs();
         if (!allLogs || allLogs.length === 0) return;
-
+        
         let totalEmailsSent = 0;
 
         for (const user of recipients) {
@@ -90,10 +90,15 @@ const checkAndAlert = async () => {
                     const humMin = log.getDataValue('humidityMin') ?? 40;
                     const humMax = log.getDataValue('humidityMax') ?? 60;
                     const typeCode = log.getDataValue('sensorType') || 'N';
-
+                    const ng = log.getDataValue('NG');
                     const tempStatus = getStatus(temp, tempMin, tempMax);
                     const humStatus = getStatus(hum, humMin, humMax);
 
+                    const timeNow = now.getTime();
+                    const timeDiff = timeNow - log.date.getTime();
+                    const timeDiffMinutes = Math.floor(timeDiff / 60000);
+                    if (timeDiffMinutes > ng) continue;
+                    
                     if (tempStatus !== 'normal' || humStatus !== 'normal') {
                         userAlerts.push({
                             sensorId: log.sensorId,
