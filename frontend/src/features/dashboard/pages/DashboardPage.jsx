@@ -40,7 +40,7 @@ const getAgeInMinutes = (isoDate) => {
 const DashboardPage = () => {
   const { t } = useTranslation();
   const { locations, isLoading, error, fetchLocations, refreshLocations } = useDashboardStore();
-  const loadFromUser = useSettingsStore((s) => s.loadFromUser);
+  const fetchSettings = useSettingsStore((s) => s.fetchSettings);
   const [view, setView] = useState('grid');
   const [filterFactory, setFilterFactory] = useState(
     () => localStorage.getItem('dashboard_filterFactory') || 'all'
@@ -61,28 +61,25 @@ const DashboardPage = () => {
     fetchLocations(filterFactory);
   }, [fetchLocations]);
 
-  // Always fetch latest user settings on dashboard load
+  // Always fetch latest settings on dashboard load
   useEffect(() => {
     let cancelled = false;
 
-    const fetchMe = async () => {
+    const loadSettings = async () => {
       try {
-        const res = await api.get('/auth/me');
-        const user = res.data?.data?.user;
-        if (!cancelled && user) {
-          loadFromUser(user);
+        if (!cancelled) {
+          await fetchSettings();
         }
       } catch (e) {
-        // axios interceptor handles 401 (logout). Keep dashboard resilient.
-        console.error('Failed to load user settings:', e);
+        console.error('Failed to load settings:', e);
       }
     };
 
-    fetchMe();
+    loadSettings();
     return () => {
       cancelled = true;
     };
-  }, [loadFromUser]);
+  }, [fetchSettings]);
 
   // Extract unique location prefixes for line filter based on selected filterType
   const lineOptions = useMemo(() => {

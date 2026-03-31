@@ -1,4 +1,4 @@
-const { DataInfo, Sensor } = require('../models');
+const { DataInfo, Sensor, THSpec, THSpecHistory } = require('../models');
 const { sequelize } = require('../config/database');
 const { Op } = require('sequelize');
 
@@ -13,76 +13,50 @@ const getLogs = async ({ factory } = {}) => {
         }
     };
 
-    // Filter by factory prefix (first 2 chars of sensorId, e.g. V4, V5)
     if (factory) {
         whereConditions.sensorId = { [Op.like]: `${factory}%` };
     }
 
     const logs = await DataInfo.findAll({
-        attributes: {
-            include: [
-                [
-                    sequelize.literal(`(
-                        SELECT S.\`NG\`
-                        FROM \`sensor_info\` S
-                        WHERE S.\`SENSORID\` = DataInfo.sensorId
-                        LIMIT 1
-                    )`),
-                    'NG',
-                ],
-                [
-                    sequelize.literal(`(
-                        SELECT S.\`TYPE\`
-                        FROM \`sensor_info\` S
-                        WHERE S.\`SENSORID\` = DataInfo.sensorId
-                        LIMIT 1
-                    )`),
-                    'sensorType',
-                ],
-                [
-                    sequelize.literal(`(
-                        SELECT S.\`TEMPERATUREMIN\`
-                        FROM \`sensor_info\` S
-                        WHERE S.\`SENSORID\` = DataInfo.sensorId
-                        LIMIT 1
-                    )`),
-                    'temperatureMin',
-                ],
-                [
-                    sequelize.literal(`(
-                        SELECT S.\`TEMPERATUREMAX\`
-                        FROM \`sensor_info\` S
-                        WHERE S.\`SENSORID\` = DataInfo.sensorId
-                        LIMIT 1
-                    )`),
-                    'temperatureMax',
-                ],
-                [
-                    sequelize.literal(`(
-                        SELECT S.\`HUMIDITYMIN\`
-                        FROM \`sensor_info\` S
-                        WHERE S.\`SENSORID\` = DataInfo.sensorId
-                        LIMIT 1
-                    )`),
-                    'humidityMin',
-                ],
-                [
-                    sequelize.literal(`(
-                        SELECT S.\`HUMIDITYMAX\`
-                        FROM \`sensor_info\` S
-                        WHERE S.\`SENSORID\` = DataInfo.sensorId
-                        LIMIT 1
-                    )`),
-                    'humidityMax',
-                ],
-            ],
-        },
         where: whereConditions,
+        include: [
+            {
+                model: Sensor,
+                as: 'sensor',
+                attributes: ['type'], 
+                include: [
+                    {
+                        model: THSpec,
+                        as: 'spec',
+                        attributes: [
+                            'ng', 
+                            'temperatureMin', 
+                            'temperatureMax', 
+                            'humidityMin', 
+                            'humidityMax'
+                        ]
+                    }
+                ]
+            }
+        ],
         order: [['sensorId', 'ASC']],
-        limit: 40
+        limit: 40,
+        raw: true,
+        nest: true
     });
 
-    return logs;
+    return logs.map(log => {
+        return {
+            ...log,
+            sensorType: log.sensor?.type || null,
+            NG: log.sensor?.spec?.ng || null,
+            temperatureMin: log.sensor?.spec?.temperatureMin ?? null,
+            temperatureMax: log.sensor?.spec?.temperatureMax ?? null,
+            humidityMin: log.sensor?.spec?.humidityMin ?? null,
+            humidityMax: log.sensor?.spec?.humidityMax ?? null,
+            sensor: undefined
+        };
+    });
 };
 
 const getLogsByDateRange = async (sensorId, startDate, endDate) => {
@@ -158,6 +132,49 @@ const getLayoutDetail = async (position) => {
     }));
 };
 
+const getSettings = async () => {
+    const settings = await THSpec.findAll();
+    return settings;
+};
+
+const updateSettings = async (location, data) => {
+    try {
+        let spec = await THSpec.findOne({ where: { location } });
+    
+    const updateData = {};
+    if (data.temperatureMin !== undefined) updateData.temperatureMin = data.temperatureMin;
+    if (data.temperatureMax !== undefined) updateData.temperatureMax = data.temperatureMax;
+    if (data.humidityMin !== undefined) updateData.humidityMin = data.humidityMin;
+    if (data.humidityMax !== undefined) updateData.humidityMax = data.humidityMax;
+    if (data.ng !== undefined) updateData.ng = data.ng;
+
+    if (!spec) {
+        const maxIdSpec = await THSpec.findOne({ order: [['id', 'DESC']] });
+        const newId = maxIdSpec ? maxIdSpec.id + 1 : 1;
+        spec = await THSpec.create({ id: newId, location, ...updateData });
+    } else {
+        await spec.update(updateData);
+    }
+    if (data.ng !== undefined) {
+        await THSpec.update({ ng: data.ng }, { where: {} });
+    }
+    // insert into th_spec_history
+    await THSpecHistory.create({
+        location: location,
+        ng: data.ng,
+        temperatureMin: data.temperatureMin,
+        temperatureMax: data.temperatureMax,
+        humidityMin: data.humidityMin,
+        humidityMax: data.humidityMax,
+        eventUser: data.eventUser,
+    });
+    return spec;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
+
 module.exports = {
     getLogs,
     getLogsByDateRange,
@@ -165,4 +182,6 @@ module.exports = {
     getSensorsByPrefix,
     updateSensor,
     getLayoutDetail,
+    getSettings,
+    updateSettings,
 };

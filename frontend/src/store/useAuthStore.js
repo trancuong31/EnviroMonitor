@@ -37,8 +37,8 @@ export const useAuthStore = create(
                         isLoading: false,
                     });
 
-                    // Hydrate settings from user data
-                    useSettingsStore.getState().loadFromUser(user);
+                    // Hydrate settings
+                    useSettingsStore.getState().fetchSettings();
 
                     return { success: true };
                 } catch (error) {
@@ -62,8 +62,8 @@ export const useAuthStore = create(
                         isLoading: false,
                     });
 
-                    // Hydrate settings from user data
-                    useSettingsStore.getState().loadFromUser(user);
+                    // Hydrate settings
+                    useSettingsStore.getState().fetchSettings();
 
                     return { success: true };
                 } catch (error) {

@@ -94,7 +94,7 @@ const RangeSliderInput = ({
 };
 
 /**
- * Tab button for switching between Fridge and Room settings
+ * Tab button for switching between WHC, WHN and PL settings
  */
 const TabButton = ({ active, icon, label, onClick }) => (
     <button
@@ -111,16 +111,16 @@ const TabButton = ({ active, icon, label, onClick }) => (
 
 /**
  * ThresholdSettingsModal - Modal for configuring temperature and humidity warning thresholds
- * Features: Tabbed UI (Fridge / Room), range sliders with number inputs, saves to DB via API
+ * Features: Tabbed UI (WHC / WHN / PL), range sliders with number inputs, saves to DB via API
  */
 const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     const { t } = useTranslation();
-    const { fridge, room, ng, updateSettings, isLoading } = useSettingsStore();
+    const { WHC, WHN, PL, ng, updateSettings, isLoading } = useSettingsStore();
     const [showTooltip, setShowTooltip] = useState(false);
-    const [activeTab, setActiveTab] = useState('room');
-    
+    const [activeTab, setActiveTab] = useState('PL');
+
     // Local state for form inputs
-    const [formValues, setFormValues] = useState({ fridge, room, ng });
+    const [formValues, setFormValues] = useState({ WHC, WHN, PL, ng });
     const [errors, setErrors] = useState({ temp: false, hum: false });
     const [saveMessage, setSaveMessage] = useState(null);
 
@@ -131,11 +131,11 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     // Sync form values when modal opens or thresholds change
     useEffect(() => {
         if (isOpen) {
-            setFormValues({ fridge, room, ng });
+            setFormValues({ WHC, WHN, PL, ng });
             setErrors({ temp: false, hum: false });
             setSaveMessage(null);
         }
-    }, [isOpen, fridge, room, ng]);
+    }, [isOpen, WHC, WHN, PL, ng]);
 
     // Get current tab values
     const currentValues = formValues[activeTab];
@@ -164,7 +164,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     // Handle save with validation
     const handleSave = async () => {
         if (!validateThresholds()) return;
-        const originalValues = activeTab === 'fridge' ? fridge : room;
+        const originalValues = activeTab === 'WHC' ? WHC : activeTab === 'WHN' ? WHN : activeTab === 'PL' ? PL : ng;
         const newValues = formValues[activeTab];
         const isTabSame = Object.keys(originalValues).every(key => originalValues[key] === newValues[key]);
         const isNgSame = formValues.ng === ng;
@@ -207,7 +207,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     };
 
     // Temperature slider range varies by type
-    const tempMaxRange = activeTab === 'fridge' ? 20 : 50;
+    const tempMaxRange = activeTab === 'WHC' ? 20 : activeTab === 'WHN' ? 50 : activeTab === 'PL' ? 50 : 50;
 
     if (!isOpen) return null;
 
@@ -257,18 +257,24 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                 {/* Tab Buttons */}
                 <div className="flex gap-2 px-6 pt-5 pb-2">
                     <TabButton
-                        active={activeTab === 'room'}
+                        active={activeTab === 'PL'}
                         icon=""
-                        label={t('settings.roomTab', 'Normal')}
-                        onClick={() => handleTabSwitch('room')}
+                        label={t('settings.PLTab', 'PL')}
+                        onClick={() => handleTabSwitch('PL')}
                     />
                     <TabButton
-                        active={activeTab === 'fridge'}
+                        active={activeTab === 'WHN'}
                         icon=""
-                        label={t('settings.fridgeTab', 'Cool')}
-                        onClick={() => handleTabSwitch('fridge')}
+                        label={t('settings.WHNTab', 'WHN')}
+                        onClick={() => handleTabSwitch('WHN')}
                     />
-                    
+                    <TabButton
+                        active={activeTab === 'WHC'}
+                        icon=""
+                        label={t('settings.WHCTab', 'WHC')}
+                        onClick={() => handleTabSwitch('WHC')}
+                    />
+
                 </div>
 
                 {/* Body */}
@@ -287,7 +293,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                                 label={t('settings.min', 'Tối thiểu')}
                                 value={currentValues.tempMin}
                                 onChange={(val) => handleChange('tempMin', val)}
-                                min={activeTab === 'fridge' ? -10 : 0}
+                                min={activeTab === 'WHC' ? -10 : 0}
                                 max={tempMaxRange}
                                 step={0.5}
                                 unit="°C"
@@ -297,7 +303,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                                 label={t('settings.max', 'Tối đa')}
                                 value={currentValues.tempMax}
                                 onChange={(val) => handleChange('tempMax', val)}
-                                min={activeTab === 'fridge' ? -10 : 0}
+                                min={activeTab === 'WHC' ? -10 : 0}
                                 max={tempMaxRange}
                                 step={0.5}
                                 unit="°C"
@@ -310,20 +316,20 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
                             {/* Safe zone highlight */}
                             <div
                                 className="absolute top-0 h-full bg-surface/80 rounded-l-full"
-                                style={{ left: 0, width: `${((currentValues.tempMin - (activeTab === 'fridge' ? -10 : 0)) / tempMaxRange) * 100}%` }}
+                                style={{ left: 0, width: `${((currentValues.tempMin - (activeTab === 'WHC' ? -10 : 0)) / tempMaxRange) * 100}%` }}
                             />
                             <div
                                 className="absolute top-0 h-full bg-surface/80 rounded-r-full"
-                                style={{ left: `${((currentValues.tempMax - (activeTab === 'fridge' ? -10 : 0)) / tempMaxRange) * 100}%`, right: 0 }}
+                                style={{ left: `${((currentValues.tempMax - (activeTab === 'WHC' ? -10 : 0)) / tempMaxRange) * 100}%`, right: 0 }}
                             />
                             {/* Markers */}
                             <div
                                 className="absolute top-0 w-0.5 h-full bg-temp shadow-lg"
-                                style={{ left: `${((currentValues.tempMin - (activeTab === 'fridge' ? -10 : 0)) / tempMaxRange) * 100}%` }}
+                                style={{ left: `${((currentValues.tempMin - (activeTab === 'WHC' ? -10 : 0)) / tempMaxRange) * 100}%` }}
                             />
                             <div
                                 className="absolute top-0 w-0.5 h-full bg-temp shadow-lg"
-                                style={{ left: `${((currentValues.tempMax - (activeTab === 'fridge' ? -10 : 0)) / tempMaxRange) * 100}%` }}
+                                style={{ left: `${((currentValues.tempMax - (activeTab === 'WHC' ? -10 : 0)) / tempMaxRange) * 100}%` }}
                             />
                         </div>
                         <div className="flex justify-between text-[10px] text-text-muted/60">

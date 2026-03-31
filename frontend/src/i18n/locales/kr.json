@@ -139,6 +139,9 @@
   },
   "settings": {
     "thresholdTitle": "경고 임계값 설정",
+    "PLTab": "PL",
+    "WHNTab": "WHN",
+    "WHCTab": "WHC",
     "sensorSettings": "센서 설정",
     "temperature": "온도",
     "humidity": "습도",

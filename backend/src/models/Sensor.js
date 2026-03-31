@@ -20,11 +20,10 @@ const Sensor = sequelize.define('Sensor', {
         defaultValue: 'N',
         field: 'TYPE',
     },
-    ng: {
-        type: DataTypes.FLOAT,
+    locationId: {
+        type: DataTypes.STRING(50),
         allowNull: true,
-        field: 'NG',
-        defaultValue: 15.0,
+        field: 'LOCATIONID',
     },
     position: {
         type: DataTypes.STRING(255),
@@ -45,27 +44,7 @@ const Sensor = sequelize.define('Sensor', {
         type: DataTypes.FLOAT,
         allowNull: true,
         field: 'YPOSITION',
-    },
-    temperatureMin: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        field: 'TEMPERATUREMIN',
-    },
-    temperatureMax: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        field: 'TEMPERATUREMAX',
-    },
-    humidityMin: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        field: 'HUMIDITYMIN',
-    },
-    humidityMax: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-        field: 'HUMIDITYMAX',
-    },
+    }
 }, {
     tableName: 'sensor_info',
     timestamps: false,

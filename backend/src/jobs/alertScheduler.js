@@ -4,7 +4,7 @@ const logger = require('../config/logger');
 const { getLogs } = require('../services/dataLogService');
 const { sendEmail } = require('../utils/email');
 const { buildAlertEmail } = require('../utils/alertEmailTemplate');
-const { User } = require('../models');
+const { User, THSpec } = require('../models');
 const { EMAIL_ALERTS } = require('../constants/emailAlerts');
 const { STATUSES } = require('../constants/statuses');
 const { FACTORIES } = require('../constants/factories');
@@ -33,7 +33,7 @@ const getStatus = (value, min, max) => {
  *  1. Fetch all logs once
  *  2. Loop through each active user (outer loop)
  *  3. Filter logs by user.factory (tc_name prefix) and EMAIL_ALERT_ENABLED = YES
- *  4. Compare against user-specific thresholds (fridge/room from DB)
+ *  4. Compare against user-specific thresholds (WHC/WHN/PL from DB)
  *  5. Build & send personalized email per user
  */
 const checkAndAlert = async () => {
@@ -75,7 +75,6 @@ const checkAndAlert = async () => {
                         log.sensorId && log.sensorId.startsWith(user.factory)
                     );
                 }
-
                 if (userLogs.length === 0) continue;
 
                 const userAlerts = [];
@@ -84,13 +83,13 @@ const checkAndAlert = async () => {
                     const temp = log.temperature;
                     const hum = log.humidity;
 
-                    // Đọc từ getDataValue do bạn dùng literal
-                    const tempMin = log.getDataValue('temperatureMin') ?? 18; 
-                    const tempMax = log.getDataValue('temperatureMax') ?? 28;
-                    const humMin = log.getDataValue('humidityMin') ?? 40;
-                    const humMax = log.getDataValue('humidityMax') ?? 60;
-                    const typeCode = log.getDataValue('sensorType') || 'N';
-                    const ng = log.getDataValue('NG');
+                    // Read properties directly since getLogs returns plain objects
+                    const tempMin = log.temperatureMin ?? 18; 
+                    const tempMax = log.temperatureMax ?? 28;
+                    const humMin = log.humidityMin ?? 40;
+                    const humMax = log.humidityMax ?? 60;
+                    const typeCode = log.sensorType || 'N';
+                    const ng = log.NG ?? 15;
                     const tempStatus = getStatus(temp, tempMin, tempMax);
                     const humStatus = getStatus(hum, humMin, humMax);
 
@@ -150,7 +149,7 @@ const startAlertScheduler = () => {
         return;
     }
 
-    const cronExpression = '* * * * *';
+    const cronExpression = '0 * * * *';
 
     cron.schedule(cronExpression, () => {
         logger.info('[AlertScheduler] Scheduled check triggered');

@@ -139,6 +139,9 @@
   },
   "settings": {
     "thresholdTitle": "Cài đặt ngưỡng cảnh báo",
+    "PLTab": "PL",
+    "WHNTab": "WHN",
+    "WHCTab": "WHC",
     "temperature": "Nhiệt độ",
     "humidity": "Độ ẩm",
     "min": "Tối thiểu",

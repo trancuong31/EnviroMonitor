@@ -6,6 +6,7 @@ const THSpecHistory = sequelize.define('THSpecHistory', {
         type: DataTypes.BIGINT,
         primaryKey: true,
         allowNull: false,
+        autoIncrement: true,
         field: 'ID',
     },
     location: {
@@ -40,8 +41,19 @@ const THSpecHistory = sequelize.define('THSpecHistory', {
         allowNull: true,
         field: 'HUMIDITYMAX',
     },
+    eventTime: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'EVENTTIME',
+        defaultValue: DataTypes.NOW,
+    },
+    eventUser: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        field: 'EVENTUSER',
+    },
 }, {
-    tableName: 'th_spec_table_history',
+    tableName: 'th_spec_history',
     timestamps: false,
     underscored: false,
 });

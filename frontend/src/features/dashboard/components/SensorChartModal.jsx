@@ -172,7 +172,12 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [updatedThresholds, setUpdatedThresholds] = useState(null);
     const sensorType = locationData?.sensorType || 'ROOM';
-    const globalThresholds = useSettingsStore((s) => (sensorType === 'FRIDGE' ? s.fridge : s.room));
+    const globalThresholds = useSettingsStore((s) => {
+        const locStr = locationData?.location?.toUpperCase() || '';
+        if (locStr.includes('_WHC_')) return s.WHC;
+        if (locStr.includes('_WHN_')) return s.WHN;
+        return s.PL || { tempMin: 0, tempMax: 50, humMin: 0, humMax: 100 };
+    });
     const ngThreshold = useSettingsStore((s) => s.ng);
 
     // Per-sensor thresholds with fallback to global
@@ -548,7 +553,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                             </svg>
                             Excel
                         </button>
-                        {user?.role === 'Admin' && (
+                        {/* {user?.role === 'Admin' && (
                             <button
                                 onClick={() => setIsSettingsOpen(true)}
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
@@ -566,7 +571,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                             >
                                 <Settings className="w-4 h-4" />
                             </button>
-                        )}
+                        )} */}
                     </div>
                 </div>
 

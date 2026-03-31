@@ -9,7 +9,12 @@ import { isWarning, isTemperatureWarning, isHumidityWarning } from '../utils/war
  */
 const LocationListItem = ({ location, locationId, temperature, humidity, sensorType = 'ROOM', chartData = [], lastUpdate, lastUpdateISO, onClick, tempMin, tempMax, humMin, humMax }) => {
     const { t } = useTranslation();
-    const globalThresholds = useSettingsStore((s) => (sensorType === 'FRIDGE' ? s.fridge : s.room));
+    const globalThresholds = useSettingsStore((s) => {
+        const locStr = location?.toUpperCase() || '';
+        if (locStr.includes('_WHC_')) return s.WHC;
+        if (locStr.includes('_WHN_')) return s.WHN;
+        return s.PL || { tempMin: 0, tempMax: 50, humMin: 0, humMax: 100 };
+    });
     const ngThreshold = useSettingsStore((s) => s.ng);
 
     // Per-sensor thresholds with fallback to global

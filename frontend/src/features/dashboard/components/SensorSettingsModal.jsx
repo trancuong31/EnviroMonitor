@@ -98,7 +98,12 @@ const SensorSettingsModal = ({ isOpen, onClose, locationData, currentThresholds,
     const [isLoading, setIsLoading] = useState(false);
 
     const sensorType = locationData?.sensorType || 'ROOM';
-    const globalThresholds = useSettingsStore((s) => (sensorType === 'FRIDGE' ? s.fridge : s.room));
+    const globalThresholds = useSettingsStore((s) => {
+        const locStr = locationData?.location?.toUpperCase() || '';
+        if (locStr.includes('_WHC_')) return s.WHC;
+        if (locStr.includes('_WHN_')) return s.WHN;
+        return s.PL || { tempMin: 0, tempMax: 50, humMin: 0, humMax: 100 };
+    });
 
     const [formValues, setFormValues] = useState({
         temperatureMin: 0,

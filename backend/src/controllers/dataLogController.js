@@ -100,6 +100,32 @@ const getLayoutDetail = catchAsync(async (req, res) => {
     });
 });
 
+/**
+ * Get settings
+ */
+const getSettings = catchAsync(async (req, res) => {
+    const settings = await dataLogs.getSettings();
+
+    res.status(HTTP_CODES.OK).json({
+        status: 'success',
+        data: { settings },
+    });
+});
+
+/**
+ * Update settings
+ */
+const updateSettings = catchAsync(async (req, res) => {
+    const eventUser = req.user.userid;      
+    const { location, temperatureMin, temperatureMax, humidityMin, humidityMax, ng } = req.body;
+    const settings = await dataLogs.updateSettings(location, {temperatureMin, temperatureMax, humidityMin, humidityMax, ng, eventUser});
+
+    res.status(HTTP_CODES.OK).json({
+        status: 'success',
+        data: { settings },
+    });
+});
+
 module.exports = {
     getLogs,
     getLogsByDateRange,
@@ -107,4 +133,6 @@ module.exports = {
     getSensorsByPrefix,
     updateSensor,
     getLayoutDetail,
+    getSettings,
+    updateSettings,
 };

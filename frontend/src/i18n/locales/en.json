@@ -140,6 +140,9 @@
   },
   "settings": {
     "thresholdTitle": "Warning Threshold Settings",
+    "PLTab": "PL",
+    "WHNTab": "WHN",
+    "WHCTab": "WHC",
     "sensorSettings": "Sensor Settings",
     "temperature": "Temperature",
     "humidity": "Humidity",
