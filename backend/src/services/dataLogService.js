@@ -3,19 +3,21 @@ const { sequelize } = require('../config/database');
 const { Op } = require('sequelize');
 
 const getLogs = async ({ factory } = {}) => {
-    const whereConditions = {
-        date: {
-            [Op.eq]: sequelize.literal(`(
-                SELECT MAX(t2.\`DATE\`)
-                FROM data_info t2
-                WHERE t2.\`SENSORID\` = DataInfo.\`SENSORID\`
-            )`)
-        }
-    };
+    const whereConditions = {};
+    let subQuery = 'SELECT SENSORID, MAX(DATE) FROM data_info';
 
     if (factory) {
         whereConditions.sensorId = { [Op.like]: `${factory}%` };
+        // Tối ưu: Filter ngay từ lúc subquery để giảm kích thước bảng tạm
+        subQuery += ` WHERE SENSORID LIKE '${factory}%'`;
     }
+
+    subQuery += ' GROUP BY SENSORID';
+
+    // Sử dụng Tuple IN thay vì Correlated Subquery
+    whereConditions[Op.and] = [
+        sequelize.literal(`(DataInfo.SENSORID, DataInfo.DATE) IN (${subQuery})`)
+    ];
 
     const logs = await DataInfo.findAll({
         where: whereConditions,
@@ -29,11 +31,8 @@ const getLogs = async ({ factory } = {}) => {
                         model: THSpec,
                         as: 'spec',
                         attributes: [
-                            'ng', 
-                            'temperatureMin', 
-                            'temperatureMax', 
-                            'humidityMin', 
-                            'humidityMax'
+                            'ng', 'temperatureMin', 'temperatureMax', 
+                            'humidityMin', 'humidityMax'
                         ]
                     }
                 ]
@@ -45,18 +44,16 @@ const getLogs = async ({ factory } = {}) => {
         nest: true
     });
 
-    return logs.map(log => {
-        return {
-            ...log,
-            sensorType: log.sensor?.type || null,
-            NG: log.sensor?.spec?.ng || null,
-            temperatureMin: log.sensor?.spec?.temperatureMin ?? null,
-            temperatureMax: log.sensor?.spec?.temperatureMax ?? null,
-            humidityMin: log.sensor?.spec?.humidityMin ?? null,
-            humidityMax: log.sensor?.spec?.humidityMax ?? null,
-            sensor: undefined
-        };
-    });
+    return logs.map(log => ({
+        ...log,
+        sensorType: log.sensor?.type || null,
+        NG: log.sensor?.spec?.ng || null,
+        temperatureMin: log.sensor?.spec?.temperatureMin ?? null,
+        temperatureMax: log.sensor?.spec?.temperatureMax ?? null,
+        humidityMin: log.sensor?.spec?.humidityMin ?? null,
+        humidityMax: log.sensor?.spec?.humidityMax ?? null,
+        sensor: undefined
+    }));
 };
 
 const getLogsByDateRange = async (sensorId, startDate, endDate) => {
