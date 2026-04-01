@@ -556,7 +556,11 @@ const DashboardPage = () => {
       />
 
       {/* Threshold Settings Modal */}
-      <ThresholdSettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <ThresholdSettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        onRefresh={handleRefresh} 
+      />
     </MainLayout>
   );
 };

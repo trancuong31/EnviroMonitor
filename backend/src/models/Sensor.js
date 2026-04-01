@@ -46,7 +46,7 @@ const Sensor = sequelize.define('Sensor', {
         field: 'YPOSITION',
     }
 }, {
-    tableName: 'sensor_info',
+    tableName: 'sensor',
     timestamps: false,
     underscored: false,
 });

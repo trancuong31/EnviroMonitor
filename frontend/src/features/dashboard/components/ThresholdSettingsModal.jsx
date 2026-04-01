@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../../store';
+import { useDashboardStore } from '../store/useDashboardStore';
 import { X, RotateCcw, Save, Thermometer, Droplets, Info, CircleAlert, Loader2, Clock } from 'lucide-react';
 import { useSettingsStore, DEFAULT_THRESHOLDS } from '../../../store';
 import { toast } from 'sonner';
@@ -113,12 +114,11 @@ const TabButton = ({ active, icon, label, onClick }) => (
  * ThresholdSettingsModal - Modal for configuring temperature and humidity warning thresholds
  * Features: Tabbed UI (WHC / WHN / PL), range sliders with number inputs, saves to DB via API
  */
-const ThresholdSettingsModal = ({ isOpen, onClose }) => {
+const ThresholdSettingsModal = ({ isOpen, onClose, onRefresh }) => {
     const { t } = useTranslation();
     const { WHC, WHN, PL, ng, updateSettings, isLoading } = useSettingsStore();
     const [showTooltip, setShowTooltip] = useState(false);
     const [activeTab, setActiveTab] = useState('PL');
-
     // Local state for form inputs
     const [formValues, setFormValues] = useState({ WHC, WHN, PL, ng });
     const [errors, setErrors] = useState({ temp: false, hum: false });
@@ -127,7 +127,6 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
     // get user role
     const { user } = useAuthStore();
     const isAdmin = user?.role === 'Admin';
-
     // Sync form values when modal opens or thresholds change
     useEffect(() => {
         if (isOpen) {
@@ -160,7 +159,6 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
 
         return !tempError && !humError;
     };
-
     // Handle save with validation
     const handleSave = async () => {
         if (!validateThresholds()) return;
@@ -176,6 +174,10 @@ const ThresholdSettingsModal = ({ isOpen, onClose }) => {
         if (result.success) {
             toast.success(t('settings.saveSuccess', 'Lưu cài đặt thành công'));
             onClose();
+            //refresh data
+            if (onRefresh) {
+                onRefresh();
+            }
         } else {
             toast.error(t('settings.saveError', 'Lỗi khi lưu cài đặt'));
         }

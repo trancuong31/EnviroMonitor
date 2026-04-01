@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 
 const getLogs = async ({ factory } = {}) => {
     const whereConditions = {};
-    let subQuery = 'SELECT SENSORID, MAX(DATE) FROM data_info';
+    let subQuery = 'SELECT SENSORID, MAX(DATE) FROM data';
 
     if (factory) {
         whereConditions.sensorId = { [Op.like]: `${factory}%` };

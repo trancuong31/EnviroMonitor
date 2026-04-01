@@ -41,7 +41,7 @@ const THSpec = sequelize.define('THSpec', {
         field: 'HUMIDITYMAX',
     },
 }, {
-    tableName: 'th_spec_table',
+    tableName: 'th_spec',
     timestamps: false,
     underscored: false,
 });

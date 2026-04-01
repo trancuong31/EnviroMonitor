@@ -34,7 +34,7 @@ const DataInfo = sequelize.define('DataInfo', {
         field: 'EVENTTIME',
     },
 }, {
-    tableName: 'data_info',
+    tableName: 'data',
     timestamps: false,
     underscored: false,
 });
