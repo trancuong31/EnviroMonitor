@@ -16,7 +16,8 @@ const RangeSliderInput = ({
     max,
     step = 1,
     unit = '',
-    color = 'primary'
+    color = 'primary',
+    disabled = false
 }) => {
     const percent = ((value - min) / (max - min)) * 100;
 
@@ -48,7 +49,8 @@ const RangeSliderInput = ({
                         min={min}
                         max={max}
                         step={step}
-                        className={`w-16 px-2 py-1 bg-surface-alt border border-border rounded-lg text-text font-mono text-sm text-center focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none transition-all ${colors.text}`}
+                        disabled={disabled}
+                        className={`w-16 px-2 py-1 bg-surface-alt border border-border rounded-lg text-text font-mono text-sm text-center focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none transition-all ${colors.text} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                     />
                     <span className="text-xs text-text-muted">{unit}</span>
                 </div>
@@ -73,7 +75,8 @@ const RangeSliderInput = ({
                     min={min}
                     max={max}
                     step={step}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    disabled={disabled}
+                    className={`absolute inset-0 w-full h-full opacity-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 />
 
                 {/* Thumb indicator */}
@@ -300,6 +303,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose, onRefresh }) => {
                                 step={0.5}
                                 unit="°C"
                                 color="temp"
+                                disabled={!isAdmin}
                             />
                             <RangeSliderInput
                                 label={t('settings.max', 'Tối đa')}
@@ -310,6 +314,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose, onRefresh }) => {
                                 step={0.5}
                                 unit="°C"
                                 color="temp"
+                                disabled={!isAdmin}
                             />
                         </div>
 
@@ -370,6 +375,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose, onRefresh }) => {
                                 step={1}
                                 unit="%"
                                 color="humidity"
+                                disabled={!isAdmin}
                             />
                             <RangeSliderInput
                                 label={t('settings.max', 'Tối đa')}
@@ -380,6 +386,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose, onRefresh }) => {
                                 step={1}
                                 unit="%"
                                 color="humidity"
+                                disabled={!isAdmin}
                             />
                         </div>
 
@@ -438,6 +445,7 @@ const ThresholdSettingsModal = ({ isOpen, onClose, onRefresh }) => {
                             step={1}
                             unit={t('settings.minutes', ' phút')}
                             color="temp"
+                            disabled={!isAdmin}
                         />
                     </div>
 

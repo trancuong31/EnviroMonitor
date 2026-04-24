@@ -3,6 +3,7 @@ const DataInfo = require('./DataInfo');
 const Sensor = require('./Sensor');
 const THSpec = require('./THSpec');
 const THSpecHistory = require('./THSpecHistory');
+const Department = require('./Department');
 DataInfo.belongsTo(Sensor, {
     foreignKey: 'sensorId',
     targetKey: 'sensorId',
@@ -31,4 +32,5 @@ module.exports = {
     Sensor,
     THSpec,
     THSpecHistory,
+    Department,
 };

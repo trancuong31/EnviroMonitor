@@ -248,3 +248,45 @@ button {
 @utility delay-800 {
     animation-delay: 800ms;
 }
+
+/* ===== Custom Button Components ===== */
+.btn-create {
+    background-color: #10b981;
+    border-color: #10b981;
+    @apply flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border font-semibold text-white transition-all hover:opacity-90 active:scale-95 shadow-sm;
+}
+
+.btn-update {
+    background-color: #2953ad;
+    border-color: #2953ad;
+    @apply flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border font-semibold text-white transition-all hover:opacity-90 active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-delete {
+    background-color: #ef4444;
+    border-color: #dc2626;
+    @apply flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border font-semibold text-white transition-all hover:opacity-90 active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Dark mode overrides for buttons */
+html.dark .btn-create {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #34d399;
+}
+
+html.dark .btn-update {
+    background-color: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #60a5fa;
+}
+
+html.dark .btn-delete {
+    background-color: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #f87171;
+}
+
+html.dark .btn-create:hover { background-color: rgba(16, 185, 129, 0.25); }
+html.dark .btn-update:hover { background-color: rgba(59, 130, 246, 0.25); }
+html.dark .btn-delete:hover { background-color: rgba(239, 68, 68, 0.25); }

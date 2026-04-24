@@ -22,4 +22,7 @@ router.delete('/:id', userController.deleteUser);
 // Get all users
 router.get('/', userController.getAllUsers);
 
+// Get all departments
+router.get('/departments', userController.getAllDepartment);
+
 module.exports = router;

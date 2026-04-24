@@ -11,6 +11,7 @@ import MainLayout from '../../../components/layout/MainLayout/MainLayout';
 
 const ROLES = [
     { value: 'Admin', label: 'Admin' },
+    { value: 'Manager', label: 'Manager' },
     { value: 'User', label: 'User' },
 ];
 
@@ -24,11 +25,6 @@ const FACTORIES = [
     { value: 'V5', label: 'V5' },
 ];
 
-const EMAIL_ALERTS = [
-    { value: 'yes', label: 'Yes' },
-    { value: 'no', label: 'No' },
-];
-
 const UserManagement = () => {
     const { t } = useTranslation();
     const { user: currentUser } = useAuthStore();
@@ -36,15 +32,26 @@ const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState(null);
-    const [isEditing, setIsEditing] = useState(false);
+    const [isEditing, setIsEditing] = useState(true); // Always true as per request
+    const [departments, setDepartments] = useState([]);
 
     const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
-            const res = await api.get('/users');
-            setUsers(res.data?.data?.users || []);
+            const [usersRes, departmentsRes] = await Promise.all([
+                api.get('/users'),
+                api.get('/users/departments')
+            ]);
+            setUsers(usersRes.data?.data?.users || []);
+            
+            // Format departments for CustomSelect
+            const deptOptions = (departmentsRes.data?.data?.departments || []).map(dept => ({
+                value: dept.departmentID,
+                label: dept.departmentID
+            }));
+            setDepartments(deptOptions);
         } catch (error) {
-            console.error('Error fetching users:', error);
+            console.error('Error fetching users or departments:', error);
             toast.error(t('dashboard.error', 'Error loading data'));
         } finally {
             setLoading(false);
@@ -69,34 +76,47 @@ const UserManagement = () => {
 
     const handleAddNew = () => {
         setSelectedUser(null);
-        setIsEditing(true);
+        // isEditing is already true
     };
 
     const handleCancelEdit = () => {
-        setIsEditing(false);
         setSelectedUser(null);
     };
 
-    const handleSaveUser = async (userData) => {
+    const handleSaveUser = async (userData, forceCreate = false) => {
         try {
-            // if information is not changed, do not save
-            if (selectedUser?.fullname === userData.fullname && selectedUser?.userid === userData.userid && selectedUser?.role === userData.role && userData.password === '' && selectedUser?.factory === userData.factory && selectedUser?.status === userData.status && selectedUser?.emailAlert === userData.emailAlert) {
+            // if information is not changed and not forceCreate, do not save
+            if (!forceCreate && selectedUser?.id && 
+                selectedUser?.fullname === userData.fullname && 
+                selectedUser?.userid === userData.userid && 
+                selectedUser?.role === userData.role && 
+                userData.password === '' && 
+                selectedUser?.factory === userData.factory && 
+                selectedUser?.department === userData.department &&
+                selectedUser?.status === userData.status && 
+                selectedUser?.emailAlert === userData.emailAlert) {
                 toast.warning(t('admin.noChanges', 'No changes made'));
                 return;
             }
+            
             // add eventuser to userData
             userData.eventuser = currentUser.id;
-            if (selectedUser?.id) {
+            
+            if (selectedUser?.id && !forceCreate) {
                 // Update
                 await api.put(`/users/${selectedUser.id}`, userData);
                 toast.success(t('admin.updatedSuccess', 'User updated successfully'));
             } else {
                 // Create
+                // Ensure password is provided for new user if it was empty in the form during "Update" mode but clicked "Create"
+                if (!userData.password && forceCreate) {
+                    toast.error(t('auth.enterPassword', 'Password is required for new users'));
+                    return;
+                }
                 await api.post('/users', userData);
                 toast.success(t('admin.createdSuccess', 'User created successfully'));
             }
             await fetchUsers();
-            // setIsEditing(false);
             setSelectedUser(null);
         } catch (error) {
             console.error('Error saving user:', error);
@@ -143,10 +163,10 @@ const UserManagement = () => {
 
     return (
         <MainLayout>
-            <div className="p-6 md:p-8 h-[calc(100vh-64px)] overflow-hidden flex flex-col pt-0 pb-6 w-full">
+            <div className="px-6 md:px-8 h-[calc(100vh-64px)] overflow-hidden flex flex-col pt-2 pb-6 w-full">
                 
                 {/* Header Section */}
-                <div className="mb-6 flex flex-row items-start sm:items-center gap-6 animate-slide-down">
+                <div className="mb-3 flex flex-row items-start sm:items-center gap-4 animate-slide-down">
                     {/* Column 1: Back Button */}
                     <div>
                         <button
@@ -163,7 +183,7 @@ const UserManagement = () => {
                         <h1 className="text-3xl font-bold bg-primary bg-clip-text text-transparent">
                             {t('admin.userManagement', 'User Management')}
                         </h1>
-                        <p className="text-text-muted mt-2 text-sm">
+                        <p className="text-text-muted mt-0.5 text-sm">
                             {t('admin.userManagementDesc', 'Manage system users, roles, and access')}
                         </p>
                     </div>
@@ -174,9 +194,7 @@ const UserManagement = () => {
                     
                     {/* Left Panel: User List */}
                     <div 
-                        className={`transition-all duration-500 ease-in-out h-full flex flex-col ${
-                            isEditing ? 'lg:w-[65%] lg:pr-6' : 'w-full'
-                        }`}
+                        className="transition-all duration-500 ease-in-out h-full flex flex-col lg:w-[65%] lg:pr-6"
                     >
                         {loading ? (
                             <div className="flex items-center justify-center h-full bg-surface rounded-2xl border border-border shadow-sm">
@@ -198,19 +216,17 @@ const UserManagement = () => {
 
                     {/* Right Panel: Editor (Slides in) */}
                     <div 
-                        className={`absolute lg:relative right-0 top-0 h-full bg-background z-10 lg:z-auto transition-all duration-500 ease-in-out ${
-                            isEditing 
-                                ? 'w-full lg:w-[35%] translate-x-0 opacity-100 visibility-visible' 
-                                : 'w-full lg:w-0 translate-x-full lg:translate-x-0 opacity-0 invisible pointer-events-none'
-                        }`}
+                        className="absolute lg:relative right-0 top-0 h-full bg-background z-10 lg:z-auto transition-all duration-500 ease-in-out w-full lg:w-[35%] translate-x-0 opacity-100 visibility-visible"
                     >
                         <div className="w-full h-full lg:min-w-[340px] lg:pl-2">
                             <UserEditor
                                 user={selectedUser}
                                 onSave={handleSaveUser}
-                                onCancel={handleCancelEdit}
+                                onDelete={handleDeleteUser}
+                                onAddNew={handleAddNew}
                                 roles={ROLES}
                                 factories={FACTORIES}
+                                departments={departments}
                             />
                         </div>
                     </div>

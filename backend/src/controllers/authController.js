@@ -49,9 +49,23 @@ const logout = catchAsync(async (req, res) => {
     });
 });
 
+/**
+ * Update current user profile
+ */
+const updateProfile = catchAsync(async (req, res) => {
+    const userService = require('../services/userService');
+    const user = await userService.updateUser(req.user.id, req.body, req.user.id);
+
+    res.status(HTTP_CODES.OK).json({
+        status: 'success',
+        data: { user },
+    });
+});
+
 module.exports = {
     register,
     login,
     getMe,
     logout,
+    updateProfile,
 };

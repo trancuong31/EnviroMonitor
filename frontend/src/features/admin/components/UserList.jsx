@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Edit2, Trash2 } from 'lucide-react';
-import { Button } from '../../../components/ui';
 
-const UserList = ({ users, selectedUser, onSelectUser, onDeleteUser, onAddNew }) => {
+const UserList = ({ users, selectedUser, onSelectUser }) => {
     const { t } = useTranslation();
 
     return (
@@ -15,9 +14,6 @@ const UserList = ({ users, selectedUser, onSelectUser, onDeleteUser, onAddNew })
                         {t('admin.totalUsers', 'Total')}: <span className="font-semibold text-text">{users.length}</span>
                     </p>
                 </div>
-                <Button variant="primary" onClick={onAddNew} className="shadow-md shadow-primary/20">
-                    + {t('admin.addUser', 'Add User')}
-                </Button>
             </div>
 
             {/* Table Container */}
@@ -38,11 +34,11 @@ const UserList = ({ users, selectedUser, onSelectUser, onDeleteUser, onAddNew })
                             <th className="py-4 px-6 text-sm font-semibold text-text-muted uppercase tracking-wider w-[10%]">
                                 {t('admin.tableFactory', 'Factory')}
                             </th>
+                            <th className="py-4 px-6 text-sm font-semibold text-text-muted uppercase tracking-wider w-[10%]">
+                                {t('admin.tableDepartment', 'Department')}
+                            </th>
                             <th className="py-4 px-6 text-sm font-semibold text-text-muted uppercase tracking-wider w-[25%]">
                                 {t('admin.tableStatus', 'Status')}
-                            </th>
-                            <th className="py-4 px-6 text-sm font-semibold text-text-muted uppercase tracking-wider text-right w-[20%]">
-                                {t('admin.tableActions', 'Actions')}
                             </th>
                         </tr>
                     </thead>
@@ -102,16 +98,24 @@ const UserList = ({ users, selectedUser, onSelectUser, onDeleteUser, onAddNew })
                                         <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold capitalize tracking-wide rounded-md border ${
                                             user.role === 'Admin'
                                                 ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                                                : 'bg-blue-500/10 text-blue-600 border-blue-500/20'
+                                                : user.role === 'Manager'
+                                                    ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                                                    : 'bg-blue-500/10 text-blue-600 border-blue-500/20'
                                         }`}>
                                             {user.role}
                                         </span>
                                     </td>
 
-                                    {/* Column: Factory */}
                                     <td className="py-3 px-6">
                                         <span className="text-sm font-medium text-text">
                                             {user.factory || '-'}
+                                        </span>
+                                    </td>
+
+                                    {/* Column: Department */}
+                                    <td className="py-3 px-6">
+                                        <span className="text-sm font-medium text-text">
+                                            {user.department || '-'}
                                         </span>
                                     </td>
 
@@ -128,40 +132,6 @@ const UserList = ({ users, selectedUser, onSelectUser, onDeleteUser, onAddNew })
                                         )}
                                     </td>
 
-                                    {/* Column: Actions */}
-                                    <td className="py-3 px-6">
-                                        <div className="flex items-center justify-end gap-2">
-                                            {/* Edit Button */}
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onSelectUser(user);
-                                                }}
-                                                className="relative group/edit p-1.5 text-text-muted hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                            >
-                                                <Edit2 size={16} />
-                                                <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-slate-800 text-white text-xs font-medium rounded-md opacity-0 invisible group-hover/edit:opacity-100 group-hover/edit:visible transition-all duration-200 whitespace-nowrap z-50 shadow-lg pointer-events-none">
-                                                    {t('admin.editUser', 'Edit')}
-                                                    <span className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-slate-800"></span>
-                                                </span>
-                                            </button>
-
-                                            {/* Delete Button */}
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onDeleteUser(user);
-                                                }}
-                                                className="relative group/delete p-1.5 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-colors"
-                                            >
-                                                <Trash2 size={16} />
-                                                <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-slate-800 text-white text-xs font-medium rounded-md opacity-0 invisible group-hover/delete:opacity-100 group-hover/delete:visible transition-all duration-200 whitespace-nowrap z-50 shadow-lg pointer-events-none">
-                                                    {t('admin.deleteUser', 'Delete')}
-                                                    <span className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-slate-800"></span>
-                                                </span>
-                                            </button>
-                                        </div>
-                                    </td>
                                 </tr>
                             ))
                         )}

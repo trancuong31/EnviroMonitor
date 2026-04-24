@@ -1,4 +1,4 @@
-const { User, Sensor } = require('../models');
+const { User, Sensor, Department } = require('../models');
 const { AppError } = require('../utils/appError');
 const { HTTP_CODES } = require('../constants/httpCodes');
 const bcrypt = require('bcryptjs');
@@ -84,8 +84,8 @@ const updateSettings = async (settingsData) => {
 // create user
 const createUser = async (userData, userId) => {
     // validate user data
-    const { fullname, userid, password, factory, emailAlert, eventuser } = userData;
-    if (!fullname || !userid || !password || !factory || !eventuser) {
+    const { fullname, userid, password, factory, emailAlert, eventuser, department } = userData;
+    if (!fullname || !userid || !password || !factory || !eventuser || !department) {
         throw new AppError('Missing required fields', HTTP_CODES.BAD_REQUEST);
     }
 
@@ -104,6 +104,7 @@ const createUser = async (userData, userId) => {
         userid: userid,
         password: hashedPassword,
         factory,
+        department,
         emailAlert: emailAlert,
         eventuser: eventuser,
     }); 
@@ -118,8 +119,8 @@ const updateUser = async (userId, userData, updated_by) => {
         throw new AppError('User not found', HTTP_CODES.NOT_FOUND);
     }
     // validate user data
-    const { fullname, userid, password, role, factory, status, emailAlert } = userData;
-    if (!fullname || !userid || !role || !factory) {
+    const { fullname, userid, password, role, factory, department, status, emailAlert } = userData;
+    if (!fullname || !userid || !role || !factory || !department) {
         throw new AppError('Missing required fields', HTTP_CODES.BAD_REQUEST);
     }
     
@@ -136,6 +137,7 @@ const updateUser = async (userId, userData, updated_by) => {
         userid: userid,
         role,
         factory,
+        department,
         status,
         emailAlert: emailAlert,
         eventuser: updated_by
@@ -169,10 +171,18 @@ const getAllUsers = async () => {
     });
 };
 
+//get all department
+const getAllDepartment = async () => {
+    return await Department.findAll({
+        order: [['eventtime', 'DESC']]
+    });
+};
+
 module.exports = {
     updateSettings,
     createUser,
     updateUser,
     deleteUser,
-    getAllUsers
+    getAllUsers,
+    getAllDepartment,
 };

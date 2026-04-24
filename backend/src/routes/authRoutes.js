@@ -12,6 +12,7 @@ router.post('/login', authLimiter, validate(authValidation.login), authControlle
 // Protected routes
 router.use(authenticate);
 router.get('/me', authController.getMe);
+router.put('/profile', authController.updateProfile);
 router.post('/logout', authController.logout);
 
 module.exports = router;

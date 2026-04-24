@@ -63,10 +63,22 @@ const getAllUsers = catchAsync(async (req, res) => {
     });
 });
 
+/**
+ * Get all departments
+ */
+const getAllDepartment = catchAsync(async (req, res) => {
+    const departments = await userService.getAllDepartment();
+
+    res.status(HTTP_CODES.OK).json({
+        status: 'success',
+        data: { departments },
+    });
+});
 module.exports = {
     updateSettings,
     createUser,
     updateUser,
     deleteUser,
-    getAllUsers
+    getAllUsers,
+    getAllDepartment,
 };

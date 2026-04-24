@@ -40,6 +40,10 @@ const User = sequelize.define('User', {
         allowNull: false,
         defaultValue: FACTORIES.ALL,
     },
+    department: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+    },
     emailAlert: {
         type: DataTypes.ENUM(...Object.values(EMAIL_ALERTS)),
         allowNull: false,

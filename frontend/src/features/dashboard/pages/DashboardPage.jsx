@@ -13,7 +13,6 @@ import {
 import {
   MapPin,
   Clock,
-  ArrowUpDown,
   RefreshCw,
   LayoutGrid,
   List,
@@ -26,7 +25,7 @@ import {
 } from 'lucide-react';
 import { useDashboardStore } from '../store/useDashboardStore';
 import { groupByLocationPrefix } from '../utils/groupUtils';
-import { useSettingsStore } from '../../../store';
+import { useSettingsStore, useAuthStore } from '../../../store';
 
 // Calculate age in minutes from ISO timestamp (used for sorting/filtering)
 const getAgeInMinutes = (isoDate) => {
@@ -39,6 +38,7 @@ const getAgeInMinutes = (isoDate) => {
  */
 const DashboardPage = () => {
   const { t } = useTranslation();
+  const { user } = useAuthStore();
   const { locations, isLoading, error, fetchLocations, refreshLocations } = useDashboardStore();
   const fetchSettings = useSettingsStore((s) => s.fetchSettings);
   const [view, setView] = useState('grid');
@@ -54,7 +54,7 @@ const DashboardPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const allFactoryOptions = ['D2', 'V0', 'V4', 'V5'];
+  const allFactoryOptions = ['D1', 'D2', 'V0', 'V1', 'V2', 'V4', 'V5'];
 
   // Fetch data on mount with saved factory filter
   useEffect(() => {
@@ -356,13 +356,15 @@ const DashboardPage = () => {
 
             {/* ── Right: Actions ── */}
             <div className="flex items-center justify-end gap-2 sm:w-[30%] 2xl:w-[25%]">
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                className="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-purple-500 hover:border-purple-500/30 shadow-sm hover:shadow transition-all duration-200"
-                title={t('settings.thresholdTitle', 'Cài đặt ngưỡng cảnh báo')}
-              >
-                <Settings className="w-4 h-4" />
-              </button>
+              {(user?.role === 'Admin' || user?.role === 'Manager') && (
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-purple-500 hover:border-purple-500/30 shadow-sm hover:shadow transition-all duration-200"
+                  title={t('settings.thresholdTitle', 'Cài đặt ngưỡng cảnh báo')}
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+              )}
 
               <button
                 onClick={handleExport}
