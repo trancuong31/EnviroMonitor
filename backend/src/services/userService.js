@@ -118,9 +118,10 @@ const updateUser = async (userId, userData, updated_by) => {
     if (!user) {
         throw new AppError('User not found', HTTP_CODES.NOT_FOUND);
     }
-    // validate user data
+    // validate user data 
+    // có thể null department, status, emailAlert
     const { fullname, userid, password, role, factory, department, status, emailAlert } = userData;
-    if (!fullname || !userid || !role || !factory || !department) {
+    if (!fullname || !userid || !role || !factory) {
         throw new AppError('Missing required fields', HTTP_CODES.BAD_REQUEST);
     }
     
@@ -131,17 +132,19 @@ const updateUser = async (userId, userData, updated_by) => {
             throw new AppError('User with this email already exists', HTTP_CODES.BAD_REQUEST);
         }
     }
-
     const updatePayload = {
         fullname: fullname,
         userid: userid,
         role,
         factory,
-        department,
         status,
         emailAlert: emailAlert,
         eventuser: updated_by
     };
+
+    if (department !== undefined && department !== null) {
+        updatePayload.department = department;
+    }
 
     if (password) {
         updatePayload.password = await bcrypt.hash(password, 12);

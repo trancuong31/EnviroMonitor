@@ -451,7 +451,7 @@ const DashboardPage = () => {
                     <div className="flex flex-col gap-3">
                       {childGroups.map((group) => (
                         <LocationGroupSection key={group.prefix} prefix={group.prefix} count={group.items.length}>
-                          <div className="flex flex-wrap sm:flex-nowrap gap-3 sm:gap-5 mt-2 w-full sm:overflow-hidden">
+                          <div className="flex flex-wrap gap-3 sm:gap-5 mt-2 w-full">
                             {group.items.map((loc) => (
                               <div
                                 key={loc.id}

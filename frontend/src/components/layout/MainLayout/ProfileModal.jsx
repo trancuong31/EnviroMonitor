@@ -44,10 +44,6 @@ const ProfileModal = ({ isOpen, onClose }) => {
             return;
         }
 
-        if (passwordData.password.length < 8) {
-            toast.error(t('auth.passwordLength', 'Password must be at least 8 characters'));
-            return;
-        }
 
         if (passwordData.password !== passwordData.confirmPassword) {
             toast.error(t('profile.confirmPasswordMismatch', 'Passwords do not match'));

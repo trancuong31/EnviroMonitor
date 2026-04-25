@@ -103,8 +103,6 @@ const UserEditor = ({
 
     if (!isEditing && !formData.password)
       newErrors.password = t('auth.enterPassword', 'Password is required for new users');
-    if (formData.password && formData.password.length < 8)
-      newErrors.password = 'Password must be at least 8 characters';
 
     if (!formData.role) newErrors.role = 'Role is required';
     if (!formData.factory) newErrors.factory = t('auth.pleaseSelectFactory', 'Factory is required');
