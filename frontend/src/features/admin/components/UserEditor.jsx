@@ -36,7 +36,7 @@ const UserEditor = ({
     factory: '',
     department: '',
     status: 'Active',
-    emailAlert: 'no',
+    emailAlert: 'No',
   });
 
   const [errors, setErrors] = useState({});
@@ -52,7 +52,7 @@ const UserEditor = ({
         factory: user.factory || '',
         department: user.department || '',
         status: user.status || 'Active',
-        emailAlert: user.emailAlert || 'no',
+        emailAlert: user.emailAlert || 'No',
       });
     } else {
       setFormData({
@@ -63,7 +63,7 @@ const UserEditor = ({
         factory: '',
         department: '',
         status: 'Active',
-        emailAlert: 'no',
+        emailAlert: 'No',
       });
     }
     setErrors({});
@@ -106,10 +106,6 @@ const UserEditor = ({
 
     if (!formData.role) newErrors.role = 'Role is required';
     if (!formData.factory) newErrors.factory = t('auth.pleaseSelectFactory', 'Factory is required');
-
-    if (formData.factory && formData.factory !== 'ALL' && !formData.department) {
-      newErrors.department = t('auth.pleaseSelectDepartment', 'Department is required');
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -275,7 +271,6 @@ const UserEditor = ({
               <label htmlFor="department" className={labelClasses}>
                 <Layers size={16} />
                 {t('auth.department', 'Department')}{' '}
-                {formData.factory !== 'ALL' && <span className="text-error">*</span>}
               </label>
               <CustomSelect
                 name="department"

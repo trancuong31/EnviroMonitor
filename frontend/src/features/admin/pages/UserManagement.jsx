@@ -69,6 +69,8 @@ const UserManagement = () => {
         return <Navigate to="/dashboard" replace />;
     }
 
+    const [refreshKey, setRefreshKey] = useState(0);
+
     const handleSelectUser = (user) => {
         setSelectedUser(user);
         setIsEditing(true);
@@ -76,11 +78,13 @@ const UserManagement = () => {
 
     const handleAddNew = () => {
         setSelectedUser(null);
-        // isEditing is already true
+        setRefreshKey(prev => prev + 1);
+        setIsEditing(true);
     };
 
     const handleCancelEdit = () => {
         setSelectedUser(null);
+        setRefreshKey(prev => prev + 1);
     };
 
     const handleSaveUser = async (userData, forceCreate = false) => {
@@ -107,8 +111,6 @@ const UserManagement = () => {
                 await api.put(`/users/${selectedUser.id}`, userData);
                 toast.success(t('admin.updatedSuccess', 'User updated successfully'));
             } else {
-                // Create
-                // Ensure password is provided for new user if it was empty in the form during "Update" mode but clicked "Create"
                 if (!userData.password && forceCreate) {
                     toast.error(t('auth.enterPassword', 'Password is required for new users'));
                     return;
@@ -116,8 +118,10 @@ const UserManagement = () => {
                 await api.post('/users', userData);
                 toast.success(t('admin.createdSuccess', 'User created successfully'));
             }
-            await fetchUsers();
             setSelectedUser(null);
+            setRefreshKey(prev => prev + 1);
+            setIsEditing(true);
+            await fetchUsers();
         } catch (error) {
             console.error('Error saving user:', error);
             const msg = error.response?.data?.message || t('admin.errorOccurred', 'An error occurred');
@@ -146,8 +150,9 @@ const UserManagement = () => {
                         toast.success(t('admin.deletedSuccess', 'User deleted successfully'));
                         
                         if (selectedUser?.id === userToDelete.id) {
-                            setIsEditing(false);
                             setSelectedUser(null);
+                            setRefreshKey(prev => prev + 1);
+                            setIsEditing(true);
                         }
                         
                         await fetchUsers();
@@ -220,6 +225,7 @@ const UserManagement = () => {
                     >
                         <div className="w-full h-full lg:min-w-[340px] lg:pl-2">
                             <UserEditor
+                                key={`user-editor-${refreshKey}-${selectedUser?.id || 'new'}`}
                                 user={selectedUser}
                                 onSave={handleSaveUser}
                                 onDelete={handleDeleteUser}

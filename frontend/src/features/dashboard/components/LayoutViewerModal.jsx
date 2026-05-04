@@ -18,6 +18,7 @@ const LAYOUT_IMAGES = {
     "V0_1F": "/uploads/images/V0_1F.jpg",
     "V0_2F": "/uploads/images/V0_2F.jpg",
     "V0_3F": "/uploads/images/V0_3F.jpg",
+    "V1_1F": "/uploads/images/V1_1F.jpg",
     "V4_1F": "/uploads/images/V4_1F.jpg",
     "V4_2F": "/uploads/images/V4_2F.jpg",
     "V4_3F": "/uploads/images/V4_3F.jpg",
