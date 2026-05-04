@@ -228,6 +228,7 @@
     "tableFactory": "Factory",
     "tableDepartment": "Department",
     "tableStatus": "Status",
-    "tableActions": "Actions"
+    "tableActions": "Actions",
+    "noDepartment": "No Department"
   }
 }

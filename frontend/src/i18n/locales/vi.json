@@ -225,6 +225,7 @@
     "tableFactory": "Xưởng",
     "tableDepartment": "Bộ phận",
     "tableStatus": "Trạng thái",
-    "tableActions": "Hành động"
+    "tableActions": "Hành động",
+    "noDepartment": "Không chọn"
   }
 }

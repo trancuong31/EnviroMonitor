@@ -142,7 +142,7 @@ const updateUser = async (userId, userData, updated_by) => {
         eventuser: updated_by
     };
 
-    if (department !== undefined && department !== null) {
+    if (department !== undefined) {
         updatePayload.department = department;
     }
 

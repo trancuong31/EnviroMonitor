@@ -228,6 +228,7 @@
     "tableRole": "역할",
     "tableFactory": "공장",
     "tableStatus": "상태",
-    "tableActions": "작업"
+    "tableActions": "작업",
+    "noDepartment": "선택 안 함"
   }
 }

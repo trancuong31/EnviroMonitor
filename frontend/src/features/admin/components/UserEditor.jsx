@@ -114,7 +114,11 @@ const UserEditor = ({
   const handleSubmit = (e, forceCreate = false) => {
     if (e) e.preventDefault();
     if (validate()) {
-      onSave(formData, forceCreate);
+      const submissionData = {
+        ...formData,
+        department: formData.department === '' ? null : formData.department,
+      };
+      onSave(submissionData, forceCreate);
     }
   };
 
@@ -276,7 +280,10 @@ const UserEditor = ({
                 name="department"
                 value={formData.department}
                 onChange={(val) => handleChange({ target: { name: 'department', value: val } })}
-                options={departments}
+                options={[
+                  { value: '', label: `${t('admin.noDepartment', 'No Department')}` },
+                  ...departments,
+                ]}
                 placeholder={
                   formData.factory === 'ALL'
                     ? 'ALL'
@@ -290,7 +297,6 @@ const UserEditor = ({
               )}
             </div>
           </div>
-
           {/* Email Alert */}
           <div>
             <div className="mt-2 p-4 rounded-xl border border-border bg-surface-alt/30">
