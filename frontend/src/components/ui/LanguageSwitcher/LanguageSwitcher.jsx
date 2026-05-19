@@ -27,8 +27,8 @@ const LanguageSwitcher = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleSelect = (code) => {
-        i18n.changeLanguage(code);
+    const handleSelect = async (code) => {
+        await i18n.changeLanguage(code);
         setIsOpen(false);
     };
 

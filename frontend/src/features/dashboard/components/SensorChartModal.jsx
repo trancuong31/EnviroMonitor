@@ -12,6 +12,7 @@ import { getLogsByDateRange } from '../api/dashboardApi';
 import { useSettingsStore } from '../../../store';
 import SensorSettingsModal from './SensorSettingsModal';
 import { useAuthStore } from '../../../store';
+import formatRelativeTime from '../utils/timeUtils';
 
 /**
  * Utility: Check if dark mode is active
@@ -723,7 +724,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                         className="text-sm"
                         style={{ color: colors.textMuted }}
                     >
-                        {t('dashboard.lastUpdate', 'Cập nhật lần cuối')}: {locationData.lastUpdate}
+                        {t('dashboard.lastUpdate', 'Cập nhật lần cuối')}: {formatRelativeTime(locationData.lastUpdateISO)}
                     </p>
                     <div className="flex items-center gap-2">
                         <span
@@ -747,7 +748,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                                                         colors.textSecondary
                             }}
                         >
-                            {isOffline ? 'NG' : locationData.status}
+                            {isOffline ? 'NG' : (locationData.status === 'Normal' ? t('dashboard.normal', 'Normal') : locationData.status)}
                         </span>
                     </div>
                 </div>

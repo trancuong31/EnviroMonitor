@@ -58,6 +58,7 @@
   "dashboard": {
     "title": "Giám sát Nhiệt độ & Độ ẩm",
     "subtitle": "Theo dõi nhiệt độ & độ ẩm thời gian thực",
+    "chartView": "Hiển thị",
     "chartTitleTemp": "Biểu đồ nhiệt độ",
     "chartTitleHum": "Biểu đồ độ ẩm",
     "export": "Xuất báo cáo CSV",

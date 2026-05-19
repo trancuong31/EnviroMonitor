@@ -58,6 +58,7 @@
   "dashboard": {
     "title": "온습도 모니터링",
     "subtitle": "실시간 온도 및 습도 추적",
+    "chartView": "표시",
     "chartTitleTemp": "온도 차트",
     "chartTitleHum": "습도 차트",
     "export": "CSV 내보내기",
@@ -112,8 +113,8 @@
     "warningValues": "안전 임계값 초과",
     "locationName": "위치",
     "status": "상태",
-    "minuteAgo": "{{count}}분 전",
-    "secondAgo": "{{count}}초 전",
+    "minuteAgo": "{{count}}분 이전",
+    "secondAgo": "{{count}}초 이전",
     "loading": "데이터 로드 중...",
     "error": "데이터 로드 오류",
     "retry": "재시도",
@@ -121,17 +122,17 @@
     "selectType": "위치 선택",
     "allTypes": "모든 위치",
     "typeWh": "창고",
-    "typeLine": "생산 라인",
+    "typeLine": "제조 라인",
     "line": "Line",
     "selectLine": "Line 선택",
     "allLines": "모든 Line"
   },
   "time": {
     "justNow": "방금",
-    "secondsAgo": "{{count}}초 전",
-    "minutesAgo": "{{count}}분 전",
-    "hoursAgo": "{{count}}시간 전",
-    "daysAgo": "{{count}}일 전"
+    "secondsAgo": "{{count}}초 이전",
+    "minutesAgo": "{{count}}분 이전",
+    "hoursAgo": "{{count}}시간 이전",
+    "daysAgo": "{{count}}일 이전"
   },
   "notFound": {
     "message": "페이지를 찾을 수 없습니다."
@@ -199,7 +200,7 @@
     "tableDepartment": "부서",
     "userManagement": "사용자 관리",
     "users": "사용자",
-    "addUser": "수정",
+    "addUser": "추가",
     "editUser": "편집",
     "deleteUser": "삭제",
     "addUserDesc": "새 사용자 계정을 생성합니다.",

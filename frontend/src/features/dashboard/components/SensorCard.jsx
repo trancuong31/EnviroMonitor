@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertTriangle, WifiOff, Clock, Thermometer, Droplets } from 'lucide-react';
 import { useSettingsStore } from '../../../store';
 import { isTemperatureWarning, isHumidityWarning } from '../utils/warningUtils';
+import formatRelativeTime from '../utils/timeUtils';
 
 /**
  * Location Card - displays both temperature & humidity for a factory location
@@ -157,7 +158,7 @@ const LocationCard = ({ location, locationId, temperature, humidity, sensorType 
             {/* Footer: Time Update */}
             <div className="relative z-10 flex items-center gap-1.5 pt-2.5 border-t border-border/40 text-[0.65rem] text-text-muted/60 font-medium">
                 <Clock className="w-4 h-4 text-gray-500" />
-                <span className='text-sm text-gray-500'>{lastUpdate}</span>
+                <span className='text-sm text-gray-500'>{formatRelativeTime(lastUpdateISO)}</span>
             </div>
         </div>
     );

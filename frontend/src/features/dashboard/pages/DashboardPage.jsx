@@ -26,6 +26,7 @@ import {
 import { useDashboardStore } from '../store/useDashboardStore';
 import { groupByLocationPrefix } from '../utils/groupUtils';
 import { useSettingsStore, useAuthStore } from '../../../store';
+import formatRelativeTime from '../utils/timeUtils';
 
 // Calculate age in minutes from ISO timestamp (used for sorting/filtering)
 const getAgeInMinutes = (isoDate) => {
@@ -260,8 +261,8 @@ const DashboardPage = () => {
       loc.location,
       loc.temperature,
       Math.round(loc.humidity),
-      loc.lastUpdate,
-      loc.status,
+      formatRelativeTime(loc.lastUpdateISO),
+      loc.status === 'Normal' ? t('dashboard.normal', 'Normal') : loc.status,
     ]);
 
     // Add BOM for Excel UTF-8 compatibility

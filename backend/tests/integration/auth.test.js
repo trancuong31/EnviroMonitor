@@ -54,9 +54,9 @@ describe('Auth Routes', () => {
                 .post('/api/v1/auth/register')
                 .send({
                     name: 'Login Test',
-                    email: 'login@example.com',
-                    password: 'password123',
-                    confirmPassword: 'password123',
+                    email: 'it@gmail.com',
+                    password: '1',
+                    confirmPassword: '1',
                     factory: 'V0',
                 });
 
@@ -64,8 +64,8 @@ describe('Auth Routes', () => {
             const res = await request(app)
                 .post('/api/v1/auth/login')
                 .send({
-                    email: 'login@example.com',
-                    password: 'password123',
+                    email: 'it@gmail.com',
+                    password: '1',
                 });
 
             expect(res.statusCode).toBe(200);

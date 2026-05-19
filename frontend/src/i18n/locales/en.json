@@ -59,6 +59,7 @@
     "title": "Temperature & Humidity Monitoring",
     "chartTitleTemp": "Temperature Chart",
     "chartTitleHum": "Humidity Chart",
+    "chartView": "View",
     "subtitle": "Real-time temperature & humidity tracking",
     "export": "Export CSV report",
     "refresh": "Refresh data",

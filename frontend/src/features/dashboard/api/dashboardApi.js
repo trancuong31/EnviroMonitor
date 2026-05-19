@@ -30,7 +30,7 @@ const transformLogsToLocations = (logs) => {
         sensorType: mapSensorType(log.sensorType) || 'ROOM',
         lastUpdate: formatRelativeTime(log.date),
         lastUpdateISO: log.date,
-        status: i18next.t('dashboard.normal', 'Normal'),
+        status: 'Normal',
         chartData: Array.from({ length: 7 }, () => Math.floor(Math.random() * 60) + 30),
         // Per-sensor thresholds from SENSOR table
         tempMin: log.temperatureMin,
