@@ -2,12 +2,15 @@ const express = require('express');
 const authRoutes = require('./authRoutes');
 const dataLogRoutes = require('./dataLogRoutes');
 const userRoutes = require('./userRoutes');
+const translationRoutes = require('./translationRoutes');
 const router = express.Router();
 
 // API routes
 router.use('/auth', authRoutes);
 router.use('/dataLogs', dataLogRoutes);
+router.use('/translations', translationRoutes);
 router.use('/users', userRoutes);
+
 // Health check
 router.get('/health', (req, res) => {
     res.status(200).json({

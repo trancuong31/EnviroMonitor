@@ -39,6 +39,11 @@ export const useAuthStore = create(
 
                     // Hydrate settings
                     useSettingsStore.getState().fetchSettings();
+                    
+                    // Load dynamic translations
+                    import('../i18n').then(({ loadAllTranslations }) => {
+                        loadAllTranslations().catch(console.error);
+                    });
 
                     return { success: true };
                 } catch (error) {
@@ -64,6 +69,11 @@ export const useAuthStore = create(
 
                     // Hydrate settings
                     useSettingsStore.getState().fetchSettings();
+                    
+                    // Load dynamic translations
+                    import('../i18n').then(({ loadAllTranslations }) => {
+                        loadAllTranslations().catch(console.error);
+                    });
 
                     return { success: true };
                 } catch (error) {

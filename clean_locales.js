@@ -1,24 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
-// Helper to load ES locale file as standard object
-function loadLocaleFile(filePath, varName) {
+// Helper to load JSON locale file
+function loadLocaleFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
-  let cjsContent = content.replace(new RegExp(`export\\s+const\\s+${varName}\\s*=`), `const ${varName} =`);
-  cjsContent += `\nmodule.exports = ${varName};`;
-  
-  const tempPath = path.join(__dirname, `temp_clean_${varName}.js`);
-  fs.writeFileSync(tempPath, cjsContent, 'utf8');
-  
-  try {
-    const obj = require(tempPath);
-    delete require.cache[require.resolve(tempPath)];
-    fs.unlinkSync(tempPath);
-    return obj;
-  } catch (err) {
-    if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
-    throw err;
-  }
+  return JSON.parse(content);
 }
 
 // Function to delete nested key
@@ -49,32 +35,6 @@ function pruneEmptyObjects(obj) {
   }
 }
 
-// Custom serializer to generate beautiful, standard ES modules
-function serialize(val, indent = 0) {
-  const spaces = ' '.repeat(indent);
-  if (typeof val === 'string') {
-    return JSON.stringify(val);
-  }
-  if (typeof val === 'object' && val !== null) {
-    if (Array.isArray(val)) {
-      return '[\n' + val.map(item => ' '.repeat(indent + 2) + serialize(item, indent + 2)).join(',\n') + '\n' + spaces + ']';
-    }
-    const keys = Object.keys(val);
-    if (keys.length === 0) return '{}';
-    
-    let str = '{\n';
-    keys.forEach((k, idx) => {
-      const escapedKey = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(k) ? k : JSON.stringify(k);
-      str += ' '.repeat(indent + 2) + escapedKey + ': ' + serialize(val[k], indent + 2);
-      if (idx < keys.length - 1) str += ',\n';
-      else str += '\n';
-    });
-    str += spaces + '}';
-    return str;
-  }
-  return String(val);
-}
-
 const reportPath = path.join(__dirname, 'unused_keys_report.json');
 if (!fs.existsSync(reportPath)) {
   console.error('Error: unused_keys_report.json does not exist. Run analyze_locales.js first.');
@@ -89,14 +49,14 @@ if (unusedKeys.length === 0) {
   process.exit(0);
 }
 
-const enPath = path.join(__dirname, 'Frontend', 'locales', 'en.js');
-const viPath = path.join(__dirname, 'Frontend', 'locales', 'vi.js');
-const krPath = path.join(__dirname, 'Frontend', 'locales', 'kr.js');
+const enPath = path.join(__dirname, 'frontend', 'src', 'i18n', 'locales', 'en.json');
+const viPath = path.join(__dirname, 'frontend', 'src', 'i18n', 'locales', 'vi.json');
+const krPath = path.join(__dirname, 'frontend', 'src', 'i18n', 'locales', 'kr.json');
 
-console.log(`Loading en.js, vi.js, and kr.js...`);
-const enObj = loadLocaleFile(enPath, 'en');
-const viObj = loadLocaleFile(viPath, 'vi');
-const krObj = loadLocaleFile(krPath, 'ko');
+console.log(`Loading en.json, vi.json, and kr.json...`);
+const enObj = loadLocaleFile(enPath);
+const viObj = loadLocaleFile(viPath);
+const krObj = loadLocaleFile(krPath);
 
 console.log(`Deleting ${unusedKeys.length} unused keys...`);
 unusedKeys.forEach(key => {
@@ -110,19 +70,14 @@ pruneEmptyObjects(enObj);
 pruneEmptyObjects(viObj);
 pruneEmptyObjects(krObj);
 
-// Generate clean file contents
-const newEnContent = `export const en = ${serialize(enObj, 0)};\n`;
-const newViContent = `export const vi = ${serialize(viObj, 0)};\n`;
-const newKrContent = `export const ko = ${serialize(krObj, 0)};\n`;
-
 // Write to files
-console.log('Writing updated en.js...');
-fs.writeFileSync(enPath, newEnContent, 'utf8');
+console.log('Writing updated en.json...');
+fs.writeFileSync(enPath, JSON.stringify(enObj, null, 2) + '\n', 'utf8');
 
-console.log('Writing updated vi.js...');
-fs.writeFileSync(viPath, newViContent, 'utf8');
+console.log('Writing updated vi.json...');
+fs.writeFileSync(viPath, JSON.stringify(viObj, null, 2) + '\n', 'utf8');
 
-console.log('Writing updated kr.js...');
-fs.writeFileSync(krPath, newKrContent, 'utf8');
+console.log('Writing updated kr.json...');
+fs.writeFileSync(krPath, JSON.stringify(krObj, null, 2) + '\n', 'utf8');
 
 console.log('\nSUCCESS! Cleaned translation files saved.');

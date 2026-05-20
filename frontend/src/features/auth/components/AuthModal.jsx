@@ -12,7 +12,7 @@ import CustomSelect from '../../../components/ui/CustomSelect/CustomSelect';
  */
 const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
     const navigate = useNavigate();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { login, register, isLoading, error, clearError } = useAuthStore();
     const [mode, setMode] = useState(initialMode); // 'login' or 'register'
     const [formData, setFormData] = useState({
@@ -70,6 +70,11 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
         }
 
         if (result.success) {
+            // Load all 3 languages from DB and cache in localStorage in the background
+            import('../../../i18n').then(({ loadAllTranslations }) => {
+                loadAllTranslations().catch(console.error);
+            });
+
             onClose();
             navigate('/dashboard');
             toast.success(t(`auth.${mode}Success`));
@@ -96,7 +101,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            onClick={onClose}
+            onClick={(e) => e.stopPropagation()}
         >
             {/* Backdrop */}
             <div className="absolute inset-0 bg-background/80 backdrop-blur-md animate-fade-in"></div>
@@ -234,23 +239,40 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
                             </div>
                         )}
 
+                        {/* Language Selector default english*/}
+                        <div className="flex justify-end w-full mt-1">
+                            <div className="w-[130px]">
+                                <CustomSelect
+                                    value={i18n.language?.split('-')[0] || 'en'}
+                                    options={[
+                                        { value: 'vi', label: '🇻🇳 Tiếng Việt' },
+                                        { value: 'en', label: '🇺🇸 English'},
+                                        { value: 'kr', label: '🇰🇷 한국어' },
+                                    ]}
+                                    onChange={async (val) => {
+                                        // Update UI language immediately (uses local fallback if DB not loaded)
+                                        await i18n.changeLanguage(val);
+                                        
+                                        // Fetch latest translations for this language from API
+                                        try {
+                                            const { loadTranslationsFromAPI } = await import('../../../i18n');
+                                            await loadTranslationsFromAPI(val);
+                                            // Re-trigger language change to apply newly fetched DB translations
+                                            if (i18n.isInitialized) {
+                                                i18n.changeLanguage(val);
+                                            }
+                                        } catch (error) {
+                                            console.error(error);
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+
                         <Button type="submit" variant="primary" size="large" loading={isLoading} className="w-full mt-2">
                             {mode === 'login' ? t('auth.signIn') : t('auth.register')}
                         </Button>
                     </form>
-
-                    {/* <div className="text-center mt-6 text-text-secondary text-sm">
-                        <p>
-                            {mode === 'login' ? t('auth.noAccount') : t('auth.alreadyHaveAccount')}{' '}
-                            <button
-                                type="button"
-                                onClick={toggleMode}
-                                className="text-primary font-medium hover:underline"
-                            >
-                                {mode === 'login' ? t('auth.signUp') : t('common.login')}
-                            </button>
-                        </p>
-                    </div> */}
                 </div>
             </div>
         </div>

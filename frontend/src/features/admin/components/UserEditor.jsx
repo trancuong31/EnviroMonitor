@@ -133,7 +133,7 @@ const UserEditor = ({
       {/* Header */}
       <div className="p-[10px_18px] border-b border-border bg-surface-alt/50">
         <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          {isEditing ? t('admin.editUser', 'Edit User') : t('admin.addUser', 'Add User')}
+          {isEditing ? t('admin.save', 'Edit User') : t('admin.addUser', 'Add User')}
         </h2>
         <p className="text-sm text-text-muted mt-1">
           {isEditing
@@ -325,11 +325,7 @@ const UserEditor = ({
       {/* Footer / Actions */}
       <div className="p-6 border-t border-border bg-surface-alt/50 grid grid-cols-3 gap-3">
         {/* Create Button */}
-        <button
-          onClick={(e) => handleSubmit(e, true)}
-          type="button"
-          className="btn-create"
-        >
+        <button onClick={(e) => handleSubmit(e, true)} type="button" className="btn-create">
           <PlusCircle size={18} />
           {t('admin.addUser', 'Create')}
         </button>

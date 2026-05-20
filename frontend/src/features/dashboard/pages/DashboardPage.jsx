@@ -21,7 +21,7 @@ import {
   SearchAlert,
   CircleAlert,
   Building2,
-  Factory
+  Factory,
 } from 'lucide-react';
 import { useDashboardStore } from '../store/useDashboardStore';
 import { groupByLocationPrefix } from '../utils/groupUtils';
@@ -108,40 +108,44 @@ const DashboardPage = () => {
 
   // Extract unique location types for type filter (after 2nd underscore)
   const typeOptions = useMemo(() => {
-    const validLocations = filterFactory === 'all'
-      ? locations
-      : locations.filter(l => l.location && l.location.startsWith(filterFactory));
-    const types = validLocations.map((l) => {
-      if (!l.location) return null;
-      const parts = l.location.split('_');
-      if (parts.length > 2) {
-        let typeStr = parts[2].trim().toUpperCase();
-        if (typeStr.startsWith('LINE')) return 'LINE';
-        if (typeStr.startsWith('WH')) return 'WH';
-        return parts[2].trim();
-      }
-      return null;
-    }).filter(Boolean);
+    const validLocations =
+      filterFactory === 'all'
+        ? locations
+        : locations.filter((l) => l.location && l.location.startsWith(filterFactory));
+    const types = validLocations
+      .map((l) => {
+        if (!l.location) return null;
+        const parts = l.location.split('_');
+        if (parts.length > 2) {
+          let typeStr = parts[2].trim().toUpperCase();
+          if (typeStr.startsWith('LINE')) return 'LINE';
+          if (typeStr.startsWith('WH')) return 'WH';
+          return parts[2].trim();
+        }
+        return null;
+      })
+      .filter(Boolean);
     return [...new Set(types)];
   }, [locations]);
 
   // Factory dropdown options should match current "location type" filter.
   // This prevents showing the full factory list when the visible locations are narrowed.
   const factoryOptions = useMemo(() => {
-    const validLocations = filterType === 'all'
-      ? locations
-      : locations.filter((l) => {
-          if (!l.location) return false;
-          const parts = l.location.split('_');
-          if (parts.length > 2) {
-            let typeStr = parts[2].trim().toUpperCase();
-            if (typeStr.startsWith('LINE')) typeStr = 'LINE';
-            else if (typeStr.startsWith('WH')) typeStr = 'WH';
-            else typeStr = parts[2].trim();
-            return typeStr === filterType;
-          }
-          return false;
-        });
+    const validLocations =
+      filterType === 'all'
+        ? locations
+        : locations.filter((l) => {
+            if (!l.location) return false;
+            const parts = l.location.split('_');
+            if (parts.length > 2) {
+              let typeStr = parts[2].trim().toUpperCase();
+              if (typeStr.startsWith('LINE')) typeStr = 'LINE';
+              else if (typeStr.startsWith('WH')) typeStr = 'WH';
+              else typeStr = parts[2].trim();
+              return typeStr === filterType;
+            }
+            return false;
+          });
 
     const availableFactorySet = new Set(
       validLocations
@@ -171,12 +175,15 @@ const DashboardPage = () => {
   }, []);
 
   // Handle factory filter change - persist to localStorage + re-fetch from API
-  const handleFilterFactoryChange = useCallback((factory) => {
-    setFilterFactory(factory);
-    localStorage.setItem('dashboard_filterFactory', factory);
-    fetchLocations(factory);
-    setFilterType('all');
-  }, [fetchLocations]);
+  const handleFilterFactoryChange = useCallback(
+    (factory) => {
+      setFilterFactory(factory);
+      localStorage.setItem('dashboard_filterFactory', factory);
+      fetchLocations(factory);
+      setFilterType('all');
+    },
+    [fetchLocations]
+  );
 
   // Refresh handler - full re-fetch from API
   const handleRefresh = useCallback(async () => {
@@ -184,7 +191,7 @@ const DashboardPage = () => {
     await fetchLocations(filterFactory);
     setTimeout(() => setIsRefreshing(false), 600);
   }, [fetchLocations, filterFactory]);
-  
+
   // Auto-refresh based on user-selected interval (persisted in localStorage)
   useEffect(() => {
     const interval = setInterval(() => {
@@ -193,7 +200,6 @@ const DashboardPage = () => {
     return () => clearInterval(interval);
   }, [refreshLocations, refreshInterval, filterFactory]);
 
-  
   // Persist refresh interval to localStorage
   const handleRefreshIntervalChange = useCallback((val) => {
     const ms = parseInt(val, 10);
@@ -310,16 +316,20 @@ const DashboardPage = () => {
         <div className="max-w-[1700px] mx-auto p-4 md:p-3">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 animate-slide-down">
-
             {/* ── Left: Filters ── */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:w-[70%] 2xl:w-[75%]">
               <div className="w-full sm:flex-1 bg-surface rounded-lg border border-border p-2.5 shadow-sm">
                 <CustomSelect
-                  label={<span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5" />{t('dashboard.type', 'Loại khu vực')}</span>}
+                  label={
+                    <span className="flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5" />
+                      {t('dashboard.locationName', 'Loại khu vực')}
+                    </span>
+                  }
                   value={filterType}
                   onChange={(val) => setFilterType(val)}
                   options={[
-                    { label: t('dashboard.allTypes', 'Tất cả loại'), value: 'all' },
+                    { label: t('dashboard.allFactories', 'Tất cả loại'), value: 'all' },
                     ...typeOptions.map((type) => {
                       let label = type;
                       if (type === 'WH') label = t('dashboard.typeWh', 'WAREHOUSE');
@@ -333,7 +343,12 @@ const DashboardPage = () => {
 
               <div className="w-full sm:flex-1 bg-surface rounded-lg border border-border p-2.5 shadow-sm">
                 <CustomSelect
-                  label={<span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" />{t('dashboard.factory')}</span>}
+                  label={
+                    <span className="flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {t('auth.factory')}
+                    </span>
+                  }
                   value={filterFactory}
                   onChange={handleFilterFactoryChange}
                   options={[
@@ -346,7 +361,12 @@ const DashboardPage = () => {
 
               <div className="w-full sm:flex-1 bg-surface rounded-lg border border-border p-2.5 shadow-sm">
                 <CustomSelect
-                  label={<span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{t('dashboard.refreshInterval')}</span>}
+                  label={
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      {t('dashboard.refreshInterval')}
+                    </span>
+                  }
                   value={String(refreshInterval)}
                   onChange={handleRefreshIntervalChange}
                   options={refreshIntervalOptions}
@@ -380,7 +400,9 @@ const DashboardPage = () => {
                 className="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-primary hover:border-primary/30 shadow-sm hover:shadow transition-all duration-200"
                 title={t('dashboard.refresh', 'Refresh data')}
               >
-                <RefreshCw className={`w-4 h-4 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-4 h-4 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : ''}`}
+                />
               </button>
 
               <div className="w-px h-6 bg-border mx-1" />
@@ -389,7 +411,9 @@ const DashboardPage = () => {
                 <button
                   onClick={() => setView('grid')}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
-                    view === 'grid' ? 'bg-primary text-white shadow-sm' : 'text-text-muted hover:text-text hover:bg-surface-hover'
+                    view === 'grid'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-text-muted hover:text-text hover:bg-surface-hover'
                   }`}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
@@ -398,7 +422,9 @@ const DashboardPage = () => {
                 <button
                   onClick={() => setView('list')}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
-                    view === 'list' ? 'bg-primary text-white shadow-sm' : 'text-text-muted hover:text-text hover:bg-surface-hover'
+                    view === 'list'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-text-muted hover:text-text hover:bg-surface-hover'
                   }`}
                 >
                   <List className="w-3.5 h-3.5" />
@@ -406,8 +432,7 @@ const DashboardPage = () => {
                 </button>
               </div>
             </div>
-          </div>     
-          
+          </div>
 
           {/* Loading state */}
           {isLoading && locations.length === 0 && (
@@ -439,7 +464,10 @@ const DashboardPage = () => {
             <div key="grid-view" className="flex flex-col gap-2 animate-fade-in w-full">
               {Object.keys(nestedLocations).length > 0 ? (
                 Object.entries(nestedLocations).map(([parentPrefix, childGroups]) => (
-                  <div key={parentPrefix} className="w-full bg-surface/20 px-3 py-2 rounded-2xl border border-border/60">
+                  <div
+                    key={parentPrefix}
+                    className="w-full bg-surface/20 px-3 py-2 rounded-2xl border border-border/60"
+                  >
                     {/* Compact Header Nhóm Cha */}
                     <div className="flex items-center gap-1.5 mb-2 pb-1 border-b border-border/30">
                       <Factory className="w-6 h-6 text-primary" />
@@ -451,7 +479,11 @@ const DashboardPage = () => {
                     {/* Each child group = 1 row */}
                     <div className="flex flex-col gap-3">
                       {childGroups.map((group) => (
-                        <LocationGroupSection key={group.prefix} prefix={group.prefix} count={group.items.length}>
+                        <LocationGroupSection
+                          key={group.prefix}
+                          prefix={group.prefix}
+                          count={group.items.length}
+                        >
                           <div className="flex flex-wrap gap-3 sm:gap-5 mt-2 w-full">
                             {group.items.map((loc) => (
                               <div
@@ -496,7 +528,10 @@ const DashboardPage = () => {
             <div className="flex flex-col gap-5 animate-fade-in w-full">
               {Object.keys(nestedLocations).length > 0 ? (
                 Object.entries(nestedLocations).map(([parentPrefix, childGroups]) => (
-                  <div key={parentPrefix} className="w-full bg-surface/20 p-5 rounded-[24px] border border-border/60">
+                  <div
+                    key={parentPrefix}
+                    className="w-full bg-surface/20 p-5 rounded-[24px] border border-border/60"
+                  >
                     {/* Header Nhóm Cha */}
                     <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border/40">
                       <Factory className="w-6 h-6 text-primary" />
@@ -508,7 +543,11 @@ const DashboardPage = () => {
                     {/* Lưới Nhóm Con (List) */}
                     <div className="flex flex-col gap-6">
                       {childGroups.map((group) => (
-                        <LocationGroupSection key={group.prefix} prefix={group.prefix} count={group.items.length}>
+                        <LocationGroupSection
+                          key={group.prefix}
+                          prefix={group.prefix}
+                          count={group.items.length}
+                        >
                           <div className="flex flex-col gap-4 mt-2">
                             {group.items.map((loc) => (
                               <LocationListItem
@@ -543,8 +582,6 @@ const DashboardPage = () => {
               )}
             </div>
           )}
-
-
         </div>
         <div className="fixed bottom-4 right-4 text-xs text-gray-400 opacity-70 tracking-wide select-none">
           {t('home.features.copyright')}
@@ -559,10 +596,10 @@ const DashboardPage = () => {
       />
 
       {/* Threshold Settings Modal */}
-      <ThresholdSettingsModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
-        onRefresh={handleRefresh} 
+      <ThresholdSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onRefresh={handleRefresh}
       />
     </MainLayout>
   );

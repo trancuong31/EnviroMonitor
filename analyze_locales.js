@@ -1,24 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
-// Helper to load ES locale file as standard object
-function loadLocaleFile(filePath, varName) {
+// Helper to load JSON locale file
+function loadLocaleFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
-  let cjsContent = content.replace(new RegExp(`export\\s+const\\s+${varName}\\s*=`), `const ${varName} =`);
-  cjsContent += `\nmodule.exports = ${varName};`;
-  
-  const tempPath = path.join(__dirname, `temp_scan_${varName}.js`);
-  fs.writeFileSync(tempPath, cjsContent, 'utf8');
-  
-  try {
-    const obj = require(tempPath);
-    delete require.cache[require.resolve(tempPath)];
-    fs.unlinkSync(tempPath);
-    return obj;
-  } catch (err) {
-    if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
-    throw err;
-  }
+  return JSON.parse(content);
 }
 
 // Flatten nested keys
@@ -38,16 +24,17 @@ function flattenKeys(obj, prefix = '') {
 
 // Recurse directory and get all HTML/JS files
 function getFiles(dir, fileList = []) {
+  if (!fs.existsSync(dir)) return fileList;
   const files = fs.readdirSync(dir);
   for (const file of files) {
     const name = path.join(dir, file);
     if (fs.statSync(name).isDirectory()) {
-      if (file !== 'locales' && file !== 'node_modules' && file !== 'assets') { // Exclude locales and libraries
+      if (!['locales', 'node_modules', 'dist', 'build', '.git', 'assets'].includes(file)) {
         getFiles(name, fileList);
       }
     } else {
       const ext = path.extname(file);
-      if (['.html', '.js'].includes(ext)) {
+      if (['.html', '.js', '.jsx', '.ts', '.tsx'].includes(ext)) {
         fileList.push(name);
       }
     }
@@ -59,9 +46,9 @@ const enPath = path.join(__dirname, 'frontend', 'src', 'i18n', 'locales', 'en.js
 const viPath = path.join(__dirname, 'frontend', 'src', 'i18n', 'locales', 'vi.json');
 const krPath = path.join(__dirname, 'frontend', 'src', 'i18n', 'locales', 'kr.json');
 
-const enObj = loadLocaleFile(enPath, 'en');
-const viObj = loadLocaleFile(viPath, 'vi');
-const krObj = loadLocaleFile(krPath, 'kr');
+const enObj = loadLocaleFile(enPath);
+const viObj = loadLocaleFile(viPath);
+const krObj = loadLocaleFile(krPath);
 
 const enFlat = flattenKeys(enObj);
 const viFlat = flattenKeys(viObj);
@@ -69,20 +56,17 @@ const krFlat = flattenKeys(krObj);
 
 const allKeys = new Set([...Object.keys(enFlat), ...Object.keys(viFlat), ...Object.keys(krFlat)]);
 const frontendDir = path.join(__dirname, 'frontend');
-const files = getFiles(frontendDir);
+const backendDir = path.join(__dirname, 'backend');
 
-// Also include assets/js/nav.js
-const navJsPath = path.join(frontendDir, 'assets', 'js', 'nav.js');
-if (fs.existsSync(navJsPath)) {
-  files.push(navJsPath);
-}
+let files = getFiles(frontendDir);
+files = getFiles(backendDir, files);
 
-console.log(`Scanning ${files.length} Frontend files for translation keys...`);
+console.log(`Scanning ${files.length} project files for translation keys...`);
 
 // Preload all file contents
 const fileContents = files.map(file => ({
   path: file,
-  relPath: path.relative(frontendDir, file),
+  relPath: path.relative(__dirname, file),
   content: fs.readFileSync(file, 'utf8')
 }));
 
