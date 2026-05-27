@@ -84,8 +84,8 @@ const updateSettings = async (settingsData) => {
 // create user
 const createUser = async (userData, userId) => {
     // validate user data
-    const { fullname, userid, password, factory, emailAlert, eventuser, department } = userData;
-    if (!fullname || !userid || !password || !factory || !eventuser) {
+    const { fullname, userid, password,role, factory, emailAlert, eventuser, department } = userData;
+    if (!fullname || !userid || !password || !factory || !role || !eventuser) {
         throw new AppError('Missing required fields', HTTP_CODES.BAD_REQUEST);
     }
 
@@ -104,6 +104,7 @@ const createUser = async (userData, userId) => {
         userid: userid,
         password: hashedPassword,
         factory,
+        role,
         department: department || null,
         emailAlert: emailAlert,
         eventuser: eventuser,

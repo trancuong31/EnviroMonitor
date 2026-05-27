@@ -24,6 +24,7 @@
     "signInDesc": "Login to your account",
     "email": "Email",
     "password": "Password",
+    "loginSuccess": "Login successful",
     "enterEmail": "Enter your email",
     "enterPassword": "Enter your password",
     "signIn": "Login",
@@ -93,7 +94,8 @@
     "retry": "Retry",
     "selectType": "Select location",
     "typeWh": "WAREHOUSE",
-    "typeLine": "PRODUCTION LINE"
+    "typeLine": "PRODUCTION LINE",
+    "noData": "No data"
   },
   "time": {
     "justNow": "just now",
@@ -150,6 +152,7 @@
     "noChanges": "No changes"
   },
   "admin": {
+    "duplicateKey": "Duplicate data at rows",
     "tableNo": "No",
     "userManagement": "User Management",
     "users": "Users",

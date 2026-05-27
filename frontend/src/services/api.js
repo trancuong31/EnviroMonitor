@@ -47,9 +47,10 @@ api.interceptors.response.use(
     error => {
 
         if (error.response?.status === 401) {
-
-            useAuthStore.getState().logout();
-            
+            const { isAuthenticated, hasHydrated } = useAuthStore.getState();
+            if (hasHydrated && isAuthenticated) {
+                useAuthStore.getState().logout();
+            }
         }
 
         return Promise.reject(error);

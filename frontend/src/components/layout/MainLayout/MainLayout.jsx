@@ -35,7 +35,7 @@ const MainLayout = ({ children }) => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate('/', { replace: true });
   };
 
   const handleScroll = useCallback(() => {
@@ -108,7 +108,7 @@ const MainLayout = ({ children }) => {
           <div className="w-px h-5 bg-border" />
 
           {/* Language switcher */}
-          <LanguageSwitcher />
+          {/* <LanguageSwitcher /> */}
 
           <div className="w-px h-5 bg-border" />
 

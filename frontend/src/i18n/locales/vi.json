@@ -30,6 +30,7 @@
     "createAccount": "Tạo tài khoản",
     "createAccountDesc": "Bắt đầu giám sát với EnviroMonitor",
     "fullName": "Họ và tên",
+    "loginSuccess": "Đăng nhập thành công",
     "enterName": "Nhập họ tên của bạn",
     "confirmPassword": "Xác nhận mật khẩu",
     "createPassword": "Tạo mật khẩu",
@@ -93,7 +94,8 @@
     "retry": "Thử lại",
     "selectType": "Chọn vị trí",
     "typeWh": "KHO",
-    "typeLine": "LINE SẢN XUẤT"
+    "typeLine": "LINE SẢN XUẤT",
+    "noData": "Không có dữ liệu"
   },
   "time": {
     "justNow": "vừa xong",
@@ -150,6 +152,7 @@
     "noChanges": "Không có thay đổi"
   },
   "admin": {
+    "duplicateKey": "Dữ liệu bị trùng tại các dòng",
     "tableNo": "STT",
     "totalUsers": "Tổng",
     "userManagement": "Quản lý Người dùng",

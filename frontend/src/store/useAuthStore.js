@@ -3,6 +3,9 @@ import { persist } from 'zustand/middleware';
 import api from '../services/api';
 import { useSettingsStore } from './useSettingsStore';
 
+/** Set when user logs out before persist rehydration finishes (avoids stale restore). */
+let logoutBeforeHydration = false;
+
 /**
  * Auth store using Zustand
  */
@@ -15,6 +18,7 @@ export const useAuthStore = create(
             isAuthenticated: false,
             isLoading: false,
             error: null,
+            hasHydrated: false,
 
             // Actions
             setUser: (user) => set({ user, isAuthenticated: !!user }),
@@ -40,9 +44,9 @@ export const useAuthStore = create(
                     // Hydrate settings
                     useSettingsStore.getState().fetchSettings();
                     
-                    // Load dynamic translations
-                    import('../i18n').then(({ loadAllTranslations }) => {
-                        loadAllTranslations().catch(console.error);
+                    // Load dynamic translations for current language
+                    import('../i18n').then(({ refreshCurrentTranslations }) => {
+                        refreshCurrentTranslations({ force: true }).catch(console.error);
                     });
 
                     return { success: true };
@@ -70,9 +74,9 @@ export const useAuthStore = create(
                     // Hydrate settings
                     useSettingsStore.getState().fetchSettings();
                     
-                    // Load dynamic translations
-                    import('../i18n').then(({ loadAllTranslations }) => {
-                        loadAllTranslations().catch(console.error);
+                    // Load dynamic translations for current language
+                    import('../i18n').then(({ refreshCurrentTranslations }) => {
+                        refreshCurrentTranslations({ force: true }).catch(console.error);
                     });
 
                     return { success: true };
@@ -85,6 +89,9 @@ export const useAuthStore = create(
 
             // Logout
             logout: () => {
+                if (!get().hasHydrated) {
+                    logoutBeforeHydration = true;
+                }
                 set({
                     user: null,
                     token: null,
@@ -106,3 +113,24 @@ export const useAuthStore = create(
         }
     )
 );
+
+const finishAuthHydration = () => {
+    if (logoutBeforeHydration) {
+        logoutBeforeHydration = false;
+        useAuthStore.setState({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            hasHydrated: true,
+        });
+        return;
+    }
+    useAuthStore.setState({ hasHydrated: true });
+};
+
+useAuthStore.persist.onFinishHydration(finishAuthHydration);
+
+// Sync storage (e.g. localStorage) may hydrate before the listener is attached
+if (useAuthStore.persist.hasHydrated()) {
+    finishAuthHydration();
+}

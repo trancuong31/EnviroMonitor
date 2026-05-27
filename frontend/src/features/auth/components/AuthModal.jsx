@@ -70,11 +70,6 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
         }
 
         if (result.success) {
-            // Load all 3 languages from DB and cache in localStorage in the background
-            import('../../../i18n').then(({ loadAllTranslations }) => {
-                loadAllTranslations().catch(console.error);
-            });
-
             onClose();
             navigate('/dashboard');
             toast.success(t(`auth.${mode}Success`));
@@ -253,14 +248,10 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
                                         // Update UI language immediately (uses local fallback if DB not loaded)
                                         await i18n.changeLanguage(val);
                                         
-                                        // Fetch latest translations for this language from API
+                                        // Refresh latest translations for this language from API
                                         try {
-                                            const { loadTranslationsFromAPI } = await import('../../../i18n');
-                                            await loadTranslationsFromAPI(val);
-                                            // Re-trigger language change to apply newly fetched DB translations
-                                            if (i18n.isInitialized) {
-                                                i18n.changeLanguage(val);
-                                            }
+                                            const { refreshTranslations } = await import('../../../i18n');
+                                            await refreshTranslations(val, { force: true });
                                         } catch (error) {
                                             console.error(error);
                                         }

@@ -27,6 +27,7 @@
     "enterEmail": "이메일을 입력하세요",
     "enterPassword": "비밀번호를 입력하세요",
     "signIn": "로그인",
+    "loginSuccess": "로그인 성공",
     "createAccount": "계정 만들기",
     "createAccountDesc": "EnviroMonitor로 모니터링을 시작하세요",
     "fullName": "성명",
@@ -93,7 +94,8 @@
     "retry": "재시도",
     "selectType": "위치 선택",
     "typeWh": "창고",
-    "typeLine": "제조 라인"
+    "typeLine": "제조 라인",
+    "noData": "데이터가 없습니다"
   },
   "time": {
     "justNow": "방금",
@@ -150,6 +152,7 @@
     "noChanges": "변경사항이 없습니다"
   },
   "admin": {
+    "duplicateKey": "중복된 데이터 행",
     "tableNo": "번",
     "totalUsers": "총",
     "userManagement": "사용자 관리",

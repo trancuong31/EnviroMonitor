@@ -25,7 +25,11 @@ const Loading = () => (
  * Public route wrapper - redirects to dashboard if already authenticated
  */
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, hasHydrated } = useAuthStore();
+
+  if (!hasHydrated) {
+    return <Loading />;
+  }
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;

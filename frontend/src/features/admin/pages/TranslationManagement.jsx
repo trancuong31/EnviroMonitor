@@ -78,16 +78,12 @@ const TranslationManagement = () => {
             : item
         )
       );
-      setSelectedTranslation((prev) => ({
-        ...prev,
-        VI: formData.vi,
-        EN: formData.en,
-        KR: formData.kr,
-      }));
+      //reset form
+      setSelectedTranslation(null);
 
       // Reload translations for the UI
-      import('../../../i18n').then(({ loadAllTranslations }) => {
-        loadAllTranslations().catch(console.error);
+      import('../../../i18n').then(({ refreshCurrentTranslations }) => {
+        refreshCurrentTranslations({ force: true }).catch(console.error);
       });
     } catch (error) {
       console.error('Error updating translation:', error);
@@ -151,7 +147,20 @@ const TranslationManagement = () => {
           item.ID && (item.VI !== undefined || item.EN !== undefined || item.KR !== undefined)
       );
       if (!valid) {
-        toast.error(t('admin.importInvalidData', 'Invalid translation data structure'));
+        toast.error(t('admin.importInvalidData'));
+        return;
+      }
+
+      // check duplidate DESCRIPTION
+      const descriptions = importedData.map((item) => item.DESCRIPTION);
+      const uniqueDescriptions = new Set(descriptions);
+      // get list row index duplidcate
+      const duplicateRowIndices = descriptions
+        .map((item, index) => (descriptions.indexOf(item) !== index ? index + 2 : null))
+        .filter(Boolean);
+
+      if (descriptions.length !== uniqueDescriptions.size) {
+        toast.error(t('admin.duplicateKey') + ': ' + duplicateRowIndices.join(', '));
         return;
       }
 
@@ -167,8 +176,8 @@ const TranslationManagement = () => {
       setSelectedTranslation(null);
 
       // Reload translations for the UI
-      import('../../../i18n').then(({ loadAllTranslations }) => {
-        loadAllTranslations().catch(console.error);
+      import('../../../i18n').then(({ refreshCurrentTranslations }) => {
+        refreshCurrentTranslations({ force: true }).catch(console.error);
       });
 
       toast.success(t('admin.importSuccess', 'Translations imported successfully'));
