@@ -129,7 +129,7 @@ const TranslationList = ({
                 >
                   {/* Column: No */}
                   <td className="py-3 px-4">
-                    <span className="text-sm font-medium text-text">{index + 1}</span>
+                    <span className="text-sm font-medium text-text">{item.ID}</span>
                   </td>
                   {/* Column: Key (description) */}
                   <td className="py-3 px-4" title={item.DESCRIPTION}>

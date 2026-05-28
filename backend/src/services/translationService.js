@@ -3,7 +3,7 @@ const { sequelize } = require('../config/database');
 
 const getAllTranslations = async () => {
     const translations = await sequelize.query(`
-        SELECT * FROM translations ORDER BY VI
+        SELECT * FROM translations ORDER BY ID
     `, { type: sequelize.QueryTypes.SELECT });
     return translations;
 };
