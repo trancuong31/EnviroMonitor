@@ -1,15 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '@/store';
 const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT, 10) || 30000;
-const API_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL || 'http://localhost:8888/api/v1';
-const API_URL_PUBLIC = import.meta.env.VITE_API_URL_PUBLIC || API_URL_LOCAL;
-
-const hostname = window.location.hostname;
-const isLocal =
-    hostname === 'localhost' ||
-    hostname.startsWith('192.168.');
-
-const baseURL = isLocal ? API_URL_LOCAL : API_URL_PUBLIC;
+const baseURL = import.meta.env.VITE_API_URL || '/api/v1';
 
 const api = axios.create({
     baseURL,
