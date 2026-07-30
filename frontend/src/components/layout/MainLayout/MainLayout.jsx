@@ -116,57 +116,57 @@ const MainLayout = ({ children }) => {
             <>
               <div className="hidden sm:flex items-center gap-2 text-sm text-text-muted">
                 {user?.role === 'Admin' && (
-                  <>
-                    <Link
-                      to="/admin/users"
-                      className="relative group flex items-center h-full pt-1 pb-1"
+                  <Link
+                    to="/admin/users"
+                    className="relative group flex items-center h-full pt-1 pb-1"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="small"
+                      className={`text-primary transition-colors hover:bg-transparent ${
+                        location.pathname.startsWith('/admin/users')
+                          ? 'bg-primary/10 font-semibold'
+                          : ''
+                      }`}
                     >
-                      <Button
-                        variant="ghost"
-                        size="small"
-                        className={`text-primary transition-colors hover:bg-transparent ${
-                          location.pathname.startsWith('/admin/users')
-                            ? 'bg-primary/10 font-semibold'
-                            : ''
-                        }`}
-                      >
-                        {t('admin.userManagement', 'Users')}
-                      </Button>
+                      {t('admin.userManagement', 'Users')}
+                    </Button>
 
-                      <span
-                        className={`absolute bottom-0 left-2 right-2 h-[2.5px] bg-primary rounded-t-full transition-transform duration-300 origin-center ${
-                          location.pathname.startsWith('/admin/users')
-                            ? 'scale-x-100'
-                            : 'scale-x-0 group-hover:scale-x-100'
-                        }`}
-                      />
-                    </Link>
+                    <span
+                      className={`absolute bottom-0 left-2 right-2 h-[2.5px] bg-primary rounded-t-full transition-transform duration-300 origin-center ${
+                        location.pathname.startsWith('/admin/users')
+                          ? 'scale-x-100'
+                          : 'scale-x-0 group-hover:scale-x-100'
+                      }`}
+                    />
+                  </Link>
+                )}
 
-                    <Link
-                      to="/admin/translations"
-                      className="relative group flex items-center h-full pt-1 pb-1"
+                {['Admin', 'Manager'].includes(user?.role) && (
+                  <Link
+                    to="/admin/translations"
+                    className="relative group flex items-center h-full pt-1 pb-1"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="small"
+                      className={`text-primary transition-colors hover:bg-transparent ${
+                        location.pathname.startsWith('/admin/translations')
+                          ? 'bg-primary/10 font-semibold'
+                          : ''
+                      }`}
                     >
-                      <Button
-                        variant="ghost"
-                        size="small"
-                        className={`text-primary transition-colors hover:bg-transparent ${
-                          location.pathname.startsWith('/admin/translations')
-                            ? 'bg-primary/10 font-semibold'
-                            : ''
-                        }`}
-                      >
-                        {t('admin.translationManagement', 'Languages')}
-                      </Button>
+                      {t('admin.translationManagement', 'Languages')}
+                    </Button>
 
-                      <span
-                        className={`absolute bottom-0 left-2 right-2 h-[2.5px] bg-primary rounded-t-full transition-transform duration-300 origin-center ${
-                          location.pathname.startsWith('/admin/translations')
-                            ? 'scale-x-100'
-                            : 'scale-x-0 group-hover:scale-x-100'
-                        }`}
-                      />
-                    </Link>
-                  </>
+                    <span
+                      className={`absolute bottom-0 left-2 right-2 h-[2.5px] bg-primary rounded-t-full transition-transform duration-300 origin-center ${
+                        location.pathname.startsWith('/admin/translations')
+                          ? 'scale-x-100'
+                          : 'scale-x-0 group-hover:scale-x-100'
+                      }`}
+                    />
+                  </Link>
                 )}
 
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary flex items-center justify-center text-xs font-bold text-white ml-2">

@@ -33,13 +33,13 @@ const TranslationManagement = () => {
   }, [t]);
 
   useEffect(() => {
-    if (currentUser?.role === 'Admin') {
+    if (['Admin', 'Manager'].includes(currentUser?.role)) {
       fetchTranslations();
     }
   }, [currentUser, fetchTranslations]);
 
   // Redirect if not admin
-  if (currentUser?.role !== 'Admin') {
+  if (!['Admin', 'Manager'].includes(currentUser?.role)) {
     return <Navigate to="/dashboard" replace />;
   }
 
