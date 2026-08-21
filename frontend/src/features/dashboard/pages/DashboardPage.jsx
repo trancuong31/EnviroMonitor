@@ -59,7 +59,7 @@ const DashboardPage = () => {
 
   // Fetch data on mount with saved factory filter
   useEffect(() => {
-    fetchLocations(filterFactory);
+    fetchLocations('all'); // Always fetch all to allow cross-filtering factories and types
   }, [fetchLocations]);
 
   // Always fetch latest settings on dashboard load
@@ -174,31 +174,31 @@ const DashboardPage = () => {
     setSelectedLocation(null);
   }, []);
 
-  // Handle factory filter change - persist to localStorage + re-fetch from API
+  // Handle factory filter change - persist to localStorage
   const handleFilterFactoryChange = useCallback(
     (factory) => {
       setFilterFactory(factory);
       localStorage.setItem('dashboard_filterFactory', factory);
-      fetchLocations(factory);
+      // No need to fetchLocations here since we always fetch 'all' and filter locally
       setFilterType('all');
     },
-    [fetchLocations]
+    []
   );
 
   // Refresh handler - full re-fetch from API
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await fetchLocations(filterFactory);
+    await fetchLocations('all');
     setTimeout(() => setIsRefreshing(false), 600);
-  }, [fetchLocations, filterFactory]);
+  }, [fetchLocations]);
 
   // Auto-refresh based on user-selected interval (persisted in localStorage)
   useEffect(() => {
     const interval = setInterval(() => {
-      refreshLocations(filterFactory);
+      refreshLocations('all');
     }, refreshInterval);
     return () => clearInterval(interval);
-  }, [refreshLocations, refreshInterval, filterFactory]);
+  }, [refreshLocations, refreshInterval]);
 
   // Persist refresh interval to localStorage
   const handleRefreshIntervalChange = useCallback((val) => {
@@ -210,6 +210,12 @@ const DashboardPage = () => {
   // Filtered + sorted data
   const filteredLocations = useMemo(() => {
     let result = [...locations];
+    
+    // Filter by factory
+    if (filterFactory !== 'all') {
+      result = result.filter((l) => l.location && l.location.startsWith(filterFactory));
+    }
+
     // Filter by type (after 2nd underscore)
     if (filterType !== 'all') {
       result = result.filter((l) => {
@@ -227,7 +233,7 @@ const DashboardPage = () => {
     }
 
     return result;
-  }, [locations, filterType]);
+  }, [locations, filterFactory, filterType]);
 
   // Group filtered locations by 5-char prefix of tc_name
   const groupedLocations = useMemo(
