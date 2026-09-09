@@ -42,7 +42,8 @@
     "department": "부서",
     "selectDepartment": "부서 선택",
     "contactAdminForAccount": "계정 관리에 문의하세요",
-    "registrationDisabledDesc": "회원가입이 비활성화되어 있습니다. 계정은 관리자가 생성합니다."
+    "registrationDisabledDesc": "회원가입이 비활성화되어 있습니다. 계정은 관리자가 생성합니다.",
+    "rememberMe": "로그인 정보 기억"
   },
   "dashboard": {
     "title": "온습도 모니터링",

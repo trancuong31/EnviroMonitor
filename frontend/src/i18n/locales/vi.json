@@ -42,7 +42,8 @@
     "pleaseSelectFactory": " Vui lòng chọn nhà máy",
     "selectDepartment": "Chọn bộ phận",
     "contactAdminForAccount": "Liên hệ quản trị viên để được cấp tài khoản",
-    "registrationDisabledDesc": "Đăng ký đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên để được cấp tài khoản."
+    "registrationDisabledDesc": "Đăng ký đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên để được cấp tài khoản.",
+    "rememberMe": "Ghi nhớ tôi"
   },
   "dashboard": {
     "title": "Giám sát Nhiệt độ & Độ ẩm",

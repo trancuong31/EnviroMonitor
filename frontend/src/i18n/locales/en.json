@@ -42,7 +42,8 @@
     "pleaseSelectFactory": "Please select factory",
     "selectDepartment": "Select department",
     "contactAdminForAccount": "Contact admin for account",
-    "registrationDisabledDesc": "Registration is disabled. Please contact admin for account."
+    "registrationDisabledDesc": "Registration is disabled. Please contact admin for account.",
+    "rememberMe": "Remember me"
   },
   "dashboard": {
     "title": "Temperature & Humidity Monitoring",

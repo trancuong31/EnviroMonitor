@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../../store';
-import { Button } from '../../../components/ui';
+import { Button, CustomCheckbox } from '../../../components/ui';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
 import CustomSelect from '../../../components/ui/CustomSelect/CustomSelect';
@@ -15,6 +15,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
     const { t, i18n } = useTranslation();
     const { login, register, isLoading, error, clearError } = useAuthStore();
     const [mode, setMode] = useState(initialMode); // 'login' or 'register'
+    const [rememberMe, setRememberMe] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -23,9 +24,17 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
         factory: '',
     });
 
-    // Reset form when modal closes or mode changes
+    // Reset form when modal closes or load saved email when opened
     useEffect(() => {
-        if (!isOpen) {
+        if (isOpen) {
+            const savedEmail = localStorage.getItem('remembered_email');
+            if (savedEmail) {
+                setFormData((prev) => ({ ...prev, email: savedEmail }));
+                setRememberMe(true);
+            } else {
+                setRememberMe(false);
+            }
+        } else {
             setFormData({ name: '', email: '', password: '', confirmPassword: '', factory: '' });
             clearError();
         }
@@ -49,6 +58,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
             document.body.style.overflow = 'unset';
         };
     }, [isOpen, onClose]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -70,6 +80,13 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
         }
 
         if (result.success) {
+            if (mode === 'login') {
+                if (rememberMe) {
+                    localStorage.setItem('remembered_email', formData.email);
+                } else {
+                    localStorage.removeItem('remembered_email');
+                }
+            }
             onClose();
             navigate('/dashboard');
             toast.success(t(`auth.${mode}Success`));
@@ -84,7 +101,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
             return;
         }
         setMode('login');
-        setFormData({ name: '', email: '', password: '', confirmPassword: '', factory: '' });
+        const savedEmail = localStorage.getItem('remembered_email');
+        setFormData({ name: '', email: savedEmail || '', password: '', confirmPassword: '', factory: '' });
         clearError();
     };
 
@@ -234,8 +252,17 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
                             </div>
                         )}
 
-                        {/* Language Selector default english*/}
-                        <div className="flex justify-end w-full mt-1">
+                        {/* Remember Me & Language Selector */}
+                        <div className="flex items-center justify-between w-full mt-1">
+                            {mode === 'login' ? (
+                                <CustomCheckbox
+                                    checked={rememberMe}
+                                    onChange={(checked) => setRememberMe(checked)}
+                                    label={t('auth.rememberMe')}
+                                />
+                            ) : (
+                                <div />
+                            )}
                             <div className="w-[130px]">
                                 <CustomSelect
                                     value={i18n.language?.split('-')[0] || 'en'}
