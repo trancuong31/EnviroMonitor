@@ -15,10 +15,12 @@ import { getLayoutDetail } from '../api/dashboardApi';
 
 const LAYOUT_IMAGES = {
     "D2_2F": "/uploads/images/D2_2F.jpg",
+    "D2_3F": "/uploads/images/D2_3F.jpg",
     "V0_1F": "/uploads/images/V0_1F.jpg",
     "V0_2F": "/uploads/images/V0_2F.jpg",
     "V0_3F": "/uploads/images/V0_3F.jpg",
     "V1_1F": "/uploads/images/V1_1F.jpg",
+    "V2_1F": "/uploads/images/V2_1F.jpg",
     "V4_1F": "/uploads/images/V4_1F.jpg",
     "V4_2F": "/uploads/images/V4_2F.jpg",
     "V4_3F": "/uploads/images/V4_3F.jpg",
