@@ -44,6 +44,26 @@ const Sensor = sequelize.define('Sensor', {
         type: DataTypes.FLOAT,
         allowNull: true,
         field: 'YPOSITION',
+    },
+    humidityMax: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        field: 'HUMIDITYMAX',
+    },
+    humidityMin: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        field: 'HUMIDITYMIN',
+    },
+    temperatureMax: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        field: 'TEMPERATUREMAX',
+    },
+    temperatureMin: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        field: 'TEMPERATUREMIN',
     }
 }, {
     tableName: 'sensor',

@@ -12,8 +12,12 @@ const THSpecHistory = sequelize.define('THSpecHistory', {
     location: {
         type: DataTypes.STRING(50),
         allowNull: true,
-        unique: true,
         field: 'LOCATION',
+    },
+    sensorId: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        field: 'SENSORID',
     },
     ng: {
         type: DataTypes.FLOAT,

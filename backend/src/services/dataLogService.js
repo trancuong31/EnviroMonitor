@@ -25,7 +25,7 @@ const getLogs = async ({ factory } = {}) => {
             {
                 model: Sensor,
                 as: 'sensor',
-                attributes: ['type'], 
+                attributes: ['type', 'locationId', 'humidityMax', 'humidityMin', 'temperatureMax', 'temperatureMin'], 
                 include: [
                     {
                         model: THSpec,
@@ -39,21 +39,38 @@ const getLogs = async ({ factory } = {}) => {
             }
         ],
         order: [['sensorId', 'ASC']],
-        limit: 40,
+        limit: 100,
         raw: true,
         nest: true
     });
 
-    return logs.map(log => ({
-        ...log,
-        sensorType: log.sensor?.type || null,
-        NG: log.sensor?.spec?.ng || null,
-        temperatureMin: log.sensor?.spec?.temperatureMin ?? null,
-        temperatureMax: log.sensor?.spec?.temperatureMax ?? null,
-        humidityMin: log.sensor?.spec?.humidityMin ?? null,
-        humidityMax: log.sensor?.spec?.humidityMax ?? null,
-        sensor: undefined
-    }));
+    return logs.map(log => {
+        const sensor = log.sensor || {};
+        const spec = sensor.spec || {};
+        
+        let tMin = spec.temperatureMin ?? null;
+        let tMax = spec.temperatureMax ?? null;
+        let hMin = spec.humidityMin ?? null;
+        let hMax = spec.humidityMax ?? null;
+
+        if (sensor.locationId === 'PL') {
+            tMin = sensor.temperatureMin ?? tMin;
+            tMax = sensor.temperatureMax ?? tMax;
+            hMin = sensor.humidityMin ?? hMin;
+            hMax = sensor.humidityMax ?? hMax;
+        }
+
+        return {
+            ...log,
+            sensorType: sensor.type || null,
+            NG: spec.ng || null,
+            temperatureMin: tMin,
+            temperatureMax: tMax,
+            humidityMin: hMin,
+            humidityMax: hMax,
+            sensor: undefined
+        };
+    });
 };
 
 const getLogsByDateRange = async (sensorId, startDate, endDate) => {
@@ -101,6 +118,10 @@ const updateSensor = async (sensorId, data) => {
     const sensor = await Sensor.findOne({ where: { sensorId: sensorId } });
     if (!sensor) return null;
 
+    if (sensor.locationId !== 'PL') {
+        throw new Error('Permission denied: Only sensors in location PL can be updated.');
+    }
+
     const allowedFields = ['temperatureMin', 'temperatureMax', 'humidityMin', 'humidityMax'];
     const updateData = {};
     for (const field of allowedFields) {
@@ -110,6 +131,18 @@ const updateSensor = async (sensorId, data) => {
     }
 
     await sensor.update(updateData);
+
+    await THSpecHistory.create({
+        location: sensor.locationId,
+        sensorId: sensor.sensorId,
+        ng: null,
+        temperatureMin: updateData.temperatureMin !== undefined ? updateData.temperatureMin : sensor.temperatureMin,
+        temperatureMax: updateData.temperatureMax !== undefined ? updateData.temperatureMax : sensor.temperatureMax,
+        humidityMin: updateData.humidityMin !== undefined ? updateData.humidityMin : sensor.humidityMin,
+        humidityMax: updateData.humidityMax !== undefined ? updateData.humidityMax : sensor.humidityMax,
+        eventUser: data.eventUser || 'system',
+    });
+
     return sensor;
 };
 
@@ -155,9 +188,24 @@ const updateSettings = async (location, data) => {
     if (data.ng !== undefined) {
         await THSpec.update({ ng: data.ng }, { where: {} });
     }
+    
+    // Update SENSOR table overriding any specific sensor thresholds for this location ONLY IF location is PL
+    if (location === 'PL') {
+        const sensorUpdateData = {};
+        if (data.temperatureMin !== undefined) sensorUpdateData.temperatureMin = data.temperatureMin;
+        if (data.temperatureMax !== undefined) sensorUpdateData.temperatureMax = data.temperatureMax;
+        if (data.humidityMin !== undefined) sensorUpdateData.humidityMin = data.humidityMin;
+        if (data.humidityMax !== undefined) sensorUpdateData.humidityMax = data.humidityMax;
+
+        if (Object.keys(sensorUpdateData).length > 0) {
+            await Sensor.update(sensorUpdateData, { where: { locationId: location } });
+        }
+    }
+
     // insert into th_spec_history
     await THSpecHistory.create({
         location: location,
+        sensorId: 'ALL',
         ng: data.ng,
         temperatureMin: data.temperatureMin,
         temperatureMax: data.temperatureMax,
@@ -168,7 +216,7 @@ const updateSettings = async (location, data) => {
     return spec;
     } catch (error) {
         console.log(error);
-        return null;
+        throw error;
     }
 };
 

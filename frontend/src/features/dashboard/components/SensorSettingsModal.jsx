@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Save, Thermometer, Droplets, Loader2, CircleAlert, Info } from 'lucide-react';
 import { updateSensorSettings } from '../api/dashboardApi';
-import { useSettingsStore } from '../../../store';
+import { useSettingsStore, useAuthStore } from '../../../store';
 import { useDashboardStore } from '../store/useDashboardStore';
 import { toast } from 'sonner';
 /**
@@ -40,17 +40,33 @@ const RangeSliderInput = ({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-xs text-text-muted font-medium">{label}</span>
-        <div className="flex items-center gap-1">
-          <input
-            type="number"
-            value={value}
-            onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-            min={min}
-            max={max}
-            step={step}
-            className={`w-16 px-2 py-1 bg-surface-alt border border-border rounded-lg text-text font-mono text-sm text-center focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none transition-all ${colors.text}`}
-          />
-          <span className="text-xs text-text-muted">{unit}</span>
+        <div className="flex items-center">
+          <div className="flex items-center border border-border rounded-lg bg-surface-alt overflow-hidden focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+            <button
+              onClick={() => onChange(Math.max(min, value - step))}
+              disabled={value <= min}
+              className="px-2 py-1 text-text-muted hover:bg-surface hover:text-text disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              -
+            </button>
+            <input
+              type="number"
+              value={value}
+              onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+              min={min}
+              max={max}
+              step={step}
+              className={`w-14 py-1 bg-transparent text-text font-mono text-sm text-center outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${colors.text}`}
+            />
+            <button
+              onClick={() => onChange(Math.min(max, value + step))}
+              disabled={value >= max}
+              className="px-2 py-1 text-text-muted hover:bg-surface hover:text-text disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              +
+            </button>
+          </div>
+          <span className="text-xs text-text-muted ml-2">{unit}</span>
         </div>
       </div>
 
@@ -105,9 +121,11 @@ const SensorSettingsModal = ({
   locationData,
   currentThresholds,
   onSaveSuccess,
+  isViewOnly = false,
 }) => {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuthStore();
 
   const sensorType = locationData?.sensorType || 'ROOM';
   const globalThresholds = useSettingsStore((s) => {
@@ -139,6 +157,7 @@ const SensorSettingsModal = ({
   }, [isOpen, locationData, globalThresholds]);
 
   const handleChange = (field, value) => {
+    if (isViewOnly) return;
     setFormValues((prev) => ({ ...prev, [field]: parseFloat(value) || 0 }));
     setErrors({ temp: false, hum: false });
   };
@@ -154,7 +173,11 @@ const SensorSettingsModal = ({
 
     setIsLoading(true);
     try {
-      await updateSensorSettings(locationData.locationId, formValues);
+      const payload = {
+        ...formValues,
+        eventUser: user?.userid || user?.fullname || 'unknown_user',
+      };
+      await updateSensorSettings(locationData.locationId, payload);
 
       const { locations } = useDashboardStore.getState();
       const updated = locations.map((loc) =>
@@ -403,32 +426,34 @@ const SensorSettingsModal = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border bg-surface-alt/50">
-          <button
-            onClick={onClose}
-            disabled={isLoading}
-            className="px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors disabled:opacity-50"
-          >
-            {t('settings.cancel', 'Hủy')}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-primary/25 transition-all disabled:opacity-50"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                {t('settings.savingSettings', 'Đang lưu...')}
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                {t('settings.save', 'Lưu')}
-              </>
-            )}
-          </button>
-        </div>
+        {!isViewOnly && (
+          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border bg-surface-alt/50">
+            <button
+              onClick={onClose}
+              disabled={isLoading}
+              className="px-4 py-2 text-sm font-medium text-text-muted hover:text-text hover:bg-surface-hover rounded-lg transition-colors disabled:opacity-50"
+            >
+              {t('settings.cancel', 'Hủy')}
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-primary/25 transition-all disabled:opacity-50"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {t('settings.savingSettings', 'Đang lưu...')}
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  {t('settings.save', 'Lưu')}
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

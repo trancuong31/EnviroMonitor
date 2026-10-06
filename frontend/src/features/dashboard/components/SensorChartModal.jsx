@@ -448,9 +448,21 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                             </div>
                         </div>
                     </div>
+                    
+                    <div className="flex items-center gap-2">
+                        {/* Settings Button - Show for PL location and Admin/Manager roles */}
+                        {!locationData?.location?.toUpperCase().includes('_WH_C_') && !locationData?.location?.toUpperCase().includes('_WH_N_') && (user?.role === 'Admin' || user?.role === 'Manager') && (
+                            <button
+                                onClick={() => setIsSettingsOpen(true)}
+                                className="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-purple-500 hover:border-purple-500/30 shadow-sm hover:shadow transition-all duration-200"
+                                title={t('settings.thresholdTitle', 'Cài đặt')}
+                            >
+                                <Settings className="w-4 h-4" />
+                            </button>
+                        )}
 
-                    <button
-                        onClick={onClose}
+                        <button
+                            onClick={onClose}
                         className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200"
                         style={{
                             color: colors.textMuted,
@@ -470,6 +482,7 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
+                    </div>
                 </div>
 
                 {/* Date Range Filter Bar */}

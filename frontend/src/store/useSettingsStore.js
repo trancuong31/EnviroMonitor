@@ -84,13 +84,15 @@ export const useSettingsStore = create((set) => ({
     
     updateSettings: async (type, values, rootValues = {}) => {
         set({ isLoading: true });
+        const user = useAuthStore.getState().user;
         const payload = {
             location: type,
             temperatureMin: values?.tempMin,
             temperatureMax: values?.tempMax,
             humidityMin: values?.humMin,
             humidityMax: values?.humMax,
-            ng: rootValues?.ng
+            ng: rootValues?.ng,
+            eventUser: user?.userid || user?.fullname || 'system'
         };
 
         try {

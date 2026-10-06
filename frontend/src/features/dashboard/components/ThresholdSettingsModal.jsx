@@ -51,18 +51,36 @@ const RangeSliderInput = ({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-xs text-text-muted font-medium">{label}</span>
-        <div className="flex items-center gap-1">
-          <input
-            type="number"
-            value={value}
-            onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-            min={min}
-            max={max}
-            step={step}
-            disabled={disabled}
-            className={`w-16 px-2 py-1 bg-surface-alt border border-border rounded-lg text-text font-mono text-sm text-center focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none transition-all ${colors.text} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-          />
-          <span className="text-xs text-text-muted">{unit}</span>
+        <div className="flex items-center">
+          <div
+            className={`flex items-center border border-border rounded-lg bg-surface-alt overflow-hidden focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <button
+              onClick={() => onChange(Math.max(min, value - step))}
+              disabled={disabled || value <= min}
+              className="px-2 py-1 text-text-muted hover:bg-surface hover:text-text disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              -
+            </button>
+            <input
+              type="number"
+              value={value}
+              onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+              min={min}
+              max={max}
+              step={step}
+              disabled={disabled}
+              className={`w-12 py-1 bg-transparent text-text font-mono text-sm text-center outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${colors.text}`}
+            />
+            <button
+              onClick={() => onChange(Math.min(max, value + step))}
+              disabled={disabled || value >= max}
+              className="px-2 py-1 text-text-muted hover:bg-surface hover:text-text disabled:opacity-50 transition-colors cursor-pointer"
+            >
+              +
+            </button>
+          </div>
+          <span className="text-xs text-text-muted ml-2">{unit}</span>
         </div>
       </div>
 

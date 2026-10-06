@@ -33,7 +33,7 @@ export const useAuthStore = create(
                     const response = await api.post('/auth/login', { email, password });
                     const token = response.data.token;
                     const user = response.data.data.user;
-
+ 
                     set({
                         user,
                         token,
