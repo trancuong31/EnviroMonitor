@@ -20,10 +20,20 @@ const Sensor = sequelize.define('Sensor', {
         defaultValue: 'N',
         field: 'TYPE',
     },
+    item: {
+        type: DataTypes.STRING(200),
+        allowNull: true,
+        field: 'ITEM',
+    },
     locationId: {
         type: DataTypes.STRING(50),
         allowNull: true,
         field: 'LOCATIONID',
+    },
+    areaId: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        field: 'AREAID',
     },
     position: {
         type: DataTypes.STRING(255),

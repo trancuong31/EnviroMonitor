@@ -203,5 +203,9 @@
     "importError": "Error importing translations",
     "importInvalidFormat": "Invalid file format",
     "importInvalidData": "Invalid translation data structure"
+  },
+  "sensor": {
+    "loc_PL": "Product_line",
+    "loc_WH": "WAREHOUSE"
   }
 }

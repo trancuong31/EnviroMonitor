@@ -13,6 +13,7 @@ import { useSettingsStore } from '../../../store';
 import SensorSettingsModal from './SensorSettingsModal';
 import { useAuthStore } from '../../../store';
 import formatRelativeTime from '../utils/timeUtils';
+import { formatSensorName } from '../utils/formatUtils';
 
 /**
  * Utility: Check if dark mode is active
@@ -182,12 +183,12 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
     const ngThreshold = useSettingsStore((s) => s.ng);
 
     // Per-sensor thresholds with fallback to global
-    const thresholds = {
+    const thresholds = useMemo(() => ({
         tempMin: updatedThresholds?.temperatureMin ?? locationData?.tempMin ?? globalThresholds.tempMin,
         tempMax: updatedThresholds?.temperatureMax ?? locationData?.tempMax ?? globalThresholds.tempMax,
         humMin: updatedThresholds?.humidityMin ?? locationData?.humMin ?? globalThresholds.humMin,
         humMax: updatedThresholds?.humidityMax ?? locationData?.humMax ?? globalThresholds.humMax,
-    };
+    }), [updatedThresholds, locationData, globalThresholds]);
 
     const isOffline = locationData?.lastUpdateISO ? (Date.now() - new Date(locationData.lastUpdateISO).getTime()) / 60000 > ngThreshold : false;
     const finalTemp = isOffline ? 0 : locationData?.temperature;
@@ -440,10 +441,10 @@ const LocationChartModal = ({ isOpen, onClose, locationData }) => {
                             </div>
                             <div>
                                 <h2
-                                    className="text-lg font-bold"
+                                    className="text-lg font-bold uppercase"
                                     style={{ color: colors.textPrimary }}
                                 >
-                                    {locationData.location}
+                                    {formatSensorName(locationData.location, t)}
                                 </h2>
                             </div>
                         </div>

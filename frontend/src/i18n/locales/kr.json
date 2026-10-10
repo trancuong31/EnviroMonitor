@@ -204,5 +204,9 @@
     "importError": "번역 가져오기 오류",
     "importInvalidFormat": "파일 형식이 잘못되었습니다",
     "importInvalidData": "번역 데이터 구조가 잘못되었습니다"
+  },
+  "sensor": {
+    "loc_PL": "생산 라인",
+    "loc_WH": "창고"
   }
 }

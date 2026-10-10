@@ -37,6 +37,8 @@ const transformLogsToLocations = (logs) => {
         tempMax: log.temperatureMax,
         humMin: log.humidityMin,
         humMax: log.humidityMax,
+        areaName: log.areaId || null,
+        item: log.item || null,
     }));
 };
 

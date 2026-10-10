@@ -11,7 +11,7 @@ import {
   LocationGroupSection,
 } from '../components';
 import {
-  MapPin,
+  MapPin, 
   Clock,
   RefreshCw,
   LayoutGrid,
@@ -27,6 +27,7 @@ import { useDashboardStore } from '../store/useDashboardStore';
 import { groupByLocationPrefix } from '../utils/groupUtils';
 import { useSettingsStore, useAuthStore } from '../../../store';
 import formatRelativeTime from '../utils/timeUtils';
+import { formatSensorName } from '../utils/formatUtils';
 
 // Calculate age in minutes from ISO timestamp (used for sorting/filtering)
 const getAgeInMinutes = (isoDate) => {
@@ -175,15 +176,12 @@ const DashboardPage = () => {
   }, []);
 
   // Handle factory filter change - persist to localStorage
-  const handleFilterFactoryChange = useCallback(
-    (factory) => {
-      setFilterFactory(factory);
-      localStorage.setItem('dashboard_filterFactory', factory);
-      // No need to fetchLocations here since we always fetch 'all' and filter locally
-      setFilterType('all');
-    },
-    []
-  );
+  const handleFilterFactoryChange = useCallback((factory) => {
+    setFilterFactory(factory);
+    localStorage.setItem('dashboard_filterFactory', factory);
+    // No need to fetchLocations here since we always fetch 'all' and filter locally
+    setFilterType('all');
+  }, []);
 
   // Refresh handler - full re-fetch from API
   const handleRefresh = useCallback(async () => {
@@ -210,7 +208,7 @@ const DashboardPage = () => {
   // Filtered + sorted data
   const filteredLocations = useMemo(() => {
     let result = [...locations];
-    
+
     // Filter by factory
     if (filterFactory !== 'all') {
       result = result.filter((l) => l.location && l.location.startsWith(filterFactory));
@@ -246,9 +244,21 @@ const DashboardPage = () => {
     return groupedLocations.reduce((acc, group) => {
       const parentPrefix = group.prefix.substring(0, 2);
       if (!acc[parentPrefix]) {
-        acc[parentPrefix] = [];
+        acc[parentPrefix] = {
+          childGroups: [],
+          itemsSet: new Set()
+        };
       }
-      acc[parentPrefix].push(group);
+      acc[parentPrefix].childGroups.push(group);
+      
+      // Thu thập các phần tử item và loại bỏ trùng lặp
+      group.items.forEach(loc => {
+        if (loc.item) {
+          const parts = loc.item.split(',').map(s => s.trim()).filter(Boolean);
+          parts.forEach(p => acc[parentPrefix].itemsSet.add(p));
+        }
+      });
+      
       return acc;
     }, {});
   }, [groupedLocations]);
@@ -270,7 +280,7 @@ const DashboardPage = () => {
 
     // Convert filtered data to CSV rows
     const rows = filteredLocations.map((loc) => [
-      loc.location,
+      formatSensorName(loc.location, t),
       loc.temperature,
       Math.round(loc.humidity),
       formatRelativeTime(loc.lastUpdateISO),
@@ -469,17 +479,34 @@ const DashboardPage = () => {
           {!isLoading && !error && view === 'grid' && (
             <div key="grid-view" className="flex flex-col gap-2 animate-fade-in w-full">
               {Object.keys(nestedLocations).length > 0 ? (
-                Object.entries(nestedLocations).map(([parentPrefix, childGroups]) => (
+                Object.entries(nestedLocations).map(([parentPrefix, { childGroups, itemsSet }]) => {
+                  const itemsArray = Array.from(itemsSet).sort();
+                  return (
                   <div
                     key={parentPrefix}
                     className="w-full bg-surface/20 px-3 py-2 rounded-2xl border border-border/60"
                   >
                     {/* Compact Header Nhóm Cha */}
-                    <div className="flex items-center gap-1.5 mb-2 pb-1 border-b border-border/30">
-                      <Factory className="w-6 h-6 text-primary" />
-                      <h2 className="text-[24px] font-bold text-text uppercase tracking-wider">
-                        {parentPrefix}
-                      </h2>
+                    <div className="flex flex-wrap items-center gap-3 mb-2 pb-2 border-b border-border/30">
+                      <div className="flex items-center gap-1.5">
+                        <Factory className="w-6 h-6 text-primary" />
+                        <h2 className="text-[24px] font-bold text-text uppercase tracking-wider leading-none">
+                          {parentPrefix}
+                        </h2>
+                      </div>
+                      
+                      {itemsArray.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {itemsArray.map((itm, i) => (
+                            <span 
+                              key={i} 
+                              className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest border border-primary/20 shadow-sm"
+                            >
+                              {itm}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Each child group = 1 row */}
@@ -490,27 +517,41 @@ const DashboardPage = () => {
                           prefix={group.prefix}
                           count={group.items.length}
                         >
-                          <div className="flex flex-wrap gap-3 sm:gap-5 mt-2 w-full">
-                            {group.items.map((loc) => (
-                              <div
-                                key={loc.id}
-                                className="w-full sm:w-[153px] lg:w-[212px] 2xl:w-[253px] min-w-0 overflow-hidden"
-                              >
-                                <LocationCard
-                                  location={loc.location}
-                                  locationId={loc.locationId}
-                                  temperature={loc.temperature}
-                                  humidity={Math.round(loc.humidity)}
-                                  sensorType={loc.sensorType}
-                                  lastUpdate={loc.lastUpdate}
-                                  lastUpdateISO={loc.lastUpdateISO}
-                                  status={loc.status}
-                                  tempMin={loc.tempMin}
-                                  tempMax={loc.tempMax}
-                                  humMin={loc.humMin}
-                                  humMax={loc.humMax}
-                                  onClick={() => handleLocationClick(loc)}
-                                />
+                          <div className="flex flex-col gap-4 mt-2 w-full">
+                            {Object.values(
+                              group.items.reduce((acc, loc) => {
+                                const parts = (loc.location || '').split('_');
+                                const locType = parts.length > 2 ? parts[2] : 'UNKNOWN';
+                                const key = `${locType}_${loc.areaName || ''}`;
+                                if (!acc[key]) acc[key] = [];
+                                acc[key].push(loc);
+                                return acc;
+                              }, {})
+                            ).map((subGroup, idx) => (
+                              <div key={idx} className="flex flex-wrap gap-3 sm:gap-5 w-full">
+                                {subGroup.map((loc) => (
+                                  <div
+                                    key={loc.id}
+                                    className="w-full sm:w-[153px] lg:w-[212px] 2xl:w-[253px] min-w-0 overflow-hidden"
+                                  >
+                                    <LocationCard
+                                      location={loc.location}
+                                      locationId={loc.locationId}
+                                      temperature={loc.temperature}
+                                      humidity={Math.round(loc.humidity)}
+                                      sensorType={loc.sensorType}
+                                      areaName={loc.areaName}
+                                      lastUpdate={loc.lastUpdate}
+                                      lastUpdateISO={loc.lastUpdateISO}
+                                      status={loc.status}
+                                      tempMin={loc.tempMin}
+                                      tempMax={loc.tempMax}
+                                      humMin={loc.humMin}
+                                      humMax={loc.humMax}
+                                      onClick={() => handleLocationClick(loc)}
+                                    />
+                                  </div>
+                                ))}
                               </div>
                             ))}
                           </div>
@@ -518,7 +559,7 @@ const DashboardPage = () => {
                       ))}
                     </div>
                   </div>
-                ))
+                )})
               ) : (
                 <div className="text-center py-16 w-full">
                   <SearchAlert className="w-12 h-12 text-text-muted mx-auto mb-4" />
@@ -533,17 +574,34 @@ const DashboardPage = () => {
           {!isLoading && !error && view === 'list' && (
             <div className="flex flex-col gap-5 animate-fade-in w-full">
               {Object.keys(nestedLocations).length > 0 ? (
-                Object.entries(nestedLocations).map(([parentPrefix, childGroups]) => (
+                Object.entries(nestedLocations).map(([parentPrefix, { childGroups, itemsSet }]) => {
+                  const itemsArray = Array.from(itemsSet).sort();
+                  return (
                   <div
                     key={parentPrefix}
                     className="w-full bg-surface/20 p-5 rounded-[24px] border border-border/60"
                   >
                     {/* Header Nhóm Cha */}
-                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border/40">
-                      <Factory className="w-6 h-6 text-primary" />
-                      <h2 className="text-xl font-bold text-text uppercase tracking-wider">
-                        {parentPrefix}
-                      </h2>
+                    <div className="flex flex-wrap items-center gap-3 mb-4 pb-3 border-b border-border/40">
+                      <div className="flex items-center gap-2">
+                        <Factory className="w-6 h-6 text-primary" />
+                        <h2 className="text-xl font-bold text-text uppercase tracking-wider leading-none">
+                          {parentPrefix}
+                        </h2>
+                      </div>
+
+                      {itemsArray.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {itemsArray.map((itm, i) => (
+                            <span 
+                              key={i} 
+                              className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest border border-primary/20 shadow-sm"
+                            >
+                              {itm}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Lưới Nhóm Con (List) */}
@@ -554,31 +612,45 @@ const DashboardPage = () => {
                           prefix={group.prefix}
                           count={group.items.length}
                         >
-                          <div className="flex flex-col gap-4 mt-2">
-                            {group.items.map((loc) => (
-                              <LocationListItem
-                                key={loc.id}
-                                location={loc.location}
-                                locationId={loc.locationId}
-                                temperature={loc.temperature}
-                                humidity={Math.round(loc.humidity)}
-                                sensorType={loc.sensorType}
-                                lastUpdate={loc.lastUpdate}
-                                lastUpdateISO={loc.lastUpdateISO}
-                                chartData={loc.chartData}
-                                tempMin={loc.tempMin}
-                                tempMax={loc.tempMax}
-                                humMin={loc.humMin}
-                                humMax={loc.humMax}
-                                onClick={() => handleLocationClick(loc)}
-                              />
+                          <div className="flex flex-col gap-6 mt-2">
+                            {Object.values(
+                              group.items.reduce((acc, loc) => {
+                                const parts = (loc.location || '').split('_');
+                                const locType = parts.length > 2 ? parts[2] : 'UNKNOWN';
+                                const key = `${locType}_${loc.areaName || ''}`;
+                                if (!acc[key]) acc[key] = [];
+                                acc[key].push(loc);
+                                return acc;
+                              }, {})
+                            ).map((subGroup, idx) => (
+                              <div key={idx} className="flex flex-col gap-4">
+                                {subGroup.map((loc) => (
+                                  <LocationListItem
+                                    key={loc.id}
+                                    location={loc.location}
+                                    locationId={loc.locationId}
+                                    temperature={loc.temperature}
+                                    humidity={Math.round(loc.humidity)}
+                                    sensorType={loc.sensorType}
+                                    areaName={loc.areaName}
+                                    lastUpdate={loc.lastUpdate}
+                                    lastUpdateISO={loc.lastUpdateISO}
+                                    chartData={loc.chartData}
+                                    tempMin={loc.tempMin}
+                                    tempMax={loc.tempMax}
+                                    humMin={loc.humMin}
+                                    humMax={loc.humMax}
+                                    onClick={() => handleLocationClick(loc)}
+                                  />
+                                ))}
+                              </div>
                             ))}
                           </div>
                         </LocationGroupSection>
                       ))}
                     </div>
                   </div>
-                ))
+                )})
               ) : (
                 <div className="text-center py-16 w-full">
                   <SearchAlert className="w-12 h-12 text-text-muted mx-auto mb-4" />

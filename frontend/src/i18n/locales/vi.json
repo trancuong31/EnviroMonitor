@@ -204,5 +204,9 @@
     "importError": "Lỗi khi nhập bản dịch",
     "importInvalidFormat": "Định dạng file không hợp lệ",
     "importInvalidData": "Cấu trúc dữ liệu bản dịch không hợp lệ"
+  },
+  "sensor": {
+    "loc_PL": "Dây chuyền",
+    "loc_WH": "NHÀ KHO"
   }
 }

@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { X, Camera, MapPin } from 'lucide-react';
 import api from '../../../services/api';
 import { getLayoutDetail } from '../api/dashboardApi';
+import { formatSensorName } from '../utils/formatUtils';
+
 /**
  * Full-screen modal to display a layout (floor plan) image
  * with clickable sensor hotspot dots.
@@ -274,8 +276,8 @@ const LayoutViewerModal = ({ isOpen, onClose, position }) => {
                                 <span className="text-xs text-text-muted uppercase tracking-wider font-semibold">
                                     Sensor
                                 </span>
-                                <p className="text-sm font-bold font-mono text-text mt-1">
-                                    {selectedSensor.name}
+                                <p className="text-sm font-bold font-mono text-text mt-1 uppercase">
+                                    {formatSensorName(selectedSensor.name, t)}
                                 </p>
                             </div>
 

@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertTriangle, AlertOctagon } from 'lucide-react';
 import { useSettingsStore } from '../../../store';
 import { isWarning, isTemperatureWarning, isHumidityWarning } from '../utils/warningUtils';
+import { formatSensorName } from '../utils/formatUtils';
 
 /**
  * Location List Item - displays combined temp & humidity for a factory location
@@ -67,7 +68,7 @@ const LocationListItem = ({ location, locationId, temperature, humidity, sensorT
 
             {/* Info */}
             <div className="flex flex-col gap-1">
-                <div className="text-md font-semibold text-text-secondary">{location?.substring(6)}</div>
+                <div className="text-md font-semibold text-text-secondary uppercase">{formatSensorName(location, t)}</div>
                 {isOffline ? (
                     <div className="flex items-center gap-1 text-red-500 text-xs font-medium mt-1">
                         <AlertOctagon className="w-3 h-3" />

@@ -154,7 +154,7 @@ const SensorSettingsModal = ({
       });
       setErrors({ temp: false, hum: false });
     }
-  }, [isOpen, locationData, globalThresholds]);
+  }, [isOpen, locationData, globalThresholds, currentThresholds]);
 
   const handleChange = (field, value) => {
     if (isViewOnly) return;
@@ -181,7 +181,7 @@ const SensorSettingsModal = ({
 
       const { locations } = useDashboardStore.getState();
       const updated = locations.map((loc) =>
-        loc.id === locationData.id
+        loc.locationId === locationData.locationId
           ? {
               ...loc,
               tempMin: formValues.temperatureMin,

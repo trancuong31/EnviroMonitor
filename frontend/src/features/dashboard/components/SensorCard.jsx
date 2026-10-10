@@ -1,14 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, WifiOff, Clock, Thermometer, Droplets } from 'lucide-react';
+import { AlertTriangle, WifiOff, Clock, Thermometer, Droplets, MapPin } from 'lucide-react';
 import { useSettingsStore } from '../../../store';
 import { isTemperatureWarning, isHumidityWarning } from '../utils/warningUtils';
 import formatRelativeTime from '../utils/timeUtils';
+import { formatSensorName } from '../utils/formatUtils';
 
 /**
  * Location Card - displays both temperature & humidity for a factory location
  * With warning highlight when values exceed configurable thresholds
  */
-const LocationCard = ({ location, locationId, temperature, humidity, sensorType = 'ROOM', lastUpdate, lastUpdateISO, status = 'Normal', onClick, tempMin, tempMax, humMin, humMax }) => {
+const LocationCard = ({ location, temperature, humidity, lastUpdateISO, onClick, tempMin, tempMax, humMin, humMax, areaName }) => {
     const { t } = useTranslation();
     const globalThresholds = useSettingsStore((s) => {
         const locStr = location?.toUpperCase() || '';
@@ -62,8 +63,8 @@ const LocationCard = ({ location, locationId, temperature, humidity, sensorType 
 
             {/* Header: Location name + Status Badge */}
             <div className="relative z-10 flex items-center justify-between mb-4.5">
-                <div className="text-text xl:text-[16px] font-bold tracking-wide truncate" title={location}>
-                    {location?.substring(6) || 'Unknown'}
+                <div className="text-text xl:text-[14px] font-bold tracking-wide truncate uppercase" title={location}>
+                    {formatSensorName(location, t)}
                 </div>
                 {(isOffline || hasWarning) && (
                     <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.6rem] font-bold uppercase tracking-wider ${
@@ -158,7 +159,17 @@ const LocationCard = ({ location, locationId, temperature, humidity, sensorType 
             {/* Footer: Time Update */}
             <div className="relative z-10 flex items-center gap-1.5 pt-2.5 border-t border-border/40 text-[0.65rem] text-text-muted/60 font-medium">
                 <Clock className="w-4 h-4 text-gray-500" />
-                <span className='text-sm text-gray-500'>{formatRelativeTime(lastUpdateISO)}</span>
+                <span className="text-sm text-gray-500">
+                    {formatRelativeTime(lastUpdateISO)}
+                </span>
+                {areaName && (
+                    <div className="ml-auto flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5 text-primary/70" />
+                        <span className="text-[11px] text-primary/80 font-bold uppercase tracking-wide">
+                            {areaName}
+                        </span>
+                    </div>
+                )}
             </div>
         </div>
     );
